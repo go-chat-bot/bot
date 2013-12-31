@@ -11,3 +11,4 @@ Simple IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for the IRC 
 
 - Register commands
 - Run commands in parallel
+- Read server, nick, channel, etc from config file
