@@ -11,6 +11,7 @@ type Command struct {
 	Args    []string
 }
 
+// Parses the arguments returning the Command to execute and the Arguments passed to it
 func Parse(c string) (*Command, error) {
 	if c == "" {
 		return nil, errors.New("Empty params")

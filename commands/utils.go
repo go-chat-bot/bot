@@ -1,5 +1,6 @@
 package commands
 
+// Convert the argumets passed to a command to string, using space as separator
 func ArgsToString(args []string) string {
 	s := ""
 	for _, value := range args {

@@ -52,7 +52,7 @@ func onPRIVMSG(e *irc.Event) {
 	}
 }
 
-func Connect() {
+func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.UseTLS = config.UseTLS
 	err := irccon.Connect(config.Server)
@@ -61,7 +61,7 @@ func Connect() {
 	}
 }
 
-func ConfigureEvents() {
+func configureEvents() {
 	irccon.AddCallback("001", func(e *irc.Event) {
 		irccon.Join(config.Channels[0])
 	})
@@ -73,7 +73,7 @@ func ConfigureEvents() {
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
-func ReadConfig() {
+func readConfig() {
 	configFile, err := os.Open(CONFIG_FILE)
 	if err != nil {
 		panic(err)
@@ -83,8 +83,8 @@ func ReadConfig() {
 }
 
 func main() {
-	ReadConfig()
-	Connect()
-	ConfigureEvents()
+	readConfig()
+	connect()
+	configureEvents()
 	irccon.Loop()
 }

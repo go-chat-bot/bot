@@ -1,7 +1,7 @@
 package commands
 
 // From stackoverflow: http://stackoverflow.com/a/10030772
-func ReverseString(s string) string {
+func reverseString(s string) string {
 	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
@@ -9,8 +9,9 @@ func ReverseString(s string) string {
 	return string(runes)
 }
 
+// Reverses a string
 func Reverse(args []string) string {
-	return ReverseString(ArgsToString(args))
+	return reverseString(ArgsToString(args))
 }
 
 func init() {
