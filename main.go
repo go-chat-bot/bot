@@ -6,7 +6,6 @@ import (
 	"github.com/thoj/go-ircevent"
 	"log"
 	"os"
-	"strings"
 )
 
 const (
@@ -27,21 +26,7 @@ func printAvailableCommands(channel string) {
 	irccon.Privmsg(channel, cmds[:len(cmds)-2])
 }
 
-func onPRIVMSG(e *irc.Event) {
-	log.Println(e.Message)
-	if !strings.Contains(e.Message, config.Cmd) {
-		return
-	}
-
-	channel := e.Arguments[0]
-	cmd, err := Parse(StrAfter(e.Message, config.Cmd))
-	if err != nil {
-		irccon.Privmsg(channel, err.Error())
-		return
-	}
-
-	log.Printf("cmd: %v", cmd)
-
+func handleCmd(cmd *Command, channel string) {
 	irc_cmd := commands.Commands[cmd.Command]
 	if irc_cmd == nil {
 		irccon.Privmsg(channel, fmt.Sprintf("Command %v not found.", cmd.Command))
@@ -50,6 +35,25 @@ func onPRIVMSG(e *irc.Event) {
 		log.Printf("cmd %v args %v", cmd.Command, cmd.Args)
 		irccon.Privmsg(channel, irc_cmd(cmd.Args))
 	}
+}
+
+func onPRIVMSG(e *irc.Event) {
+	channel := e.Arguments[0]
+	args := ""
+	if channel == config.Nick {
+		channel = e.Nick
+		args = e.Message
+	} else {
+		args = StrAfter(e.Message, config.Cmd)
+	}
+
+	cmd, err := Parse(args)
+	if err != nil {
+		irccon.Privmsg(channel, err.Error())
+		return
+	}
+
+	handleCmd(cmd, channel)
 }
 
 func connect() {
