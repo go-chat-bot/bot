@@ -12,6 +12,20 @@ func TestEmptyCommand(t *testing.T) {
 	}
 }
 
+func TestTrimArgs(t *testing.T) {
+	command := "command"
+	arg := "arg"
+	c := ParseString(t, fmt.Sprintf(" %v %v ", command, arg))
+
+	if c.Command != command {
+		t.Errorf("Expected %v got %v", command, c.Command)
+	}
+
+	if c.Args[0] != arg {
+		t.Errorf("Expected %v got %v", arg, c.Args[0])
+	}
+}
+
 func TestRawCommand(t *testing.T) {
 	raw := "raw command"
 	c := ParseString(t, raw)

@@ -18,7 +18,6 @@ func Parse(c string) (*Command, error) {
 
 	cmd := &Command{Raw: c}
 
-	//TODO: test trim
 	values := strings.SplitN(strings.Trim(c, " "), " ", 2)
 
 	cmd.Command = values[0]
