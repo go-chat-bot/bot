@@ -5,37 +5,38 @@ import (
 	"github.com/fabioxgn/go-bot/commands"
 	"github.com/thoj/go-ircevent"
 	"log"
+	"os"
 	"strings"
 )
 
 const (
-	CHANNEL        = "#bandodeputos"
-	CMD_IDENTIFIER = "!go-bot"
+	CONFIG_FILE = "config.json"
 )
 
 var (
-	irccon = irc.IRC("go-bot", "go-bot")
+	irccon *irc.Connection
+	config = &Config{}
 )
 
-func printAvailableCommands(c string) {
-	irccon.Privmsg(CHANNEL, fmt.Sprintf("Command %v not found.", c))
-	irccon.Privmsg(CHANNEL, "Available Commands:")
+func printAvailableCommands(channel string) {
+	irccon.Privmsg(channel, "Available Commands:")
 	cmds := ""
 	for k, _ := range commands.Commands {
 		cmds += k + ", "
 	}
-	irccon.Privmsg(CHANNEL, cmds[:len(cmds)-2])
+	irccon.Privmsg(channel, cmds[:len(cmds)-2])
 }
 
-func OnPRIVMSG(e *irc.Event) {
+func onPRIVMSG(e *irc.Event) {
 	log.Println(e.Message)
-	if !strings.Contains(e.Message, CMD_IDENTIFIER) {
+	if !strings.Contains(e.Message, config.Cmd) {
 		return
 	}
 
-	cmd, err := Parse(StrAfter(e.Message, CMD_IDENTIFIER))
+	channel := e.Arguments[0]
+	cmd, err := Parse(StrAfter(e.Message, config.Cmd))
 	if err != nil {
-		irccon.Privmsg(CHANNEL, err.Error())
+		irccon.Privmsg(channel, err.Error())
 		return
 	}
 
@@ -43,28 +44,47 @@ func OnPRIVMSG(e *irc.Event) {
 
 	irc_cmd := commands.Commands[cmd.Command]
 	if irc_cmd == nil {
-		printAvailableCommands(cmd.Command)
+		irccon.Privmsg(channel, fmt.Sprintf("Command %v not found.", cmd.Command))
+		printAvailableCommands(channel)
 	} else {
 		log.Printf("cmd %v args %v", cmd.Command, cmd.Args)
-		irccon.Privmsg(CHANNEL, irc_cmd(cmd.Args))
+		irccon.Privmsg(channel, irc_cmd(cmd.Args))
 	}
 }
 
-func main() {
-	irccon.UseTLS = true
-	err := irccon.Connect("irc.freenode.net:7000")
+func Connect() {
+	irccon = irc.IRC(config.User, config.Nick)
+	irccon.UseTLS = config.UseTLS
+	err := irccon.Connect(config.Server)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ConfigureEvents() {
 	irccon.AddCallback("001", func(e *irc.Event) {
-		irccon.Join(CHANNEL)
+		irccon.Join(config.Channels[0])
 	})
 
 	irccon.AddCallback("366", func(e *irc.Event) {
-		irccon.Privmsg(CHANNEL, "Hi there.\n")
+		irccon.Privmsg(config.Channels[0], "Hi there.\n")
 	})
 
-	irccon.AddCallback("PRIVMSG", OnPRIVMSG)
+	irccon.AddCallback("PRIVMSG", onPRIVMSG)
+}
 
+func ReadConfig() {
+	configFile, err := os.Open(CONFIG_FILE)
+	if err != nil {
+		panic(err)
+	}
+	config.Read(configFile)
+	fmt.Printf("%v", config)
+}
+
+func main() {
+	ReadConfig()
+	Connect()
+	ConfigureEvents()
 	irccon.Loop()
 }

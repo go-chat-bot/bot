@@ -1,0 +1,23 @@
+package main
+
+import (
+	"encoding/json"
+	"io"
+)
+
+type Config struct {
+	Server   string
+	Channels []string
+	User     string
+	Nick     string
+	Cmd      string
+	UseTLS   bool
+}
+
+func (c *Config) Read(value io.Reader) {
+	decoder := json.NewDecoder(value)
+	err := decoder.Decode(&c)
+	if err != nil {
+		panic(err)
+	}
+}
