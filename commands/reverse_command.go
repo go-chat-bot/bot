@@ -10,11 +10,7 @@ func ReverseString(s string) string {
 }
 
 func Reverse(args []string) string {
-	s := ""
-	for _, value := range args {
-		s += value + " "
-	}
-	return ReverseString(s[:len(s)-1])
+	return ReverseString(ArgsToString(args))
 }
 
 func init() {
