@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CONFIG_FILE = "config.json"
+	configFile = "config.json"
 )
 
 var (
@@ -78,11 +78,11 @@ func configureEvents() {
 }
 
 func readConfig() {
-	configFile, err := os.Open(CONFIG_FILE)
+	file, err := os.Open(configFile)
 	if err != nil {
 		panic(err)
 	}
-	config.Read(configFile)
+	config.Read(file)
 	fmt.Printf("%v", config)
 }
 
