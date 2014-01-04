@@ -2,3 +2,6 @@ language: go
 
 go:
   - tip
+
+notifications:
+  irc: "chat.freenode.net#go-bot"
