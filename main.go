@@ -27,13 +27,13 @@ func printAvailableCommands(channel string) {
 }
 
 func handleCmd(cmd *Command, channel string) {
-	irc_cmd := commands.Commands[cmd.Command]
-	if irc_cmd == nil {
+	cmdFunction := commands.Commands[cmd.Command]
+	if cmdFunction == nil {
 		irccon.Privmsg(channel, fmt.Sprintf("Command %v not found.", cmd.Command))
 		printAvailableCommands(channel)
 	} else {
 		log.Printf("cmd %v args %v", cmd.Command, cmd.Args)
-		irccon.Privmsg(channel, irc_cmd(cmd.Args))
+		irccon.Privmsg(channel, cmdFunction(cmd.Args))
 	}
 }
 
