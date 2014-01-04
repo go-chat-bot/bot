@@ -17,26 +17,6 @@ var (
 	config = &Config{}
 )
 
-func printAvailableCommands(channel string) {
-	irccon.Privmsg(channel, "Available Commands:")
-	cmds := ""
-	for k := range commands.Commands {
-		cmds += k + ", "
-	}
-	irccon.Privmsg(channel, cmds[:len(cmds)-2])
-}
-
-func handleCmd(cmd *Command, channel string) {
-	cmdFunction := commands.Commands[cmd.Command]
-	if cmdFunction == nil {
-		irccon.Privmsg(channel, fmt.Sprintf("Command %v not found.", cmd.Command))
-		printAvailableCommands(channel)
-	} else {
-		log.Printf("cmd %v args %v", cmd.Command, cmd.Args)
-		irccon.Privmsg(channel, cmdFunction(cmd.Args))
-	}
-}
-
 func onPRIVMSG(e *irc.Event) {
 	channel := e.Arguments[0]
 	args := ""
@@ -47,8 +27,8 @@ func onPRIVMSG(e *irc.Event) {
 		args = StrAfter(e.Message, config.Cmd)
 	}
 
-	cmd := Parse(args)
-	handleCmd(cmd, channel)
+	cmd := commands.Parse(args)
+	commands.HandleCmd(cmd, channel, irccon)
 }
 
 func connect() {
