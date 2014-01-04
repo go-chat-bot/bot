@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// Struct which separates the user's input for easier handling of commands
 type Command struct {
 	Raw     string
 	Command string

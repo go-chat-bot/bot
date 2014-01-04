@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// Struct mapping the config
 type Config struct {
 	Server   string
 	Channels []string
