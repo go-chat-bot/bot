@@ -28,7 +28,7 @@ func onPRIVMSG(e *irc.Event) {
 	}
 
 	cmd := commands.Parse(args)
-	commands.HandleCmd(cmd, channel, irccon)
+	commands.HandleCmd(cmd, channel, irccon.Privmsg)
 }
 
 func connect() {

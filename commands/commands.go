@@ -6,10 +6,15 @@ import (
 )
 
 type CommandFunc func(args []string) string
+type privMsgFunc func(channel string, msg string)
 
 type IRC interface {
 	Privmsg(string, string)
 }
+
+const (
+	commandNotAvailable = "Command %v not available."
+)
 
 var (
 	commands = make(map[string]CommandFunc)
@@ -20,22 +25,21 @@ func RegisterCommand(command string, f CommandFunc) {
 }
 
 // HandleCmd handles a command and respond to channel or user
-func HandleCmd(cmd *Command, channel string, irc IRC) {
+func HandleCmd(cmd *Command, channel string, Msg privMsgFunc) {
 	cmdFunction := commands[cmd.Command]
 	if cmdFunction == nil {
-		irc.Privmsg(channel, fmt.Sprintf("Command %v not found.", cmd.Command))
-		printAvailableCommands(channel, irc)
+		Msg(channel, fmt.Sprintf(commandNotAvailable, cmd.Command))
+		printAvailableCommands(channel, Msg)
 	} else {
 		log.Printf("cmd %v args %v", cmd.Command, cmd.Args)
-		irc.Privmsg(channel, cmdFunction(cmd.Args))
+		Msg(channel, cmdFunction(cmd.Args))
 	}
 }
 
-func printAvailableCommands(channel string, irc IRC) {
-	irc.Privmsg(channel, "Available Commands:")
-	cmds := ""
+func printAvailableCommands(channel string, Msg privMsgFunc) {
+	availableCommands := "Available Commands: "
 	for k := range commands {
-		cmds += k + ", "
+		availableCommands += k + ", "
 	}
-	irc.Privmsg(channel, cmds[:len(cmds)-2])
+	Msg(channel, availableCommands[:len(availableCommands)-2])
 }
