@@ -6,8 +6,8 @@ import (
 )
 
 func TestEmptyCommand(t *testing.T) {
-	_, err := Parse("")
-	if err == nil {
+	cmd := Parse("")
+	if cmd.Command != "" {
 		t.Fail()
 	}
 }
@@ -15,7 +15,7 @@ func TestEmptyCommand(t *testing.T) {
 func TestTrimArgs(t *testing.T) {
 	command := "command"
 	arg := "arg"
-	c := ParseString(t, fmt.Sprintf(" %v %v ", command, arg))
+	c := Parse(fmt.Sprintf(" %v %v ", command, arg))
 
 	if c.Command != command {
 		t.Errorf("Expected %v got %v", command, c.Command)
@@ -28,7 +28,7 @@ func TestTrimArgs(t *testing.T) {
 
 func TestRawCommand(t *testing.T) {
 	raw := "raw command"
-	c := ParseString(t, raw)
+	c := Parse(raw)
 
 	if c.Raw != raw {
 		t.Errorf("Expected %v, got %v", raw, c.Command)
@@ -37,7 +37,7 @@ func TestRawCommand(t *testing.T) {
 
 func TestCommandWithNoArgs(t *testing.T) {
 	raw := "command"
-	c := ParseString(t, raw)
+	c := Parse(raw)
 
 	if c.Command != raw {
 		t.Errorf("Expected %v, got %v", raw, c.Command)
@@ -52,7 +52,7 @@ func TestArgs(t *testing.T) {
 		"base",
 	}
 
-	c := ParseString(t, fmt.Sprintf("%v %v %v %v", command, expectedArgs[0], expectedArgs[1], expectedArgs[2]))
+	c := Parse(fmt.Sprintf("%v %v %v %v", command, expectedArgs[0], expectedArgs[1], expectedArgs[2]))
 
 	if len(c.Args) != len(expectedArgs) {
 		t.Errorf("Expected %v args got %v", len(expectedArgs), len(c.Args))
@@ -68,18 +68,9 @@ func TestArgs(t *testing.T) {
 func TestCommandWithArgs(t *testing.T) {
 	command := "command"
 	args := " with 2 args"
-	c := ParseString(t, command+args)
+	c := Parse(command + args)
 
 	if c.Command != "command" {
 		t.Errorf("Expected %v, got %v", command, c.Command)
 	}
-}
-
-func ParseString(t *testing.T, value string) *Command {
-	c, err := Parse(value)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-		return nil
-	}
-	return c
 }

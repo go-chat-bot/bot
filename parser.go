@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -11,12 +10,8 @@ type Command struct {
 	Args    []string
 }
 
-// Parses the arguments returning the Command to execute and the Arguments passed to it
-func Parse(c string) (*Command, error) {
-	if c == "" {
-		return nil, errors.New("Empty params")
-	}
-
+// Parse the arguments returning the Command to execute and the arguments passed to it
+func Parse(c string) *Command {
 	cmd := &Command{Raw: c}
 
 	values := strings.SplitN(strings.Trim(c, " "), " ", 2)
@@ -26,5 +21,5 @@ func Parse(c string) (*Command, error) {
 		cmd.Args = strings.Split(values[1], " ")
 	}
 
-	return cmd, nil
+	return cmd
 }

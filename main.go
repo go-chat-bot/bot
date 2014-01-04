@@ -20,7 +20,7 @@ var (
 func printAvailableCommands(channel string) {
 	irccon.Privmsg(channel, "Available Commands:")
 	cmds := ""
-	for k, _ := range commands.Commands {
+	for k := range commands.Commands {
 		cmds += k + ", "
 	}
 	irccon.Privmsg(channel, cmds[:len(cmds)-2])
@@ -47,12 +47,7 @@ func onPRIVMSG(e *irc.Event) {
 		args = StrAfter(e.Message, config.Cmd)
 	}
 
-	cmd, err := Parse(args)
-	if err != nil {
-		irccon.Privmsg(channel, err.Error())
-		return
-	}
-
+	cmd := Parse(args)
 	handleCmd(cmd, channel)
 }
 
