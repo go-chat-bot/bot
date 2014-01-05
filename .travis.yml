@@ -5,6 +5,7 @@ go:
 
 install:
   - go get launchpad.net/gocheck
+  - go get github.com/thoj/go-ircevent
 
 notifications:
   irc: "chat.freenode.net#go-bot"
