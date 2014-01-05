@@ -14,6 +14,8 @@ type IRC interface {
 
 const (
 	commandNotAvailable = "Command %v not available."
+	availableCommands   = "Available commands: "
+	noCommandsAvailable = "No commands available."
 )
 
 var (
@@ -37,9 +39,13 @@ func HandleCmd(cmd *Command, channel string, Msg privMsgFunc) {
 }
 
 func printAvailableCommands(channel string, Msg privMsgFunc) {
-	availableCommands := "Available Commands: "
+	cmds := ""
 	for k := range commands {
-		availableCommands += k + ", "
+		cmds += k + ", "
 	}
-	Msg(channel, availableCommands[:len(availableCommands)-2])
+	if cmds != "" {
+		Msg(channel, fmt.Sprintf("%s: %s", availableCommands, cmds[:len(cmds)-2]))
+	} else {
+		Msg(channel, noCommandsAvailable)
+	}
 }

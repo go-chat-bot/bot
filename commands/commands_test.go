@@ -2,10 +2,21 @@ package commands
 
 import (
 	"fmt"
+	. "launchpad.net/gocheck"
 	"testing"
 )
 
-func TestRegisterCommand(t *testing.T) {
+func Test(t *testing.T) { TestingT(t) }
+
+type MySuite struct{}
+
+var _ = Suite(&MySuite{})
+
+func (s *MySuite) SetUpTest(c *C) {
+	commands = make(map[string]CommandFunc)
+}
+
+func (s *MySuite) TestRegisterCommand(c *C) {
 	command := "teste"
 	ok := false
 	fn := func(args []string) string { ok = true; return "" }
@@ -14,18 +25,45 @@ func TestRegisterCommand(t *testing.T) {
 	cmd := commands[command]
 	cmd([]string{""})
 
-	if !ok {
-		t.Fail()
+	c.Check(ok, Equals, true)
+}
+
+func (s *MySuite) TestHandleExistingCommand(c *C) {
+	arg1 := "echo"
+	cmdString := "cmd"
+	cmd := &Command{
+		Command: cmdString,
+		Args:    []string{arg1},
 	}
+	fn := func(args []string) string { return ArgsToString(args) }
+
+	RegisterCommand(cmdString, fn)
+
+	msg := ""
+	privMsgFunc := func(c string, m string) {
+		msg = m
+	}
+
+	HandleCmd(cmd, "", privMsgFunc)
+
+	c.Assert(msg, Equals, arg1)
 }
 
-func TestHandleExistingCommand(t *testing.T) {
+func (s *MySuite) TestNoCommandsAvailable(c *C) {
+	cmd := &Command{Command: "cmd"}
 
+	msg := []string{}
+	fn := func(c string, m string) {
+		msg = append(msg, m)
+	}
+
+	HandleCmd(cmd, "", fn)
+
+	c.Assert(msg, HasLen, 2)
+	c.Check(msg[1], Equals, noCommandsAvailable)
 }
 
-func TestHandleCommandNotFound(t *testing.T) {
-	commands = make(map[string]CommandFunc)
-
+func (s *MySuite) TestHandleCommandNotFound(c *C) {
 	channel := ""
 	msg := []string{}
 	fn := func(c string, m string) {
@@ -33,22 +71,15 @@ func TestHandleCommandNotFound(t *testing.T) {
 		msg = append(msg, m)
 	}
 
-	expectedChannel := "#go-bot"
-
 	cmd := &Command{}
 	cmd.Command = "allyourbase"
+
+	expectedChannel := "#go-bot"
+	expectedMsg := fmt.Sprintf(commandNotAvailable, cmd.Command)
+
 	HandleCmd(cmd, expectedChannel, fn)
 
-	if channel != expectedChannel {
-		t.Errorf("Invalid channel. Expected '%v' got '%v'", expectedChannel, channel)
-	}
-
-	if len(msg) != 2 {
-		t.Errorf("Invalid msg length. Expected 2 got %v", len(msg))
-	}
-
-	expectedMsg := fmt.Sprintf(commandNotAvailable, cmd.Command)
-	if msg[0] != expectedMsg {
-		t.Errorf("Invalid msg. Expected '%v' got '%v'", expectedMsg, msg)
-	}
+	c.Check(channel, Equals, expectedChannel)
+	c.Assert(msg, HasLen, 2)
+	c.Check(msg[0], Equals, expectedMsg)
 }
