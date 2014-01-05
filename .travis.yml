@@ -3,5 +3,8 @@ language: go
 go:
   - tip
 
+install:
+  - go get launchpad.net/gocheck
+
 notifications:
   irc: "chat.freenode.net#go-bot"
