@@ -4,11 +4,11 @@ import (
 	"strings"
 )
 
-// Struct which separates the user's input for easier handling of commands
+// Command is a struct which separates the user's input for easier handling of commands
 type Command struct {
-	Raw     string
-	Command string
-	Args    []string
+	Raw     string   // Raw is full string passed to the command
+	Command string   // Command is the first argument passed to the bot
+	Args    []string // Args is the remaining arguments after the command
 }
 
 // Parse the arguments returning the Command to execute and the arguments passed to it

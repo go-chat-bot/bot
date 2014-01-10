@@ -9,7 +9,7 @@ func reverseString(s string) string {
 	return string(runes)
 }
 
-// Reverses a string
+// Reverse reverses a string
 func Reverse(args []string) string {
 	return reverseString(ArgsToString(args))
 }

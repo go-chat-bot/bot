@@ -83,3 +83,24 @@ func (s *MySuite) TestHandleCommandNotFound(c *C) {
 	c.Assert(msg, HasLen, 2)
 	c.Check(msg[0], Equals, expectedMsg)
 }
+
+func (s *MySuite) TestHandleInvalidCommand(c *C) {
+	cmd1 := "cmd1"
+	cmd2 := "cmd2"
+	RegisterCommand(cmd1, nil)
+	RegisterCommand(cmd2, nil)
+
+	cmd3 := "cmd3"
+	cmd := &Command{Command: cmd3}
+
+	msg := []string{}
+	fn := func(c string, m string) {
+		msg = append(msg, m)
+	}
+
+	HandleCmd(cmd, "", fn)
+
+	c.Check(msg, HasLen, 2)
+	c.Check(msg[0], Equals, fmt.Sprintf(commandNotAvailable, cmd3))
+	c.Check(msg[1], Equals, fmt.Sprintf("%s: %s, %s", availableCommands, cmd1, cmd2))
+}
