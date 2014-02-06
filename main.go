@@ -75,7 +75,7 @@ func startMetrics() {
 	}
 
 	agent := gorelic.NewAgent()
-	agent.Verbose = true
+	agent.Verbose = false
 	agent.NewrelicLicense = newRelicAPIKey
 	agent.Run()
 }
