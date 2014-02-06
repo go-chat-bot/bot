@@ -5,72 +5,98 @@ import (
 	"testing"
 )
 
+var (
+	DefaultPrefix = "!"
+	DefaultCommand = "command"
+	DefaultFullArg = "arg1 arg2"
+	DefaultArgs = []string{
+		"arg1",
+		"arg2",
+	}
+)
+
 func TestEmptyCommand(t *testing.T) {
-	cmd := Parse("")
+	cmd := Parse("", DefaultPrefix)
 	if cmd.Command != "" {
 		t.Fail()
 	}
 }
 
-func TestTrimArgs(t *testing.T) {
-	command := "command"
-	arg := "arg"
-	c := Parse(fmt.Sprintf(" %v %v ", command, arg))
+func TestWithoutPrefix(t *testing.T) {
+	IsCommand := false
+	Message := "regular message"
 
-	if c.Command != command {
-		t.Errorf("Expected %v got %v", command, c.Command)
+	res := Parse(Message, DefaultPrefix)
+
+	if res.IsCommand != IsCommand {
+		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
 	}
-
-	if c.Args[0] != arg {
-		t.Errorf("Expected %v got %v", arg, c.Args[0])
-	}
-}
-
-func TestRawCommand(t *testing.T) {
-	raw := "raw command"
-	c := Parse(raw)
-
-	if c.Raw != raw {
-		t.Errorf("Expected %v, got %v", raw, c.Command)
+	if res.Message != Message {
+		t.Errorf("Expected %v got %v", Message, res.Message)
 	}
 }
 
-func TestCommandWithNoArgs(t *testing.T) {
-	raw := "command"
-	c := Parse(raw)
+func TestOnlyPrefix(t *testing.T) {
+	IsCommand := false
 
-	if c.Command != raw {
-		t.Errorf("Expected %v, got %v", raw, c.Command)
+	res := Parse(DefaultPrefix, DefaultPrefix)
+
+	if res.IsCommand != IsCommand {
+		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
 	}
 }
 
-func TestArgs(t *testing.T) {
-	command := "command"
-	expectedArgs := []string{
-		"all",
-		"your",
-		"base",
+func TestWithPrefixAndCommand(t *testing.T) {
+	IsCommand := true
+
+	res := Parse(fmt.Sprintf("%v%v", DefaultPrefix, DefaultCommand), DefaultPrefix)
+
+	if res.IsCommand != IsCommand {
+		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
+	}
+	if res.Command != DefaultCommand {
+		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
+	}
+}
+
+func TestWithPrefixAndCommandAndArgs(t *testing.T) {
+	IsCommand := true
+
+	res := Parse(fmt.Sprintf("%v%v %v", DefaultPrefix, DefaultCommand, DefaultFullArg), DefaultPrefix)
+
+	if res.IsCommand != IsCommand {
+		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
+	}
+	if res.Command != DefaultCommand {
+		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
+	}
+	if res.Args[0] != DefaultArgs[0] {
+		t.Errorf("Expected %v got %v", DefaultArgs[0], res.Args[0])
+	}
+	if res.FullArg != DefaultFullArg {
+		t.Errorf("Expected %v got %v", DefaultFullArg, res.FullArg)
+	}
+}
+
+func TestWithExtraSpaces(t *testing.T) {
+	IsCommand := true
+
+	res := Parse(fmt.Sprintf(" %v %v %v  %v  ", DefaultPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1]), DefaultPrefix)
+
+	if res.IsCommand != IsCommand {
+		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
+	}
+	if res.Command != DefaultCommand {
+		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
 	}
 
-	c := Parse(fmt.Sprintf("%v %v %v %v", command, expectedArgs[0], expectedArgs[1], expectedArgs[2]))
-
-	if len(c.Args) != len(expectedArgs) {
-		t.Errorf("Expected %v args got %v", len(expectedArgs), len(c.Args))
-	}
-
-	for i := 0; i < len(expectedArgs); i++ {
-		if c.Args[i] != expectedArgs[i] {
-			t.Errorf("Expected %v got %v", expectedArgs[i], c.Args[i])
+	for i := 0; i < len(DefaultArgs); i++ {
+		if res.Args[i] != DefaultArgs[i] {
+			t.Errorf("Expected %v got %v", DefaultArgs[i], res.Args[i])
 		}
 	}
-}
 
-func TestCommandWithArgs(t *testing.T) {
-	command := "command"
-	args := " with 2 args"
-	c := Parse(command + args)
-
-	if c.Command != "command" {
-		t.Errorf("Expected %v, got %v", command, c.Command)
+	if res.FullArg != DefaultFullArg {
+		t.Errorf("Expected %v got %v", DefaultFullArg, res.FullArg)
 	}
 }

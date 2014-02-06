@@ -6,7 +6,7 @@ import (
 
 func TestHelloworld(t *testing.T) {
 	want := "Hello world!"
-	got := "Hello world!"
+	got := Helloworld([]string{"any string"})
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)

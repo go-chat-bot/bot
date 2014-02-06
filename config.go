@@ -7,12 +7,12 @@ import (
 
 // Struct mapping the config
 type Config struct {
-	Server   string
-	Channels []string
-	User     string
-	Nick     string
-	Cmd      string
-	UseTLS   bool
+	Server   	string
+	Channels 	[]string
+	User     	string
+	Nick     	string
+	CmdPrefix 	string
+	UseTLS		bool
 }
 
 // Read the configuration from a JSON file

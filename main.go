@@ -7,7 +7,6 @@ import (
 	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
-	"strings"
 )
 
 const (
@@ -21,21 +20,18 @@ var (
 
 func onPRIVMSG(e *irc.Event) {
 	channel := e.Arguments[0]
-	args := ""
 	if channel == config.Nick {
-		channel = e.Nick
-		args = e.Message
+		// channel = e.Nick
+		// msg := e.Message
 	} else {
-		// args = StrAfter(e.Message, config.Cmd)
-		// Test if the first word is the command sintax
-		x := strings.SplitN(e.Message, " ", 2)
-		if x[0] == config.Cmd {
+		// Parse the raw message
+		message := commands.Parse(e.Message, config.CmdPrefix)
+
+		// Is it a command or just a regular message?
+		if message.IsCommand {
 			// It's a command
-			args = x[1]
-			cmd := commands.Parse(args)
-			commands.HandleCmd(cmd, channel, irccon.Privmsg)
+			commands.HandleCmd(message, channel, irccon.Privmsg)
 		} else {
-			args = x[0]
 			// It's not a command
 			// Test for passive commands (parse url, etc) ?
 		}
