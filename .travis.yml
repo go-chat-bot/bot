@@ -12,5 +12,5 @@ deploy:
   buildpack: https://github.com/kr/heroku-buildpack-go.git
   api_key:
     secure: oTOgjhzz+f8b5oYUwQcqYWfOcx1AqYnocHJzjlfJ7vtk5VcXg5RgAfH0oq8SHz5lyp6SgJSnIp1XB/LQodJwaTCq3oLFjhbO7oHbCF1FMQcN+jKd+nNWmOV0oaCi40vC1yOCCJ6mslZ6ulZpqnS8gYn9FoV+rcViF/d/lbwpK4o=
-  app: go-bot-irc
+  app: go-irc-bot
   on: master 
