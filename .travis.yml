@@ -3,7 +3,7 @@ go:
 - tip
 notifications:
   irc: chat.freenode.net#go-bot
- deploy:
+deploy:
   provider: heroku
   buildpack: https://github.com/kr/heroku-buildpack-go.git
   api_key:
