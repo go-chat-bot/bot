@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fabioxgn/go-bot/commands"
 	"github.com/thoj/go-ircevent"
+	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
 )
@@ -46,15 +47,20 @@ func connect() {
 	}
 }
 
+func onWelcome(e *irc.Event) {
+	for _, channel := range config.Channels {
+		irccon.Join(channel)
+	}
+}
+
+func onEndOfNames(e *irc.Event) {
+	log.Println("onEndOfNames: %v", e.Arguments)
+	irccon.Privmsg(e.Arguments[1], "Hi there.\n")
+}
+
 func configureEvents() {
-	irccon.AddCallback("001", func(e *irc.Event) {
-		irccon.Join(config.Channels[0])
-	})
-
-	irccon.AddCallback("366", func(e *irc.Event) {
-		irccon.Privmsg(config.Channels[0], "Hi there.\n")
-	})
-
+	irccon.AddCallback("001", onWelcome)
+	irccon.AddCallback("366", onEndOfNames)
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
@@ -67,7 +73,21 @@ func readConfig() {
 	fmt.Printf("%v\n", config)
 }
 
+func startMetrics() {
+	newRelicAPIKey := os.Getenv("NEW_RELIC_KEY")
+
+	if newRelicAPIKey == "" {
+		return
+	}
+
+	agent := gorelic.NewAgent()
+	agent.Verbose = false
+	agent.NewrelicLicense = newRelicAPIKey
+	agent.Run()
+}
+
 func main() {
+	startMetrics()
 	readConfig()
 	connect()
 	configureEvents()

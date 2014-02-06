@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	. "launchpad.net/gocheck"
+	. "github.com/motain/gocheck"
 	"testing"
 )
 
