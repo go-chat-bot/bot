@@ -1,6 +1,9 @@
 language: go
 go:
-- tip
+  - tip
+install:
+  - go get github.com/motain/gocheck
+  - go get github.com/thoj/go-ircevent
 notifications:
   irc: chat.freenode.net#go-bot
 deploy:
