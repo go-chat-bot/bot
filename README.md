@@ -9,12 +9,12 @@ Simple IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for the IRC 
 
 # Sample config
 
-    {  
+    {
 	    "Server": "irc.freenode.net:7000",
 	    "Channels": ["#go-bot"],
-	    "User": "go-bot",		
+	    "User": "go-bot",
 	    "Nick": "go-bot",
-	    "Cmd": "!go-bot",
+	    "CmdPrefix": "!go-bot",
 	    "UseTLS": true
     }
 
