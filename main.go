@@ -7,6 +7,7 @@ import (
 	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
@@ -25,11 +26,20 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick
 		args = e.Message
 	} else {
-		args = StrAfter(e.Message, config.Cmd)
+		// args = StrAfter(e.Message, config.Cmd)
+		// Test if the first word is the command sintax
+		x := strings.SplitN(e.Message, " ", 2)
+		if x[0] == config.Cmd {
+			// It's a command
+			args = x[1]
+			cmd := commands.Parse(args)
+			commands.HandleCmd(cmd, channel, irccon.Privmsg)
+		} else {
+			args = x[0]
+			// It's not a command
+			// Test for passive commands (parse url, etc) ?
+		}
 	}
-
-	cmd := commands.Parse(args)
-	commands.HandleCmd(cmd, channel, irccon.Privmsg)
 }
 
 func connect() {
@@ -64,7 +74,7 @@ func readConfig() {
 		panic(err)
 	}
 	config.Read(file)
-	fmt.Printf("%v", config)
+	fmt.Printf("%v\n", config)
 }
 
 func startMetrics() {
