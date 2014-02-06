@@ -1,8 +1,8 @@
 {
 	"Server": "irc.freenode.net:7000",
 	"Channels": ["#go-bot"],
-	"User": "go-bot",		
+	"User": "go-bot",
 	"Nick": "go-bot",
-	"Cmd": "!go-bot",
+	"CmdPrefix": "!",
 	"UseTLS": true
 }

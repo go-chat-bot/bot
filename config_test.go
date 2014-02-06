@@ -8,9 +8,9 @@ import (
 func TestReadConfig(t *testing.T) {
 	config := `{"Server": "irc.freenode.net:7000",
 		"Channels": ["#lightirc", "#go-bot"],
-		"User": "go-user",		
+		"User": "go-user",
 		"Nick": "go-bot",
-		"Cmd": "!go-bot",
+		"CmdPrefix": "!go-bot",
 		"UseTLS": true}`
 
 	c := &Config{}
@@ -40,8 +40,8 @@ func TestReadConfig(t *testing.T) {
 	}
 
 	cmd := "!go-bot"
-	if c.Cmd != cmd {
-		t.Errorf("Expected '%v' got '%v'", cmd, c.Cmd)
+	if c.CmdPrefix != cmd {
+		t.Errorf("Expected '%v' got '%v'", cmd, c.CmdPrefix)
 	}
 
 	useTLS := true
