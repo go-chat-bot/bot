@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fabioxgn/go-bot/commands"
 	"github.com/thoj/go-ircevent"
+	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
 )
@@ -61,7 +62,15 @@ func readConfig() {
 	fmt.Printf("%v", config)
 }
 
+func startMetrics() {
+	agent := gorelic.NewAgent()
+	agent.Verbose = true
+	agent.NewrelicLicense = os.Getenv("NEW_RELIC_KEY")
+	agent.Run()
+}
+
 func main() {
+	startMetrics()
 	readConfig()
 	connect()
 	configureEvents()
