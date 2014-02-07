@@ -18,23 +18,23 @@ var (
 	config = &Config{}
 )
 
+func isPrivateMsg(channel string) bool {
+	return channel == config.Nick
+}
+
 func onPRIVMSG(e *irc.Event) {
 	channel := e.Arguments[0]
-	if channel == config.Nick {
-		// channel = e.Nick
-		// msg := e.Message
-	} else {
-		// Parse the raw message
-		message := commands.Parse(e.Message, config.CmdPrefix)
 
-		// Is it a command or just a regular message?
-		if message.IsCommand {
-			// It's a command
-			commands.HandleCmd(message, channel, irccon.Privmsg)
-		} else {
-			// It's not a command
-			// Test for passive commands (parse url, etc) ?
-		}
+	if isPrivateMsg(channel) {
+		channel = e.Nick //e.Nick is who sent the pvt message
+	}
+
+	cmd := commands.Parse(e.Message, config.CmdPrefix)
+	if cmd.IsCommand {
+		commands.HandleCmd(cmd, channel, irccon.Privmsg)
+	} else {
+		// It's not a command
+		// TODO: Test for passive commands (parse url, etc) ?
 	}
 }
 

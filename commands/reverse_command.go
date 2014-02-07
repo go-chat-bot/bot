@@ -11,6 +11,9 @@ func reverseString(s string) string {
 
 // Reverse reverses a string
 func Reverse(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
 	return reverseString(ArgsToString(args))
 }
 

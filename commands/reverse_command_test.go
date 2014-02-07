@@ -12,3 +12,12 @@ func TestReverseString(t *testing.T) {
 		t.Errorf("Expected '%v' got '%v'", want, got)
 	}
 }
+
+func TestReverseEmptyString(t *testing.T) {
+	want := ""
+	got := Reverse([]string{})
+
+	if got != want {
+		t.Errorf("Expected '%v' got '%v'", want, got)
+	}
+}

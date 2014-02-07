@@ -1,19 +1,18 @@
 package commands
 
 import (
-	"strings"
 	"regexp"
-	"log"
+	"strings"
 )
 
 // Command is a struct which separates the user's input for easier handling of commands
 type Command struct {
-	Raw     		string   	// Raw is full string passed to the command
-	IsCommand 	bool   		// Confirmation if this is a command or just a regular message
-	Message 		string   	// Full string without the prefix
-	Command 		string   	// Command is the first argument passed to the bot
-	FullArg 		string 		// Full argument as a single string
-	Args    		[]string 	// Arguments as array
+	Raw       string   // Raw is full string passed to the command
+	IsCommand bool     // Confirmation if this is a command or just a regular message
+	Message   string   // Full string without the prefix
+	Command   string   // Command is the first argument passed to the bot
+	FullArg   string   // Full argument as a single string
+	Args      []string // Arguments as array
 }
 
 // Parse the arguments returning the Command to execute and the arguments passed to it
@@ -42,15 +41,16 @@ func Parse(c string, prefix string) *Command {
 	pieces := strings.SplitN(cmd.Message, " ", 2)
 	cmd.Command = pieces[0]
 
-	// get the arguments and remove extra spaces
 	if len(pieces) > 1 {
-		reg, err := regexp.Compile("\\s+")
-		if err != nil {
-         log.Fatal(err)
-      }
-		cmd.FullArg = reg.ReplaceAllString(strings.TrimSpace(pieces[1]), " ")
+		// get the arguments and remove extra spaces
+		cmd.FullArg = removeExtraSpaces(pieces[1])
 		cmd.Args = strings.Split(cmd.FullArg, " ")
 	}
 
 	return cmd
+}
+
+func removeExtraSpaces(args string) string {
+	reg := regexp.MustCompile("\\s+") // Matches one or more spaces
+	return reg.ReplaceAllString(strings.TrimSpace(args), " ")
 }
