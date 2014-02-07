@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
@@ -42,15 +41,16 @@ func Parse(c string, prefix string) *Command {
 	pieces := strings.SplitN(cmd.Message, " ", 2)
 	cmd.Command = pieces[0]
 
-	// get the arguments and remove extra spaces
 	if len(pieces) > 1 {
-		reg, err := regexp.Compile("\\s+")
-		if err != nil {
-			log.Fatal(err)
-		}
-		cmd.FullArg = reg.ReplaceAllString(strings.TrimSpace(pieces[1]), " ")
+		// get the arguments and remove extra spaces
+		cmd.FullArg = removeExtraSpaces(pieces[1])
 		cmd.Args = strings.Split(cmd.FullArg, " ")
 	}
 
 	return cmd
+}
+
+func removeExtraSpaces(args string) string {
+	reg := regexp.MustCompile("\\s+") // Matches one or more spaces
+	return reg.ReplaceAllString(strings.TrimSpace(args), " ")
 }
