@@ -8,18 +8,23 @@ import (
 // Command is a struct which separates the user's input for easier handling of commands
 type Command struct {
 	Raw       string   // Raw is full string passed to the command
+	Channel   string   // Channel where the command was called
+	Nick   	 string   // User who sent the message
 	IsCommand bool     // Confirmation if this is a command or just a regular message
 	Message   string   // Full string without the prefix
 	Command   string   // Command is the first argument passed to the bot
+	Prefix    string   // Command prefix
 	FullArg   string   // Full argument as a single string
 	Args      []string // Arguments as array
 }
 
 // Parse the arguments returning the Command to execute and the arguments passed to it
-func Parse(c string, prefix string) *Command {
+func Parse(c string, prefix string, channel string, nick string) *Command {
 	cmd := &Command{Raw: c}
 	c = strings.TrimSpace(c)
 	cmd.IsCommand = strings.HasPrefix(c, prefix)
+	cmd.Channel = strings.TrimSpace(channel)
+	cmd.Nick = strings.TrimSpace(nick)
 
 	// we can stop here if no prefix is detected
 	if !cmd.IsCommand {
@@ -36,6 +41,7 @@ func Parse(c string, prefix string) *Command {
 	if !cmd.IsCommand {
 		return cmd
 	}
+	cmd.Prefix = strings.TrimSpace(prefix)
 
 	// get the command
 	pieces := strings.SplitN(cmd.Message, " ", 2)

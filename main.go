@@ -29,9 +29,9 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	cmd := commands.Parse(e.Message, config.CmdPrefix)
+	cmd := commands.Parse(e.Message, config.CmdPrefix, channel, e.Nick)
 	if cmd.IsCommand {
-		commands.HandleCmd(cmd, channel, irccon.Privmsg)
+		commands.HandleCmd(cmd, irccon)
 	} else {
 		// It's not a command
 		// TODO: Test for passive commands (parse url, etc) ?

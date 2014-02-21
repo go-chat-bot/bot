@@ -5,19 +5,38 @@ import (
 )
 
 func TestReverseString(t *testing.T) {
+	arg := "Hello world"
 	want := "dlrow olleH"
-	got := Reverse([]string{"Hello", "world"})
+	cmd := &Command{
+		Command: "reverse",
+		FullArg: arg,
+	}
+
+	got, error := Reverse(cmd)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)
 	}
+
+	if error != nil {
+		t.Errorf("Expected '%v' got '%v'", nil, error)
+	}
 }
 
 func TestReverseEmptyString(t *testing.T) {
+	arg := ""
 	want := ""
-	got := Reverse([]string{})
+	cmd := &Command{
+		Command: "reverse",
+		FullArg: arg,
+	}
+	got, error := Reverse(cmd)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)
+	}
+
+	if error != nil {
+		t.Errorf("Expected '%v' got '%v'", nil, error)
 	}
 }
