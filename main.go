@@ -29,7 +29,7 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	cmd := commands.Parse(e.Message, config.CmdPrefix)
+	cmd := commands.Parse(e.Message(), config.CmdPrefix)
 	if cmd.IsCommand {
 		commands.HandleCmd(cmd, channel, irccon.Privmsg)
 	} else {
