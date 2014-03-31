@@ -1,31 +1,39 @@
 package commands
 
 import (
-	// "fmt"
-   // "errors"
+	"errors"
+	"fmt"
 	"log"
-	"github.com/thoj/go-ircevent"
 )
+
+type IRCConnection interface {
+	Privmsg(target, message string)
+	Notice(target, message string)
+	Join(channel string)
+	Part(channel string)
+	Quit()
+}
 
 // type privMsgFunc func(channel string, msg string)
 
 // CommandFunc is the function to be executed when a user calls a command
 type CommandFunc func(cmd *Command) (string, error)
 type Manual struct {
-	helpDescripton 	string
-	helpUse 				string
+	helpDescripton string
+	helpUse        string
 }
 
 const (
-	commandNotAvailable = "Command %v not available."
-	availableCommands   = "Available commands"
-	noCommandsAvailable = "No commands available."
+	commandNotAvailable   = "Command %v not available."
+	availableCommands     = "Available commands"
+	noCommandsAvailable   = "No commands available."
+	errorExecutingCommand = "Error executing %s: %s"
 )
 
 var (
-	helps = make(map[string]Manual)
+	helps    = make(map[string]Manual)
 	commands = make(map[string]CommandFunc)
-	irccon *irc.Connection
+	irccon   IRCConnection
 )
 
 // RegisterCommand must be used to register a command (string) and CommandFunc.
@@ -40,22 +48,23 @@ func RegisterHelp(command string, h Manual) {
 }
 
 // HandleCmd handles a command
-func HandleCmd(cmd *Command, irc *irc.Connection) (err error) {
+func HandleCmd(cmd *Command, irc IRCConnection) error {
 	cmdFunction := commands[cmd.Command]
-	irccon = irc
+
 	if cmdFunction == nil {
-		// TODO: create error
-		return err
-	} else {
-		log.Printf("cmd %v args %v", cmd.Command, cmd.FullArg)
-		resultStr, resultError := cmdFunction(cmd)
-		if resultError != nil {
-			// TODO: create error
-			return err
-			irc.Privmsg(cmd.Channel, "Show the fucking error")
-		} else if resultStr != "" {
-			irc.Privmsg(cmd.Channel, resultStr)
-		}
+		log.Println("Command not found")
+		return errors.New(fmt.Sprintf(commandNotAvailable, cmd.Command))
 	}
-	return
+
+	log.Printf("HandleCmd %v args %v", cmd.Command, cmd.FullArg)
+	resultStr, err := cmdFunction(cmd)
+	if err != nil {
+		irc.Privmsg(cmd.Channel, fmt.Sprintf(errorExecutingCommand, cmd.Command, err.Error()))
+		return err
+	}
+
+	if resultStr != "" {
+		irc.Privmsg(cmd.Channel, resultStr)
+	}
+	return nil
 }

@@ -1,96 +1,116 @@
 package commands
 
 import (
-	// "fmt"
+	"errors"
+	"fmt"
 	. "github.com/motain/gocheck"
+	"reflect"
 	"testing"
 )
 
 func Test(t *testing.T) { TestingT(t) }
-type MySuite struct{}
+
+type MySuite struct {
+	Mock IRCConnectionMock
+}
+
 var (
 	_ = Suite(&MySuite{})
-   defaultCmd = "mycommand"
-   defaultArg = "arg1 arg2"
-	defaultCommand = &Command{
-		Command: defaultCmd,
-		FullArg: defaultArg,
-	}
-   defaultCommandFn = func(cmd *Command) (string, error) {
-		return cmd.FullArg, nil
-	}
 )
 
 func (s *MySuite) SetUpTest(c *C) {
-	c.Skip("skipping these tests temporarily")
+	//c.Skip("skipping these tests temporarily")
 	// helps = make(map[string]Manual)
 	commands = make(map[string]CommandFunc)
+	s.Mock = IRCConnectionMock{}
 }
 
 func (s *MySuite) TestRegisterCommand(c *C) {
-	RegisterCommand(defaultCmd, defaultCommandFn)
-	cmdFn := commands[defaultCmd]
-	c.Check(cmdFn, NotNil)
+	fn := func(cmd *Command) (string, error) { return "", nil }
+
+	RegisterCommand("cmd", fn)
+
+	c.Check(reflect.ValueOf(commands["cmd"]).Pointer(), Equals, reflect.ValueOf(fn).Pointer())
+}
+
+func (s *MySuite) TestErrorExecutingCommand(c *C) {
+	cmd := &Command{
+		Command: "cmd",
+		Channel: "#go-bot",
+	}
+
+	cmdError := errors.New("Error")
+	RegisterCommand(cmd.Command, func(c *Command) (string, error) {
+		return "", cmdError
+
+	})
+
+	msg := []string{}
+	channel := ""
+	s.Mock.PrivMsgFunc = func(c string, m string) {
+		channel = c
+		msg = append(msg, m)
+	}
+
+	err := HandleCmd(cmd, s.Mock)
+
+	c.Check(err, Equals, cmdError)
+
+	c.Check(channel, Equals, cmd.Channel)
+	c.Check(msg[0], Equals, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
 }
 
 func (s *MySuite) TestHandleExistingCommand(c *C) {
-	RegisterCommand(defaultCmd, defaultCommandFn)
-	resultError := HandleCmd(defaultCommand, irccon)
-	c.Check(resultError, IsNil)
+	cmd := &Command{
+		Command: "cmd",
+		Channel: "#go-bot",
+	}
+	expectedMsg := []string{"msg"}
+
+	cmdFuncCalled := false
+	RegisterCommand(cmd.Command, func(c *Command) (string, error) {
+		cmdFuncCalled = true
+		return expectedMsg[0], nil
+	})
+
+	printedMsg := []string{}
+	channel := ""
+	s.Mock.PrivMsgFunc = func(c string, m string) {
+		channel = c
+		printedMsg = append(printedMsg, m)
+	}
+
+	err := HandleCmd(cmd, s.Mock)
+
+	c.Check(err, IsNil)
+	c.Check(cmdFuncCalled, Equals, true)
+
+	c.Check(channel, Equals, cmd.Channel)
+	c.Check(printedMsg[0], Equals, expectedMsg[0])
 }
 
-// func (s *MySuite) TestNoCommandsAvailable(c *C) {
-// 	cmd := &Command{Command: "cmd"}
+func (s *MySuite) TestNoCommandsAvailable(c *C) {
+	c.Skip("TestNoCommandsAvailable")
+	cmd := &Command{Command: "cmd"}
 
-// 	msg := []string{}
-// 	// fn := func(c string, m string) {
-// 	// 	msg = append(msg, m)
-// 	// }
+	msg := []string{}
+	s.Mock.PrivMsgFunc = func(target, message string) {
+		msg = append(msg, message)
+	}
 
-// 	HandleCmd(cmd, irccon)
+	HandleCmd(cmd, s.Mock)
 
-// 	c.Assert(msg, HasLen, 2)
-// 	c.Check(msg[1], Equals, noCommandsAvailable)
-// }
+	c.Assert(msg, HasLen, 2)
+	c.Check(msg[1], Equals, noCommandsAvailable)
+}
 
-// func (s *MySuite) TestHandleCommandNotFound(c *C) {
-// 	channel := ""
-// 	msg := []string{}
-// 	// fn := func(c string, m string) {
-// 	// 	channel = c
-// 	// 	msg = append(msg, m)
-// 	// }
+func (s *MySuite) TestHandleCommandNotFound(c *C) {
+	cmd1 := &Command{
+		Command: "cmd",
+	}
 
-// 	cmd := &Command{}
-// 	cmd.Command = "allyourbase"
+	err := HandleCmd(cmd1, nil)
 
-// 	expectedChannel := "#go-bot"
-// 	expectedMsg := fmt.Sprintf(commandNotAvailable, cmd.Command)
-
-// 	HandleCmd(cmd, irccon)
-
-// 	c.Check(channel, Equals, expectedChannel)
-// 	c.Assert(msg, HasLen, 2)
-// 	c.Check(msg[0], Equals, expectedMsg)
-// }
-
-// func (s *MySuite) TestHandleInvalidCommand(c *C) {
-// 	cmd1 := "cmd1"
-// 	cmd2 := "cmd2"
-// 	RegisterCommand(cmd1, nil)
-// 	RegisterCommand(cmd2, nil)
-
-// 	cmd3 := "cmd3"
-// 	cmd := &Command{Command: cmd3}
-
-// 	msg := []string{}
-// 	// fn := func(c string, m string) {
-// 	// 	msg = append(msg, m)
-// 	// }
-
-// 	HandleCmd(cmd, irccon)
-
-// 	c.Check(msg, HasLen, 2)
-// 	c.Check(msg[0], Equals, fmt.Sprintf(commandNotAvailable, cmd3))
-// 	c.Check(msg[1], Equals, fmt.Sprintf("%s: %s, %s", availableCommands, cmd1, cmd2))
-// }
+	c.Check(err, NotNil)
+	c.Check(err.Error(), Equals, fmt.Sprintf(commandNotAvailable, "cmd"))
+}
