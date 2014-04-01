@@ -16,7 +16,7 @@ func init() {
 
 	man := Manual{
 		helpDescripton: "Leave from the specified channels",
-		helpUse: "#channel1 [#channel2 ... ]",
+		helpUse:        "#channel1 [#channel2 ... ]",
 	}
 	RegisterHelp("part", man)
 }

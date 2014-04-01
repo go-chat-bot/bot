@@ -7,7 +7,7 @@ import (
 func TestQuitNoArgs(t *testing.T) {
 	cmd := &Command{
 		Command: "quit",
-		Args: []string{},
+		Args:    []string{},
 	}
 	got, error := Quit(cmd)
 
@@ -23,7 +23,7 @@ func TestQuitNoArgs(t *testing.T) {
 func TestQuitWithArgs(t *testing.T) {
 	cmd := &Command{
 		Command: "quit",
-		Args: []string{"arg1", "arg2"},
+		Args:    []string{"arg1", "arg2"},
 	}
 	got, error := Quit(cmd)
 

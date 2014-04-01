@@ -7,7 +7,7 @@ import (
 func TestJoin(t *testing.T) {
 	cmd := &Command{
 		Command: "join",
-		Args: []string{"#channel1", "#channel2"},
+		Args:    []string{"#channel1", "#channel2"},
 	}
 	got, error := Join(cmd)
 

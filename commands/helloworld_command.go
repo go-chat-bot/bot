@@ -6,10 +6,9 @@ func Helloworld(cmd *Command) (msg string, err error) {
 }
 
 func init() {
-	RegisterCommand("helloworld", Helloworld)
-
-	man := Manual{
-		helpDescripton: "Just send a 'Hello World' message on the channel.",
-	}
-	RegisterHelp("helloworld", man)
+	RegisterCommand(&CustomCommand{
+		Cmd:         "helloworld",
+		CmdFunc:     Helloworld,
+		Description: "Just send a 'Hello World' message on the channel.",
+	})
 }

@@ -1,17 +1,17 @@
-package commands
+package cmd
 
 import (
 	"errors"
 	"fmt"
+	"github.com/fabioxgn/go-bot/irc"
 	. "github.com/motain/gocheck"
-	"reflect"
 	"testing"
 )
 
 func Test(t *testing.T) { TestingT(t) }
 
 type MySuite struct {
-	Mock IRCConnectionMock
+	Mock irc.ConnectionMock
 }
 
 var (
@@ -19,30 +19,34 @@ var (
 )
 
 func (s *MySuite) SetUpTest(c *C) {
-	//c.Skip("skipping these tests temporarily")
-	// helps = make(map[string]Manual)
-	commands = make(map[string]CommandFunc)
-	s.Mock = IRCConnectionMock{}
+	Commands = make(map[string]*CustomCommand)
+	s.Mock = irc.ConnectionMock{}
 }
 
 func (s *MySuite) TestRegisterCommand(c *C) {
-	fn := func(cmd *Command) (string, error) { return "", nil }
+	fn := func(cmd *Cmd) (string, error) { return "", nil }
 
-	RegisterCommand("cmd", fn)
+	cmd := &CustomCommand{
+		Cmd:     "cmd",
+		CmdFunc: fn,
+	}
+	RegisterCommand(cmd)
 
-	c.Check(reflect.ValueOf(commands["cmd"]).Pointer(), Equals, reflect.ValueOf(fn).Pointer())
+	c.Check(Commands["cmd"], Equals, cmd)
 }
 
 func (s *MySuite) TestErrorExecutingCommand(c *C) {
-	cmd := &Command{
+	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
 	}
 
 	cmdError := errors.New("Error")
-	RegisterCommand(cmd.Command, func(c *Command) (string, error) {
-		return "", cmdError
+	fn := func(c *Cmd) (string, error) { return "", cmdError }
 
+	RegisterCommand(&CustomCommand{
+		Cmd:     cmd.Command,
+		CmdFunc: fn,
 	})
 
 	msg := []string{}
@@ -61,16 +65,18 @@ func (s *MySuite) TestErrorExecutingCommand(c *C) {
 }
 
 func (s *MySuite) TestHandleExistingCommand(c *C) {
-	cmd := &Command{
+	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
 	}
 	expectedMsg := []string{"msg"}
-
-	cmdFuncCalled := false
-	RegisterCommand(cmd.Command, func(c *Command) (string, error) {
-		cmdFuncCalled = true
+	fn := func(c *Cmd) (string, error) {
 		return expectedMsg[0], nil
+	}
+
+	RegisterCommand(&CustomCommand{
+		Cmd:     "cmd",
+		CmdFunc: fn,
 	})
 
 	printedMsg := []string{}
@@ -83,29 +89,12 @@ func (s *MySuite) TestHandleExistingCommand(c *C) {
 	err := HandleCmd(cmd, s.Mock)
 
 	c.Check(err, IsNil)
-	c.Check(cmdFuncCalled, Equals, true)
-
 	c.Check(channel, Equals, cmd.Channel)
 	c.Check(printedMsg[0], Equals, expectedMsg[0])
 }
 
-func (s *MySuite) TestNoCommandsAvailable(c *C) {
-	c.Skip("TestNoCommandsAvailable")
-	cmd := &Command{Command: "cmd"}
-
-	msg := []string{}
-	s.Mock.PrivMsgFunc = func(target, message string) {
-		msg = append(msg, message)
-	}
-
-	HandleCmd(cmd, s.Mock)
-
-	c.Assert(msg, HasLen, 2)
-	c.Check(msg[1], Equals, noCommandsAvailable)
-}
-
 func (s *MySuite) TestHandleCommandNotFound(c *C) {
-	cmd1 := &Command{
+	cmd1 := &Cmd{
 		Command: "cmd",
 	}
 

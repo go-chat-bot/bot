@@ -7,7 +7,7 @@ import (
 func TestPartNoArgs(t *testing.T) {
 	cmd := &Command{
 		Command: "part",
-		Args: []string{},
+		Args:    []string{},
 	}
 	got, error := Part(cmd)
 
@@ -23,7 +23,7 @@ func TestPartNoArgs(t *testing.T) {
 func TestPartWithArgs(t *testing.T) {
 	cmd := &Command{
 		Command: "part",
-		Args: []string{"#channel1", "#channel2"},
+		Args:    []string{"#channel1", "#channel2"},
 	}
 	got, error := Part(cmd)
 

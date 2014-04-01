@@ -1,4 +1,4 @@
-package commands
+package parser
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	DefaultPrefix = "!"
+	DefaultPrefix  = "!"
 	DefaultChannel = "#go-bot"
-	DefaultNick = "user123"
+	DefaultNick    = "user123"
 	DefaultCommand = "command"
 	DefaultFullArg = "arg1 arg2"
-	DefaultArgs = []string{
+	DefaultArgs    = []string{
 		"arg1",
 		"arg2",
 	}

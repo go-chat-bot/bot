@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/commands"
+	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/cmd/parser"
 	"github.com/thoj/go-ircevent"
 	"github.com/yvasiyarov/gorelic"
 	"log"
@@ -29,9 +30,9 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	cmd := commands.Parse(e.Message, config.CmdPrefix, channel, e.Nick)
-	if cmd.IsCommand {
-		commands.HandleCmd(cmd, irccon)
+	command := parser.Parse(e.Message, config.CmdPrefix, channel, e.Nick)
+	if command.IsCommand {
+		cmd.HandleCmd(command, irccon)
 	} else {
 		// It's not a command
 		// TODO: Test for passive commands (parse url, etc) ?

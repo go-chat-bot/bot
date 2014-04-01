@@ -1,9 +1,9 @@
 package commands
 
-// var (
-// 	helpDescripton = ""
-// 	helpUse = ""
-// )
+var (
+	helpDescripton = ""
+	helpUse        = ""
+)
 
 func Quit(cmd *Command) (msg string, err error) {
 	irccon.Quit()

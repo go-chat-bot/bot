@@ -12,7 +12,7 @@ func init() {
 
 	man := Manual{
 		helpDescripton: "Join the specified channels",
-		helpUse: "#channel1 [#channel2 ... ]",
+		helpUse:        "#channel1 [#channel2 ... ]",
 	}
 	RegisterHelp("join", man)
 }
