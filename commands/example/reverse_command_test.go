@@ -1,18 +1,19 @@
-package commands
+package example
 
 import (
+	"github.com/fabioxgn/go-bot/cmd"
 	"testing"
 )
 
 func TestReverseString(t *testing.T) {
 	arg := "Hello world"
 	want := "dlrow olleH"
-	cmd := &Command{
+	cmd := &cmd.Cmd{
 		Command: "reverse",
 		FullArg: arg,
 	}
 
-	got, error := Reverse(cmd)
+	got, error := reverse(cmd)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)
@@ -26,11 +27,11 @@ func TestReverseString(t *testing.T) {
 func TestReverseEmptyString(t *testing.T) {
 	arg := ""
 	want := ""
-	cmd := &Command{
+	cmd := &cmd.Cmd{
 		Command: "reverse",
 		FullArg: arg,
 	}
-	got, error := Reverse(cmd)
+	got, error := reverse(cmd)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)

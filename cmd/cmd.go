@@ -40,28 +40,28 @@ var (
 // RegisterCommand must be used to register a command (string) and CommandFunc.
 // The CommandFunc will be executed when a users calls the bot passing the
 // command string as the first argument
-func RegisterCommand(cmd *CustomCommand) {
-	Commands[cmd.Cmd] = cmd
+func RegisterCommand(c *CustomCommand) {
+	Commands[c.Cmd] = c
 }
 
 // HandleCmd handles a command
-func HandleCmd(cmd *Cmd, conn irc.Connection) error {
-	customCmd := Commands[cmd.Command]
+func HandleCmd(c *Cmd, conn irc.Connection) error {
+	customCmd := Commands[c.Command]
 
 	if customCmd == nil {
-		log.Println("Command not found")
-		return errors.New(fmt.Sprintf(commandNotAvailable, cmd.Command))
+		log.Printf("Command not found %v", c.Command)
+		return errors.New(fmt.Sprintf(commandNotAvailable, c.Command))
 	}
 
-	log.Printf("HandleCmd %v args %v", cmd.Command, cmd.FullArg)
-	resultStr, err := customCmd.CmdFunc(cmd)
+	log.Printf("HandleCmd %v args %v", c.Command, c.FullArg)
+	resultStr, err := customCmd.CmdFunc(c)
 	if err != nil {
-		conn.Privmsg(cmd.Channel, fmt.Sprintf(errorExecutingCommand, cmd.Command, err.Error()))
+		conn.Privmsg(c.Channel, fmt.Sprintf(errorExecutingCommand, c.Command, err.Error()))
 		return err
 	}
 
 	if resultStr != "" {
-		conn.Privmsg(cmd.Channel, resultStr)
+		conn.Privmsg(c.Channel, resultStr)
 	}
 	return nil
 }

@@ -7,41 +7,41 @@ import (
 )
 
 // Parse the arguments returning the Command to execute and the arguments passed to it
-func Parse(c string, prefix string, channel string, nick string) *cmd.Cmd {
-	cmd := &cmd.Cmd{Raw: c}
-	c = strings.TrimSpace(c)
-	cmd.IsCommand = strings.HasPrefix(c, prefix)
-	cmd.Channel = strings.TrimSpace(channel)
-	cmd.Nick = strings.TrimSpace(nick)
+func Parse(s string, prefix string, channel string, nick string) *cmd.Cmd {
+	c := &cmd.Cmd{Raw: s}
+	s = strings.TrimSpace(s)
+	c.IsCommand = strings.HasPrefix(s, prefix)
+	c.Channel = strings.TrimSpace(channel)
+	c.Nick = strings.TrimSpace(nick)
 
 	// we can stop here if no prefix is detected
-	if !cmd.IsCommand {
-		cmd.Message = c
-		return cmd
+	if !c.IsCommand {
+		c.Message = s
+		return c
 	}
 
 	// Trim the prefix and extra spaces
-	cmd.Message = strings.TrimPrefix(c, prefix)
-	cmd.Message = strings.TrimSpace(cmd.Message)
+	c.Message = strings.TrimPrefix(s, prefix)
+	c.Message = strings.TrimSpace(c.Message)
 
 	// check if we have the command and not only the prefix
-	cmd.IsCommand = cmd.Message != ""
-	if !cmd.IsCommand {
-		return cmd
+	c.IsCommand = c.Message != ""
+	if !c.IsCommand {
+		return c
 	}
-	cmd.Prefix = strings.TrimSpace(prefix)
+	c.Prefix = strings.TrimSpace(prefix)
 
 	// get the command
-	pieces := strings.SplitN(cmd.Message, " ", 2)
-	cmd.Command = pieces[0]
+	pieces := strings.SplitN(c.Message, " ", 2)
+	c.Command = pieces[0]
 
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces
-		cmd.FullArg = removeExtraSpaces(pieces[1])
-		cmd.Args = strings.Split(cmd.FullArg, " ")
+		c.FullArg = removeExtraSpaces(pieces[1])
+		c.Args = strings.Split(c.FullArg, " ")
 	}
 
-	return cmd
+	return c
 }
 
 func removeExtraSpaces(args string) string {

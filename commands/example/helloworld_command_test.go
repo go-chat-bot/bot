@@ -1,16 +1,17 @@
-package commands
+package example
 
 import (
+	"github.com/fabioxgn/go-bot/cmd"
 	"testing"
 )
 
 func TestHelloworld(t *testing.T) {
-	want := "Hello world!"
-	cmd := &Command{
+	want := "Hello nick"
+	cmd := &cmd.Cmd{
 		Command: "helloworld",
-		FullArg: want,
+		Nick:    "nick",
 	}
-	got, error := Helloworld(cmd)
+	got, error := hello(cmd)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)
