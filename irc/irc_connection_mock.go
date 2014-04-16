@@ -4,6 +4,7 @@ type ConnectionMock struct {
 	PrivMsgFunc func(target, message string)
 	NoticeFunc  func(target, message string)
 	JoinFunc    func(channel string)
+	PartFunc    func(channel string)
 }
 
 func (m ConnectionMock) Privmsg(target, message string) {
@@ -15,5 +16,7 @@ func (m ConnectionMock) Notice(target, message string) {
 func (m ConnectionMock) Join(channel string) {
 	m.JoinFunc(channel)
 }
-func (m ConnectionMock) Part(channel string) {}
-func (m ConnectionMock) Quit()               {}
+func (m ConnectionMock) Part(channel string) {
+	m.PartFunc(channel)
+}
+func (m ConnectionMock) Quit() {}
