@@ -5,7 +5,6 @@ import (
 	"github.com/fabioxgn/go-bot/cmd"
 	"github.com/fabioxgn/go-bot/cmd/parser"
 	_ "github.com/fabioxgn/go-bot/commands/example"
-	"github.com/fabioxgn/go-bot/help"
 	"github.com/thoj/go-ircevent"
 	"log"
 	"os"
@@ -33,7 +32,7 @@ func onPRIVMSG(e *irc.Event) {
 
 	command := parser.Parse(e.Message, config.CmdPrefix, channel, e.Nick)
 	if command.Command == "help" { //TODO: constant
-		help.Help(command, irccon)
+		Help(command, irccon)
 	} else if command.IsCommand {
 		cmd.HandleCmd(command, irccon)
 	} else {
