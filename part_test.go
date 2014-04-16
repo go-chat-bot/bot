@@ -50,11 +50,11 @@ func TestPartWithArgs(t *testing.T) {
 
 	Part(command, conn)
 
-	// want := 2
-	// got := len(partedChannels)
-	// if got != want {
-	// 	t.Errorf("Expected to part %v channels got %v", want, got)
-	// }
+	want := 2
+	got := len(partedChannels)
+	if got != want {
+		t.Errorf("Expected to part %v channels got %v", want, got)
+	}
 
 	if partedChannels[0] != channel1 {
 		t.Errorf("Channel1 not parted. Expected %v got %v", channel1, partedChannels[0])
