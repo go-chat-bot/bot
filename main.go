@@ -30,7 +30,7 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	command := parser.Parse(e.Message, config.CmdPrefix, channel, e.Nick)
+	command := parser.Parse(e.Message(), config.CmdPrefix, channel, e.Nick)
 	if command.Command == "help" { //TODO: constant
 		Help(command, irccon)
 	} else if command.IsCommand {
