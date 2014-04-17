@@ -15,14 +15,3 @@ func Part(command *cmd.Cmd, conn irc.Connection) (msg string, err error) {
 	}
 	return
 }
-
-//TODO: Register help for built in commands
-// func init() {
-// 	RegisterCommand("part", Part)
-
-// 	man := Manual{
-// 		helpDescripton: "Leave from the specified channels",
-// 		helpUse:        "#channel1 [#channel2 ... ]",
-// 	}
-// 	RegisterHelp("part", man)
-// }

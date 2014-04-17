@@ -10,13 +10,3 @@ func Join(command cmd.Cmd, conn irc.Connection) {
 		conn.Join(channel)
 	}
 }
-
-// TODO: Help for builtin commands
-// func init() {
-// 	RegisterCommand(&cmd.CustomCommand{
-// 		Cmd:         "join",
-// 		CmdFunc:     Join,
-// 		Description: "Join the specified channels",
-// 		Usage:       "#channel1 [#channel2 ... ]",
-// 	})
-// }
