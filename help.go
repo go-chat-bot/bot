@@ -11,12 +11,13 @@ const (
 	helpDescripton    = "Description: %s"
 	helpUsage         = "Usage: %s%s %s"
 	availableCommands = "Available commands: %v"
+	helpAboutCommand  = "Type: '%shelp <command>' to see details about a specific command."
 )
 
 func Help(c *cmd.Cmd, conn irc.Connection) {
 	command := cmd.Commands[c.Command]
 	if command == nil {
-		showAvailabeCommands(c.Nick, conn)
+		showAvailabeCommands(c.Nick, c.Prefix, conn)
 	} else {
 		showHelp(c, command, conn)
 	}
@@ -31,10 +32,11 @@ func showHelp(c *cmd.Cmd, help *cmd.CustomCommand, conn irc.Connection) {
 	}
 }
 
-func showAvailabeCommands(nick string, conn irc.Connection) {
+func showAvailabeCommands(nick, cmdPrefix string, conn irc.Connection) {
 	cmds := make([]string, 0)
 	for k := range cmd.Commands {
 		cmds = append(cmds, k)
 	}
+	conn.Notice(nick, fmt.Sprintf(helpAboutCommand, cmdPrefix))
 	conn.Notice(nick, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")))
 }

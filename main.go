@@ -31,7 +31,8 @@ func onPRIVMSG(e *irc.Event) {
 	}
 
 	command := parser.Parse(e.Message(), config.CmdPrefix, channel, e.Nick)
-	if command.Command == "help" { //TODO: constant
+	if command.Command == "help" {
+		command = parser.Parse(config.CmdPrefix+command.FullArg, config.CmdPrefix, channel, e.Nick)
 		Help(command, irccon)
 	} else if command.IsCommand {
 		cmd.HandleCmd(command, irccon)

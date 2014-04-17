@@ -10,20 +10,20 @@ import (
 
 func Test(t *testing.T) { TestingT(t) }
 
-type MySuite struct {
+type CmdSuite struct {
 	Mock irc.ConnectionMock
 }
 
 var (
-	_ = Suite(&MySuite{})
+	_ = Suite(&CmdSuite{})
 )
 
-func (s *MySuite) SetUpTest(c *C) {
+func (s *CmdSuite) SetUpTest(c *C) {
 	Commands = make(map[string]*CustomCommand)
 	s.Mock = irc.ConnectionMock{}
 }
 
-func (s *MySuite) TestRegisterCommand(c *C) {
+func (s *CmdSuite) TestRegisterCommand(c *C) {
 	fn := func(cmd *Cmd) (string, error) { return "", nil }
 
 	cmd := &CustomCommand{
@@ -35,7 +35,7 @@ func (s *MySuite) TestRegisterCommand(c *C) {
 	c.Check(Commands["cmd"], Equals, cmd)
 }
 
-func (s *MySuite) TestErrorExecutingCommand(c *C) {
+func (s *CmdSuite) TestErrorExecutingCommand(c *C) {
 	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
@@ -64,7 +64,7 @@ func (s *MySuite) TestErrorExecutingCommand(c *C) {
 	c.Check(msg[0], Equals, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
 }
 
-func (s *MySuite) TestHandleExistingCommand(c *C) {
+func (s *CmdSuite) TestHandleExistingCommand(c *C) {
 	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
@@ -93,7 +93,7 @@ func (s *MySuite) TestHandleExistingCommand(c *C) {
 	c.Check(printedMsg[0], Equals, expectedMsg[0])
 }
 
-func (s *MySuite) TestHandleCommandNotFound(c *C) {
+func (s *CmdSuite) TestHandleCommandNotFound(c *C) {
 	cmd1 := &Cmd{
 		Command: "cmd",
 	}
