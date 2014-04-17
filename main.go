@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/commands"
+	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/cmd/parser"
+	_ "github.com/fabioxgn/go-bot/commands/example"
 	"github.com/thoj/go-ircevent"
-	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
 )
@@ -29,9 +30,11 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	cmd := commands.Parse(e.Message, config.CmdPrefix)
-	if cmd.IsCommand {
-		commands.HandleCmd(cmd, channel, irccon.Privmsg)
+	command := parser.Parse(e.Message(), config.CmdPrefix, channel, e.Nick)
+	if command.Command == "help" { //TODO: constant
+		Help(command, irccon)
+	} else if command.IsCommand {
+		cmd.HandleCmd(command, irccon)
 	} else {
 		// It's not a command
 		// TODO: Test for passive commands (parse url, etc) ?
@@ -73,21 +76,7 @@ func readConfig() {
 	fmt.Printf("%v\n", config)
 }
 
-func startMetrics() {
-	newRelicAPIKey := os.Getenv("NEW_RELIC_KEY")
-
-	if newRelicAPIKey == "" {
-		return
-	}
-
-	agent := gorelic.NewAgent()
-	agent.Verbose = false
-	agent.NewrelicLicense = newRelicAPIKey
-	agent.Run()
-}
-
 func main() {
-	startMetrics()
 	readConfig()
 	connect()
 	configureEvents()
