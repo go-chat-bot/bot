@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fabioxgn/go-bot/irc"
-	. "github.com/motain/gocheck"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 
