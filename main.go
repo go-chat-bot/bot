@@ -5,6 +5,7 @@ import (
 	"github.com/fabioxgn/go-bot/cmd"
 	"github.com/fabioxgn/go-bot/cmd/parser"
 	_ "github.com/fabioxgn/go-bot/commands/example"
+	_ "github.com/fabioxgn/go-bot/commands/megasena"
 	"github.com/thoj/go-ircevent"
 	"log"
 	"os"

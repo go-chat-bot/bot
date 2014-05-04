@@ -27,9 +27,7 @@ func showHelp(c *cmd.Cmd, help *cmd.CustomCommand, conn irc.Connection) {
 	if help.Description != "" {
 		conn.Notice(c.Nick, fmt.Sprintf(helpDescripton, help.Description))
 	}
-	if help.Usage != "" {
-		conn.Notice(c.Nick, fmt.Sprintf(helpUsage, c.Prefix, c.Command, help.Usage))
-	}
+	conn.Notice(c.Nick, fmt.Sprintf(helpUsage, c.Prefix, c.Command, help.Usage))
 }
 
 func showAvailabeCommands(nick, cmdPrefix string, conn irc.Connection) {
