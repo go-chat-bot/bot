@@ -15,7 +15,18 @@ const (
 )
 
 func megasena(command *cmd.Cmd) (msg string, err error) {
-	msg = fmt.Sprintf("%s: %s", command.Nick, sortear(60))
+	//TODO: ter um método genérico "PrintUsage"
+	if len(command.Args) == 0 {
+		msg = "Informe uma opção: gerar ou resultado"
+	} else {
+		switch command.Args[0] {
+		case "gerar":
+			msg = sortear(60)
+		case "resultado":
+			msg = Resultado()
+		}
+	}
+	msg = fmt.Sprintf("%s: %s", command.Nick, msg)
 	return
 }
 
@@ -60,6 +71,7 @@ func init() {
 	cmd.RegisterCommand(&cmd.CustomCommand{
 		Cmd:         "megasena",
 		CmdFunc:     megasena,
-		Description: "Gera os 6 números que te deixarão rico ;) ou não.",
+		Description: "Gera um jogo da megasena ou mostra os últimos números sorteados.",
+		Usage:       "gerar|resultado",
 	})
 }

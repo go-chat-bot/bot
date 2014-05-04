@@ -19,6 +19,7 @@ func TestMegaSena(t *testing.T) {
 	cmd := &cmd.Cmd{
 		Command: "megasena",
 		Nick:    "nick",
+		Args:    []string{"gerar"},
 	}
 	got, err := megasena(cmd)
 
