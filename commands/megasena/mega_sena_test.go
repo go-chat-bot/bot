@@ -26,7 +26,7 @@ func TestMegaSena(t *testing.T) {
 		t.Errorf("Expected '%v' got '%v'", nil, err)
 	}
 
-	match, err := regexp.MatchString("nick, (\\d{2} {1}){5}\\d{2}", got)
+	match, err := regexp.MatchString("nick: (\\d{2} {1}){5}\\d{2}", got)
 	if !match {
 		t.Errorf("got %v", got)
 	}

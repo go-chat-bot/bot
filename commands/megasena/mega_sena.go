@@ -15,7 +15,7 @@ const (
 )
 
 func megasena(command *cmd.Cmd) (msg string, err error) {
-	msg = fmt.Sprintf("%s, %s", command.Nick, sortear(60))
+	msg = fmt.Sprintf("%s: %s", command.Nick, sortear(60))
 	return
 }
 
@@ -34,12 +34,11 @@ func sortear(limit int) string {
 		}
 	}
 
+	sort.Ints(numeros)
 	return formatarJogo(numeros)
 }
 
 func formatarJogo(numeros []int) string {
-	sort.Ints(numeros)
-
 	var jogo bytes.Buffer
 	for _, numero := range numeros {
 		jogo.WriteString(fmt.Sprintf(" %0.2d", numero))
