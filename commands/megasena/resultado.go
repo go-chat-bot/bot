@@ -48,6 +48,8 @@ func Resultado() string {
 	if err != nil {
 		return err.Error()
 	}
+	defer res.Body.Close()
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return err.Error()
