@@ -58,6 +58,10 @@ func Resultado() string {
 		return err.Error()
 	}
 
-	return fmt.Sprintf("Sorteio %s de %s: %s ",
-		data.Concurso.Numero, data.Concurso.Data, data.Concurso.NumerosSorteados)
+	return fmt.Sprintf("Sorteio %s de %s: %s - %s premiado(s) R$ %s.",
+		data.Concurso.Numero,
+		data.Concurso.Data,
+		data.Concurso.NumerosSorteados,
+		data.Concurso.Premiacao.Sena.Ganhadores,
+		data.Concurso.Premiacao.Sena.ValorPago)
 }
