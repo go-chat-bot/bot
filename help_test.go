@@ -4,46 +4,65 @@ import (
 	"fmt"
 	"github.com/fabioxgn/go-bot/cmd"
 	"github.com/fabioxgn/go-bot/irc"
-	. "gopkg.in/check.v1"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
-func Test(t *testing.T) { TestingT(t) }
-
-type HelpSuite struct {
-	Mock irc.ConnectionMock
-}
-
-var (
-	_ = Suite(&HelpSuite{})
-)
-
-func (s *HelpSuite) SetUpTest(c *C) {
+func TestHelp(t *testing.T) {
 	cmd.Commands = make(map[string]*cmd.CustomCommand)
-	s.Mock = irc.ConnectionMock{}
-}
+	Connection := irc.ConnectionMock{}
 
-func (s *HelpSuite) TestHelpCommandNotFound(c *C) {
 	channel := ""
 	msg := []string{}
-	s.Mock.NoticeFunc = func(target, message string) {
+	Connection.NoticeFunc = func(target, message string) {
 		channel = target
 		msg = append(msg, message)
 	}
 
-	availableCommand := &cmd.CustomCommand{
-		Cmd: "cmd",
+	command := &cmd.CustomCommand{
+		Cmd:         "cmd",
+		Description: "Command Description",
+		Usage:       "Command Usage",
 	}
-	cmd.RegisterCommand(availableCommand)
 
-	command := &cmd.Cmd{
-		Nick:   "nick",
-		Prefix: "!",
+	availableCommand := &cmd.Cmd{
+		Nick:    "unavailable",
+		Command: command.Cmd,
+		Prefix:  "!",
 	}
-	Help(command, s.Mock)
+	unavailableCommand := &cmd.Cmd{
+		Nick:    "nick",
+		Command: "unavaible",
+		Prefix:  "!",
+	}
+	cmd.RegisterCommand(command)
 
-	c.Check(channel, Equals, command.Nick)
-	c.Check(msg, HasLen, 2)
-	c.Check(msg[0], Equals, fmt.Sprintf(helpAboutCommand, command.Prefix))
-	c.Check(msg[1], Equals, fmt.Sprintf(availableCommands, availableCommand.Cmd))
+	Convey("Given a help command", t, func() {
+		msg = []string{}
+
+		Convey("when the command is not registered", func() {
+			Help(unavailableCommand, Connection)
+			Convey("should send a notice to the user with the available commands", func() {
+				So(channel, ShouldEqual, unavailableCommand.Nick)
+				So(msg, ShouldResemble, []string{
+					fmt.Sprintf(helpAboutCommand, unavailableCommand.Prefix),
+					fmt.Sprintf(availableCommands, availableCommand.Command),
+				})
+			})
+
+		})
+
+		Convey("when the command is registered", func() {
+			Help(availableCommand, Connection)
+			Convey("should send a notice to the user with the command's Description and Usage", func() {
+				So(channel, ShouldEqual, availableCommand.Nick)
+				So(msg, ShouldResemble, []string{
+					fmt.Sprintf(helpDescripton, command.Description),
+					fmt.Sprintf(helpUsage, availableCommand.Prefix, command.Cmd, command.Usage),
+				})
+			})
+		})
+
+	})
+
 }
