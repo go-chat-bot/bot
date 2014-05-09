@@ -7,18 +7,13 @@ Simple IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for the IRC 
 [go]: golang.org
 [go-ircevent]: https://github.com/thoj/go-ircevent
 
-# Sample config
+# Config is read from the environment:
 
-    {
-	    "Server": "irc.freenode.net:7000",
-	    "Channels": ["#go-bot"],
-	    "User": "go-bot",
-	    "Nick": "go-bot",
-	    "CmdPrefix": "!go-bot",
-	    "UseTLS": true
-    }
+    export IRC_SERVER=irc.freenode.org:7000
+    export IRC_CHANNELS="#go-bot,#lightirc"
+    export IRC_USER=go-bot
+    export IRC_NICK=go-bot
 
-# TODO
+To join channels with passwords just put the password after the channel name separated by a space:
 
-- Connect to multiple channels
-- Run commands in parallel
+    export IRC_CHANNELS="#mychannel mypassword,#go-bot"

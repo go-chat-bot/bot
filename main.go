@@ -9,15 +9,25 @@ import (
 	"github.com/thoj/go-ircevent"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
-	configFile = "config.json"
+	channelSeparator = ","
 )
+
+type Config struct {
+	Server    string
+	Channels  []string
+	User      string
+	Nick      string
+	CmdPrefix string
+	UseTLS    bool
+}
 
 var (
 	irccon *irc.Connection
-	config = &Config{}
+	config *Config
 )
 
 func isPrivateMsg(channel string) bool {
@@ -70,11 +80,15 @@ func configureEvents() {
 }
 
 func readConfig() {
-	file, err := os.Open(configFile)
-	if err != nil {
-		panic(err)
+	//TODO: Validar config
+	config = &Config{
+		Server:    os.Getenv("IRC_SERVER"),
+		Channels:  strings.Split(os.Getenv("IRC_CHANNELS"), channelSeparator),
+		User:      os.Getenv("IRC_USER"),
+		Nick:      os.Getenv("IRC_NICK"),
+		CmdPrefix: "!",
+		UseTLS:    true,
 	}
-	config.Read(file)
 	fmt.Printf("%v\n", config)
 }
 
