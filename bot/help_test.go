@@ -12,7 +12,7 @@ func TestHelp(t *testing.T) {
 
 	channel := ""
 	msg := []string{}
-	Connection.NoticeFunc = func(target, message string) {
+	Connection.PrivMsgFunc = func(target, message string) {
 		channel = target
 		msg = append(msg, message)
 	}
@@ -24,11 +24,11 @@ func TestHelp(t *testing.T) {
 	}
 
 	availableCommand := &Cmd{
-		Nick:    "unavailable",
+		Channel: "unavailable",
 		Command: command.Cmd,
 	}
 	unavailableCommand := &Cmd{
-		Nick:    "nick",
+		Channel: "nick",
 		Command: "unavaible",
 	}
 	RegisterCommand(command)
@@ -38,8 +38,8 @@ func TestHelp(t *testing.T) {
 
 		Convey("when the command is not registered", func() {
 			Help(unavailableCommand, Connection)
-			Convey("should send a notice to the user with the available commands", func() {
-				So(channel, ShouldEqual, unavailableCommand.Nick)
+			Convey("should send a message to the channel with the available commands", func() {
+				So(channel, ShouldEqual, unavailableCommand.Channel)
 				So(msg, ShouldResemble, []string{
 					fmt.Sprintf(helpAboutCommand, CmdPrefix),
 					fmt.Sprintf(availableCommands, availableCommand.Command),
@@ -50,8 +50,8 @@ func TestHelp(t *testing.T) {
 
 		Convey("when the command is registered", func() {
 			Help(availableCommand, Connection)
-			Convey("should send a notice to the user with the command's Description and Usage", func() {
-				So(channel, ShouldEqual, availableCommand.Nick)
+			Convey("should send a message to the channel with the command's Description and Usage", func() {
+				So(channel, ShouldEqual, availableCommand.Channel)
 				So(msg, ShouldResemble, []string{
 					fmt.Sprintf(helpDescripton, command.Description),
 					fmt.Sprintf(helpUsage, CmdPrefix, command.Cmd, command.Usage),

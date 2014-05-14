@@ -15,7 +15,7 @@ const (
 func Help(c *Cmd, conn Connection) {
 	command := Commands[c.Command]
 	if command == nil {
-		showAvailabeCommands(c.Nick, conn)
+		showAvailabeCommands(c.Channel, conn)
 	} else {
 		showHelp(c, command, conn)
 	}
@@ -23,16 +23,16 @@ func Help(c *Cmd, conn Connection) {
 
 func showHelp(c *Cmd, help *CustomCommand, conn Connection) {
 	if help.Description != "" {
-		conn.Notice(c.Nick, fmt.Sprintf(helpDescripton, help.Description))
+		conn.Privmsg(c.Channel, fmt.Sprintf(helpDescripton, help.Description))
 	}
-	conn.Notice(c.Nick, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.Usage))
+	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.Usage))
 }
 
-func showAvailabeCommands(nick string, conn Connection) {
+func showAvailabeCommands(channel string, conn Connection) {
 	cmds := make([]string, 0)
 	for k := range Commands {
 		cmds = append(cmds, k)
 	}
-	conn.Notice(nick, fmt.Sprintf(helpAboutCommand, CmdPrefix))
-	conn.Notice(nick, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")))
+	conn.Privmsg(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix))
+	conn.Privmsg(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")))
 }
