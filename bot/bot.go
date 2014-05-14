@@ -6,8 +6,7 @@ import (
 )
 
 const (
-	ChannelSeparator = ","
-	CmdPrefix        = "!"
+	CmdPrefix = "!"
 )
 
 type Config struct {

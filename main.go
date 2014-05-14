@@ -13,7 +13,7 @@ import (
 func main() {
 	config := &bot.Config{
 		Server:   os.Getenv("IRC_SERVER"),
-		Channels: strings.Split(os.Getenv("IRC_CHANNELS"), bot.ChannelSeparator),
+		Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
 		User:     os.Getenv("IRC_USER"),
 		Nick:     os.Getenv("IRC_NICK"),
 		UseTLS:   true,
