@@ -2,7 +2,7 @@ package cotacao
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/bot"
+	"github.com/fabioxgn/go-bot"
 	"github.com/fabioxgn/go-bot/web"
 )
 

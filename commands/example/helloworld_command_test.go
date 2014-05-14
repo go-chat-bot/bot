@@ -1,7 +1,7 @@
 package example
 
 import (
-	"github.com/fabioxgn/go-bot/bot"
+	"github.com/fabioxgn/go-bot"
 	"testing"
 )
 

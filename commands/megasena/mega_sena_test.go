@@ -1,7 +1,7 @@
 package megasena
 
 import (
-	"github.com/fabioxgn/go-bot/bot"
+	"github.com/fabioxgn/go-bot"
 	"regexp"
 	"testing"
 )

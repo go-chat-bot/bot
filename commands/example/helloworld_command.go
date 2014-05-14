@@ -2,7 +2,7 @@ package example
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/bot"
+	"github.com/fabioxgn/go-bot"
 )
 
 func hello(command *bot.Cmd) (msg string, err error) {
