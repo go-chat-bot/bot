@@ -1,10 +1,12 @@
 package megasena
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"github.com/fabioxgn/go-bot/web"
+)
+
+const (
+	URL = "http://developers.agenciaideias.com.br/loterias/megasena/json"
 )
 
 type Retorno struct {
@@ -43,19 +45,8 @@ type Retorno struct {
 }
 
 func Resultado() string {
-	url := "http://developers.agenciaideias.com.br/loterias/megasena/json"
-	res, err := http.Get(url)
-	if err != nil {
-		return err.Error()
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return err.Error()
-	}
 	data := &Retorno{}
-	err = json.Unmarshal(body, &data)
+	err := web.GetJSON(URL, data)
 	if err != nil {
 		return err.Error()
 	}
