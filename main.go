@@ -4,6 +4,7 @@ import (
 	"github.com/fabioxgn/go-bot/bot"
 	_ "github.com/fabioxgn/go-bot/commands/cotacao"
 	_ "github.com/fabioxgn/go-bot/commands/example"
+	_ "github.com/fabioxgn/go-bot/commands/gif"
 	_ "github.com/fabioxgn/go-bot/commands/megasena"
 	"log"
 	"os"
