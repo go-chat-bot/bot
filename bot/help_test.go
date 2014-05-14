@@ -1,16 +1,14 @@
-package main
+package bot
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/cmd"
-	"github.com/fabioxgn/go-bot/irc"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestHelp(t *testing.T) {
-	cmd.Commands = make(map[string]*cmd.CustomCommand)
-	Connection := irc.ConnectionMock{}
+	Commands = make(map[string]*CustomCommand)
+	Connection := ConnectionMock{}
 
 	channel := ""
 	msg := []string{}
@@ -19,23 +17,23 @@ func TestHelp(t *testing.T) {
 		msg = append(msg, message)
 	}
 
-	command := &cmd.CustomCommand{
+	command := &CustomCommand{
 		Cmd:         "cmd",
 		Description: "Command Description",
 		Usage:       "Command Usage",
 	}
 
-	availableCommand := &cmd.Cmd{
+	availableCommand := &Cmd{
 		Nick:    "unavailable",
 		Command: command.Cmd,
 		Prefix:  "!",
 	}
-	unavailableCommand := &cmd.Cmd{
+	unavailableCommand := &Cmd{
 		Nick:    "nick",
 		Command: "unavaible",
 		Prefix:  "!",
 	}
-	cmd.RegisterCommand(command)
+	RegisterCommand(command)
 
 	Convey("Given a help command", t, func() {
 		msg = []string{}

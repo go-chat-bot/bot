@@ -1,14 +1,13 @@
-package parser
+package bot
 
 import (
-	"github.com/fabioxgn/go-bot/cmd"
 	"regexp"
 	"strings"
 )
 
 // Parse the arguments returning the Command to execute and the arguments passed to it
-func Parse(s string, prefix string, channel string, nick string) *cmd.Cmd {
-	c := &cmd.Cmd{Raw: s}
+func Parse(s string, prefix string, channel string, nick string) *Cmd {
+	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
 	c.IsCommand = strings.HasPrefix(s, prefix)
 	c.Channel = strings.TrimSpace(channel)

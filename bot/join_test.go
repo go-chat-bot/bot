@@ -1,15 +1,13 @@
-package main
+package bot
 
 import (
-	"github.com/fabioxgn/go-bot/cmd"
-	"github.com/fabioxgn/go-bot/irc"
 	"testing"
 )
 
 func TestJoin(t *testing.T) {
 	channel1 := "#channel1"
 	channel2 := "#channel2"
-	command := cmd.Cmd{
+	command := Cmd{
 		Command: "join",
 		Args:    []string{channel1, channel2},
 	}
@@ -19,7 +17,7 @@ func TestJoin(t *testing.T) {
 		joinedChannels = append(joinedChannels, channel)
 	}
 
-	conn := &irc.ConnectionMock{
+	conn := &ConnectionMock{
 		JoinFunc: joinFunc,
 	}
 

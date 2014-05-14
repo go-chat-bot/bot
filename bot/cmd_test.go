@@ -1,29 +1,28 @@
-package cmd
+package bot
 
 import (
 	"errors"
 	"fmt"
-	"github.com/fabioxgn/go-bot/irc"
-	. "gopkg.in/check.v1"
+	check "gopkg.in/check.v1"
 	"testing"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func Test(t *testing.T) { check.TestingT(t) }
 
 type CmdSuite struct {
-	Mock irc.ConnectionMock
+	Mock ConnectionMock
 }
 
 var (
-	_ = Suite(&CmdSuite{})
+	_ = check.Suite(&CmdSuite{})
 )
 
-func (s *CmdSuite) SetUpTest(c *C) {
+func (s *CmdSuite) SetUpTest(c *check.C) {
 	Commands = make(map[string]*CustomCommand)
-	s.Mock = irc.ConnectionMock{}
+	s.Mock = ConnectionMock{}
 }
 
-func (s *CmdSuite) TestRegisterCommand(c *C) {
+func (s *CmdSuite) TestRegisterCommand(c *check.C) {
 	fn := func(cmd *Cmd) (string, error) { return "", nil }
 
 	cmd := &CustomCommand{
@@ -32,10 +31,10 @@ func (s *CmdSuite) TestRegisterCommand(c *C) {
 	}
 	RegisterCommand(cmd)
 
-	c.Check(Commands["cmd"], Equals, cmd)
+	c.Check(Commands["cmd"], check.Equals, cmd)
 }
 
-func (s *CmdSuite) TestErrorExecutingCommand(c *C) {
+func (s *CmdSuite) TestErrorExecutingCommand(c *check.C) {
 	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
@@ -58,13 +57,13 @@ func (s *CmdSuite) TestErrorExecutingCommand(c *C) {
 
 	err := HandleCmd(cmd, s.Mock)
 
-	c.Check(err, Equals, cmdError)
+	c.Check(err, check.Equals, cmdError)
 
-	c.Check(channel, Equals, cmd.Channel)
-	c.Check(msg[0], Equals, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
+	c.Check(channel, check.Equals, cmd.Channel)
+	c.Check(msg[0], check.Equals, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
 }
 
-func (s *CmdSuite) TestHandleExistingCommand(c *C) {
+func (s *CmdSuite) TestHandleExistingCommand(c *check.C) {
 	cmd := &Cmd{
 		Command: "cmd",
 		Channel: "#go-bot",
@@ -88,18 +87,18 @@ func (s *CmdSuite) TestHandleExistingCommand(c *C) {
 
 	err := HandleCmd(cmd, s.Mock)
 
-	c.Check(err, IsNil)
-	c.Check(channel, Equals, cmd.Channel)
-	c.Check(printedMsg[0], Equals, expectedMsg[0])
+	c.Check(err, check.IsNil)
+	c.Check(channel, check.Equals, cmd.Channel)
+	c.Check(printedMsg[0], check.Equals, expectedMsg[0])
 }
 
-func (s *CmdSuite) TestHandleCommandNotFound(c *C) {
+func (s *CmdSuite) TestHandleCommandNotFound(c *check.C) {
 	cmd1 := &Cmd{
 		Command: "cmd",
 	}
 
 	err := HandleCmd(cmd1, nil)
 
-	c.Check(err, NotNil)
-	c.Check(err.Error(), Equals, fmt.Sprintf(commandNotAvailable, "cmd"))
+	c.Check(err, check.NotNil)
+	c.Check(err.Error(), check.Equals, fmt.Sprintf(commandNotAvailable, "cmd"))
 }

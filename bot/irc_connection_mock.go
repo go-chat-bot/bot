@@ -1,4 +1,4 @@
-package irc
+package bot
 
 type ConnectionMock struct {
 	PrivMsgFunc func(target, message string)

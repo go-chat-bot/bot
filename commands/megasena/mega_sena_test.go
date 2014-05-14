@@ -1,7 +1,7 @@
 package megasena
 
 import (
-	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/bot"
 	"regexp"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestSortear(t *testing.T) {
 }
 
 func TestMegaSena(t *testing.T) {
-	cmd := &cmd.Cmd{
+	cmd := &bot.Cmd{
 		Command: "megasena",
 		Nick:    "nick",
 		Args:    []string{"gerar"},

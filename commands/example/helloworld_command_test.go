@@ -1,17 +1,17 @@
 package example
 
 import (
-	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/bot"
 	"testing"
 )
 
 func TestHelloworld(t *testing.T) {
 	want := "Hello nick"
-	cmd := &cmd.Cmd{
+	bot := &bot.Cmd{
 		Command: "helloworld",
 		Nick:    "nick",
 	}
-	got, error := hello(cmd)
+	got, error := hello(bot)
 
 	if got != want {
 		t.Errorf("Expected '%v' got '%v'", want, got)

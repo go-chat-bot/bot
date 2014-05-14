@@ -2,7 +2,7 @@ package cotacao
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/bot"
 	"github.com/fabioxgn/go-bot/web"
 )
 
@@ -26,7 +26,7 @@ type Cotacao struct {
 	Atualizacao string `json:"atualizacao"`
 }
 
-func cotacao(command *cmd.Cmd) (msg string, err error) {
+func cotacao(command *bot.Cmd) (msg string, err error) {
 	data := &Cotacao{}
 	err = web.GetJSON(URL, data)
 	if err != nil {
@@ -39,7 +39,7 @@ func cotacao(command *cmd.Cmd) (msg string, err error) {
 }
 
 func init() {
-	cmd.RegisterCommand(&cmd.CustomCommand{
+	bot.RegisterCommand(&bot.CustomCommand{
 		Cmd:         "cotacao",
 		CmdFunc:     cotacao,
 		Description: "Informa a cotação do Dólar e Euro.",

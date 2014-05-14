@@ -3,7 +3,7 @@ package megasena
 import (
 	"bytes"
 	"fmt"
-	"github.com/fabioxgn/go-bot/cmd"
+	"github.com/fabioxgn/go-bot/bot"
 	"math/rand"
 	"sort"
 	"strings"
@@ -14,7 +14,7 @@ const (
 	DigitosJogo = 6 //TODO: Suportar até 15 números
 )
 
-func megasena(command *cmd.Cmd) (msg string, err error) {
+func megasena(command *bot.Cmd) (msg string, err error) {
 	//TODO: ter um método genérico "PrintUsage"
 	if len(command.Args) == 0 {
 		msg = "Informe uma opção: gerar ou resultado"
@@ -68,7 +68,7 @@ func duplicado(numero int, numeros []int) bool {
 }
 
 func init() {
-	cmd.RegisterCommand(&cmd.CustomCommand{
+	bot.RegisterCommand(&bot.CustomCommand{
 		Cmd:         "megasena",
 		CmdFunc:     megasena,
 		Description: "Gera um jogo da megasena ou mostra os últimos números sorteados.",

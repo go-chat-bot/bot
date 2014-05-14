@@ -1,9 +1,8 @@
-package cmd
+package bot
 
 import (
 	"errors"
 	"fmt"
-	"github.com/fabioxgn/go-bot/irc"
 	"log"
 )
 
@@ -45,7 +44,7 @@ func RegisterCommand(c *CustomCommand) {
 }
 
 // HandleCmd handles a command
-func HandleCmd(c *Cmd, conn irc.Connection) error {
+func HandleCmd(c *Cmd, conn Connection) error {
 	customCmd := Commands[c.Command]
 
 	if customCmd == nil {

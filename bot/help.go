@@ -1,9 +1,7 @@
-package main
+package bot
 
 import (
 	"fmt"
-	"github.com/fabioxgn/go-bot/cmd"
-	"github.com/fabioxgn/go-bot/irc"
 	"strings"
 )
 
@@ -14,8 +12,8 @@ const (
 	helpAboutCommand  = "Type: '%shelp <command>' to see details about a specific command."
 )
 
-func Help(c *cmd.Cmd, conn irc.Connection) {
-	command := cmd.Commands[c.Command]
+func Help(c *Cmd, conn Connection) {
+	command := Commands[c.Command]
 	if command == nil {
 		showAvailabeCommands(c.Nick, c.Prefix, conn)
 	} else {
@@ -23,16 +21,16 @@ func Help(c *cmd.Cmd, conn irc.Connection) {
 	}
 }
 
-func showHelp(c *cmd.Cmd, help *cmd.CustomCommand, conn irc.Connection) {
+func showHelp(c *Cmd, help *CustomCommand, conn Connection) {
 	if help.Description != "" {
 		conn.Notice(c.Nick, fmt.Sprintf(helpDescripton, help.Description))
 	}
 	conn.Notice(c.Nick, fmt.Sprintf(helpUsage, c.Prefix, c.Command, help.Usage))
 }
 
-func showAvailabeCommands(nick, cmdPrefix string, conn irc.Connection) {
+func showAvailabeCommands(nick, cmdPrefix string, conn Connection) {
 	cmds := make([]string, 0)
-	for k := range cmd.Commands {
+	for k := range Commands {
 		cmds = append(cmds, k)
 	}
 	conn.Notice(nick, fmt.Sprintf(helpAboutCommand, cmdPrefix))

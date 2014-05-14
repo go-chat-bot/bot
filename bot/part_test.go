@@ -1,14 +1,12 @@
-package main
+package bot
 
 import (
-	"github.com/fabioxgn/go-bot/cmd"
-	"github.com/fabioxgn/go-bot/irc"
 	"testing"
 )
 
 func TestPartNoArgs(t *testing.T) {
 	channel := "#go-bot"
-	command := &cmd.Cmd{
+	command := &Cmd{
 		Command: "part",
 		Args:    []string{},
 		Channel: channel,
@@ -19,7 +17,7 @@ func TestPartNoArgs(t *testing.T) {
 		partedChannel = channel
 	}
 
-	conn := &irc.ConnectionMock{
+	conn := &ConnectionMock{
 		PartFunc: partFunc,
 	}
 
@@ -34,7 +32,7 @@ func TestPartNoArgs(t *testing.T) {
 func TestPartWithArgs(t *testing.T) {
 	channel1 := "#go-bot"
 	channel2 := "#lightirc"
-	command := &cmd.Cmd{
+	command := &Cmd{
 		Command: "part",
 		Args:    []string{channel1, channel2},
 	}
@@ -44,7 +42,7 @@ func TestPartWithArgs(t *testing.T) {
 		partedChannels = append(partedChannels, channel)
 	}
 
-	conn := &irc.ConnectionMock{
+	conn := &ConnectionMock{
 		PartFunc: partFunc,
 	}
 

@@ -1,4 +1,4 @@
-package irc
+package bot
 
 type Connection interface {
 	Privmsg(target, message string)
