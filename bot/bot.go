@@ -14,6 +14,7 @@ type Config struct {
 	Channels []string
 	User     string
 	Nick     string
+	Password string
 	UseTLS   bool
 }
 
@@ -47,6 +48,7 @@ func onPRIVMSG(e *irc.Event) {
 
 func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
+	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
 	err := irccon.Connect(config.Server)
 	if err != nil {

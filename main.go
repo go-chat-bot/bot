@@ -17,6 +17,7 @@ func main() {
 		Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
 		User:     os.Getenv("IRC_USER"),
 		Nick:     os.Getenv("IRC_NICK"),
+		Password: os.Getenv("IRC_PASSWORD"),
 		UseTLS:   true,
 	}
 	log.Printf("%v\n", config)
