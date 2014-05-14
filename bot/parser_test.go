@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	DefaultPrefix  = "!"
 	DefaultChannel = "#go-bot"
 	DefaultNick    = "user123"
 	DefaultCommand = "command"
@@ -18,7 +17,7 @@ var (
 )
 
 func TestEmptyCommand(t *testing.T) {
-	cmd := Parse("", DefaultPrefix, DefaultChannel, DefaultNick)
+	cmd := Parse("", DefaultChannel, DefaultNick)
 	if cmd.Command != "" {
 		t.Fail()
 	}
@@ -28,7 +27,7 @@ func TestWithoutPrefix(t *testing.T) {
 	IsCommand := false
 	Message := "regular message"
 
-	res := Parse(Message, DefaultPrefix, DefaultChannel, DefaultNick)
+	res := Parse(Message, DefaultChannel, DefaultNick)
 
 	if res.IsCommand != IsCommand {
 		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
@@ -44,7 +43,7 @@ func TestWithoutPrefix(t *testing.T) {
 func TestOnlyPrefix(t *testing.T) {
 	IsCommand := false
 
-	res := Parse(DefaultPrefix, DefaultPrefix, DefaultChannel, DefaultNick)
+	res := Parse(CmdPrefix, DefaultChannel, DefaultNick)
 
 	if res.IsCommand != IsCommand {
 		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
@@ -56,8 +55,8 @@ func TestOnlyPrefix(t *testing.T) {
 
 func TestWithPrefixAndCommand(t *testing.T) {
 	IsCommand := true
-	cmd := fmt.Sprintf("%v%v", DefaultPrefix, DefaultCommand)
-	res := Parse(cmd, DefaultPrefix, DefaultChannel, DefaultNick)
+	cmd := fmt.Sprintf("%v%v", CmdPrefix, DefaultCommand)
+	res := Parse(cmd, DefaultChannel, DefaultNick)
 
 	if res.IsCommand != IsCommand {
 		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
@@ -72,8 +71,8 @@ func TestWithPrefixAndCommand(t *testing.T) {
 
 func TestWithPrefixAndCommandAndArgs(t *testing.T) {
 	IsCommand := true
-	cmd := fmt.Sprintf("%v%v %v", DefaultPrefix, DefaultCommand, DefaultFullArg)
-	res := Parse(cmd, DefaultPrefix, DefaultChannel, DefaultNick)
+	cmd := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultFullArg)
+	res := Parse(cmd, DefaultChannel, DefaultNick)
 
 	if res.IsCommand != IsCommand {
 		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
@@ -94,8 +93,8 @@ func TestWithPrefixAndCommandAndArgs(t *testing.T) {
 
 func TestWithExtraSpaces(t *testing.T) {
 	IsCommand := true
-	cmd := fmt.Sprintf(" %v %v %v  %v  ", DefaultPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
-	res := Parse(cmd, DefaultPrefix, DefaultChannel, DefaultNick)
+	cmd := fmt.Sprintf(" %v %v %v  %v  ", CmdPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
+	res := Parse(cmd, DefaultChannel, DefaultNick)
 
 	if res.IsCommand != IsCommand {
 		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)

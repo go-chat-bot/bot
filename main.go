@@ -12,12 +12,11 @@ import (
 
 func main() {
 	config := &bot.Config{
-		Server:    os.Getenv("IRC_SERVER"),
-		Channels:  strings.Split(os.Getenv("IRC_CHANNELS"), bot.ChannelSeparator),
-		User:      os.Getenv("IRC_USER"),
-		Nick:      os.Getenv("IRC_NICK"),
-		CmdPrefix: "!",
-		UseTLS:    true,
+		Server:   os.Getenv("IRC_SERVER"),
+		Channels: strings.Split(os.Getenv("IRC_CHANNELS"), bot.ChannelSeparator),
+		User:     os.Getenv("IRC_USER"),
+		Nick:     os.Getenv("IRC_NICK"),
+		UseTLS:   true,
 	}
 	log.Printf("%v\n", config)
 

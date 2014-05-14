@@ -26,12 +26,10 @@ func TestHelp(t *testing.T) {
 	availableCommand := &Cmd{
 		Nick:    "unavailable",
 		Command: command.Cmd,
-		Prefix:  "!",
 	}
 	unavailableCommand := &Cmd{
 		Nick:    "nick",
 		Command: "unavaible",
-		Prefix:  "!",
 	}
 	RegisterCommand(command)
 
@@ -43,7 +41,7 @@ func TestHelp(t *testing.T) {
 			Convey("should send a notice to the user with the available commands", func() {
 				So(channel, ShouldEqual, unavailableCommand.Nick)
 				So(msg, ShouldResemble, []string{
-					fmt.Sprintf(helpAboutCommand, unavailableCommand.Prefix),
+					fmt.Sprintf(helpAboutCommand, CmdPrefix),
 					fmt.Sprintf(availableCommands, availableCommand.Command),
 				})
 			})
@@ -56,7 +54,7 @@ func TestHelp(t *testing.T) {
 				So(channel, ShouldEqual, availableCommand.Nick)
 				So(msg, ShouldResemble, []string{
 					fmt.Sprintf(helpDescripton, command.Description),
-					fmt.Sprintf(helpUsage, availableCommand.Prefix, command.Cmd, command.Usage),
+					fmt.Sprintf(helpUsage, CmdPrefix, command.Cmd, command.Usage),
 				})
 			})
 		})

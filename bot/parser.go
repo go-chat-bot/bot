@@ -6,10 +6,10 @@ import (
 )
 
 // Parse the arguments returning the Command to execute and the arguments passed to it
-func Parse(s string, prefix string, channel string, nick string) *Cmd {
+func Parse(s string, channel string, nick string) *Cmd {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
-	c.IsCommand = strings.HasPrefix(s, prefix)
+	c.IsCommand = strings.HasPrefix(s, CmdPrefix)
 	c.Channel = strings.TrimSpace(channel)
 	c.Nick = strings.TrimSpace(nick)
 
@@ -20,7 +20,7 @@ func Parse(s string, prefix string, channel string, nick string) *Cmd {
 	}
 
 	// Trim the prefix and extra spaces
-	c.Message = strings.TrimPrefix(s, prefix)
+	c.Message = strings.TrimPrefix(s, CmdPrefix)
 	c.Message = strings.TrimSpace(c.Message)
 
 	// check if we have the command and not only the prefix
@@ -28,7 +28,6 @@ func Parse(s string, prefix string, channel string, nick string) *Cmd {
 	if !c.IsCommand {
 		return c
 	}
-	c.Prefix = strings.TrimSpace(prefix)
 
 	// get the command
 	pieces := strings.SplitN(c.Message, " ", 2)

@@ -7,15 +7,15 @@ import (
 
 const (
 	ChannelSeparator = ","
+	CmdPrefix        = "!"
 )
 
 type Config struct {
-	Server    string
-	Channels  []string
-	User      string
-	Nick      string
-	CmdPrefix string
-	UseTLS    bool
+	Server   string
+	Channels []string
+	User     string
+	Nick     string
+	UseTLS   bool
 }
 
 var (
@@ -34,9 +34,9 @@ func onPRIVMSG(e *irc.Event) {
 		channel = e.Nick //e.Nick is who sent the pvt message
 	}
 
-	command := Parse(e.Message(), config.CmdPrefix, channel, e.Nick)
+	command := Parse(e.Message(), channel, e.Nick)
 	if command.Command == "help" {
-		command = Parse(config.CmdPrefix+command.FullArg, config.CmdPrefix, channel, e.Nick)
+		command = Parse(CmdPrefix+command.FullArg, channel, e.Nick)
 		Help(command, irccon)
 	} else if command.IsCommand {
 		HandleCmd(command, irccon)

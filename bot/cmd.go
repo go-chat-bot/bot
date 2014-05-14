@@ -14,7 +14,6 @@ type Cmd struct {
 	IsCommand bool     // Confirmation if this is a command or just a regular message
 	Message   string   // Full string without the prefix
 	Command   string   // Command is the first argument passed to the bot
-	Prefix    string   // Command prefix
 	FullArg   string   // Full argument as a single string
 	Args      []string // Arguments as array
 }
