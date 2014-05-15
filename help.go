@@ -12,7 +12,7 @@ const (
 	helpAboutCommand  = "Type: '%shelp <command>' to see details about a specific command."
 )
 
-func Help(c *Cmd, conn Connection) {
+func help(c *Cmd, conn Connection) {
 	command := commands[c.Command]
 	if command == nil {
 		showAvailabeCommands(c.Channel, conn)

@@ -27,17 +27,18 @@ func TestHelp(t *testing.T) {
 		Channel: "unavailable",
 		Command: command.Cmd,
 	}
-	unavailableCommand := &Cmd{
-		Channel: "nick",
-		Command: "unavaible",
-	}
+
 	RegisterCommand(command)
 
 	Convey("Given a help command", t, func() {
 		msg = []string{}
 
 		Convey("when the command is not registered", func() {
-			Help(unavailableCommand, Connection)
+			unavailableCommand := &Cmd{
+				Channel: "nick",
+				Command: "unavaible",
+			}
+			help(unavailableCommand, Connection)
 			Convey("should send a message to the channel with the available commands", func() {
 				So(channel, ShouldEqual, unavailableCommand.Channel)
 				So(msg, ShouldResemble, []string{
@@ -49,7 +50,8 @@ func TestHelp(t *testing.T) {
 		})
 
 		Convey("when the command is registered", func() {
-			Help(availableCommand, Connection)
+			help(availableCommand, Connection)
+
 			Convey("should send a message to the channel with the command's Description and Usage", func() {
 				So(channel, ShouldEqual, availableCommand.Channel)
 				So(msg, ShouldResemble, []string{

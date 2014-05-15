@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// Cmd is a struct which separates the user's input for easier handling of commands
+// Cmd holds the parsed user's input for easier handling of commands
 type Cmd struct {
 	Raw       string   // Raw is full string passed to the command
 	Channel   string   // Channel where the command was called
@@ -18,6 +18,7 @@ type Cmd struct {
 	Args      []string // Arguments as array
 }
 
+// TODO
 type CustomCommand struct {
 	Cmd         string
 	CmdFunc     func(cmd *Cmd) (string, error)
@@ -35,14 +36,15 @@ var (
 	commands = make(map[string]*CustomCommand)
 )
 
-// RegisterCommand must be used to register a command (string) and CommandFunc.
-// The CommandFunc will be executed when a users calls the bot passing the
-// command string as the first argument
+// RegisterCommand must be used to register a CustomCommand.
+// The commands must be registered in the Ini() func
+// The CustomCommand must have at least:
+// Cmd: The string which the user will use to execute the command
+// CmdFunc: The function which will be executed when the Cmd string is detected as a command
 func RegisterCommand(c *CustomCommand) {
 	commands[c.Cmd] = c
 }
 
-// HandleCmd handles a command
 func handleCmd(c *Cmd, conn Connection) error {
 	customCmd := commands[c.Command]
 

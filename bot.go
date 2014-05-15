@@ -9,6 +9,7 @@ const (
 	CmdPrefix = "!"
 )
 
+// TODO
 type Config struct {
 	Server   string
 	Channels []string
@@ -38,7 +39,7 @@ func onPRIVMSG(e *irc.Event) {
 	command := parse(e.Message(), channel, e.Nick)
 	if command.Command == "help" {
 		command = parse(CmdPrefix+command.FullArg, channel, e.Nick)
-		Help(command, irccon)
+		help(command, irccon)
 	} else if command.IsCommand {
 		handleCmd(command, irccon)
 	} else {
