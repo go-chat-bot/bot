@@ -16,6 +16,7 @@ type Config struct {
 	Nick     string
 	Password string
 	UseTLS   bool
+	Debug    bool
 }
 
 var (
@@ -50,7 +51,7 @@ func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
-	irccon.VerboseCallbackHandler = true
+	irccon.VerboseCallbackHandler = config.Debug
 	err := irccon.Connect(config.Server)
 	if err != nil {
 		log.Fatal(err)

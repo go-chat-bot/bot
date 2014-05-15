@@ -2,18 +2,17 @@
 
 [![Build Status](https://travis-ci.org/fabioxgn/go-bot.png?branch=master)](https://travis-ci.org/fabioxgn/go-bot)
 
-Simple IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for the IRC connectivity.
+IRC bot written in [Go][go] using [go-ircevent][go-ircevent] which can be deployed to heroku and used in slack.
 
 [go]: golang.org
 [go-ircevent]: https://github.com/thoj/go-ircevent
 
-# Config is read from the environment:
+# Deploying to heroku
 
-    export IRC_SERVER=irc.freenode.org:7000
-    export IRC_CHANNELS="#go-bot,#lightirc"
-    export IRC_USER=go-bot
-    export IRC_NICK=go-bot
+To see an example projeto on how to deploy it to heroku, please see my own bot:
+
+https://github.com/fabioxgn/go-bot-heroku
 
 To join channels with passwords just put the password after the channel name separated by a space:
 
-    export IRC_CHANNELS="#mychannel mypassword,#go-bot"
+    Channels: "#mychannel mypassword,#go-bot",
