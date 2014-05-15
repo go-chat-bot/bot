@@ -5,8 +5,7 @@ import (
 	"strings"
 )
 
-// Parse the arguments returning the Command to execute and the arguments passed to it
-func Parse(s string, channel string, nick string) *Cmd {
+func parse(s string, channel string, nick string) *Cmd {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
 	c.IsCommand = strings.HasPrefix(s, CmdPrefix)

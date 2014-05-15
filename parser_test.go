@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
@@ -16,103 +17,60 @@ var (
 	}
 )
 
-func TestEmptyCommand(t *testing.T) {
-	cmd := Parse("", DefaultChannel, DefaultNick)
-	if cmd.Command != "" {
-		t.Fail()
-	}
-}
+func TestPaser(t *testing.T) {
+	Convey("When given a message", t, func() {
+		Convey("When the message is empty", func() {
+			cmd := parse("", DefaultChannel, DefaultNick)
 
-func TestWithoutPrefix(t *testing.T) {
-	IsCommand := false
-	Message := "regular message"
+			So(cmd.Command, ShouldEqual, "")
+			So(cmd.IsCommand, ShouldBeFalse)
+		})
 
-	res := Parse(Message, DefaultChannel, DefaultNick)
+		Convey("When the message doesn't have the prefix", func() {
+			Message := "regular message"
+			cmd := parse(Message, DefaultChannel, DefaultNick)
 
-	if res.IsCommand != IsCommand {
-		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
-	}
-	if res.Message != Message {
-		t.Errorf("Expected %v got %v", Message, res.Message)
-	}
-	if res.Channel != DefaultChannel {
-		t.Errorf("Expected %v got %v", DefaultChannel, res.Channel)
-	}
-}
+			So(cmd.IsCommand, ShouldBeFalse)
+			So(cmd.Message, ShouldEqual, Message)
+			So(cmd.Channel, ShouldEqual, DefaultChannel)
+		})
 
-func TestOnlyPrefix(t *testing.T) {
-	IsCommand := false
+		Convey("When the message is only the prefix", func() {
+			cmd := parse(CmdPrefix, DefaultChannel, DefaultNick)
 
-	res := Parse(CmdPrefix, DefaultChannel, DefaultNick)
+			So(cmd.IsCommand, ShouldBeFalse)
+			So(cmd.Channel, ShouldEqual, DefaultChannel)
+		})
 
-	if res.IsCommand != IsCommand {
-		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
-	}
-	if res.Channel != DefaultChannel {
-		t.Errorf("Expected %v got %v", DefaultChannel, res.Channel)
-	}
-}
+		Convey("When the message is valid command", func() {
+			msg := fmt.Sprintf("%v%v", CmdPrefix, DefaultCommand)
+			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-func TestWithPrefixAndCommand(t *testing.T) {
-	IsCommand := true
-	cmd := fmt.Sprintf("%v%v", CmdPrefix, DefaultCommand)
-	res := Parse(cmd, DefaultChannel, DefaultNick)
+			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd.Command, ShouldEqual, DefaultCommand)
+			So(cmd.Channel, ShouldEqual, DefaultChannel)
+		})
 
-	if res.IsCommand != IsCommand {
-		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
-	}
-	if res.Command != DefaultCommand {
-		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
-	}
-	if res.Channel != DefaultChannel {
-		t.Errorf("Expected %v got %v", DefaultChannel, res.Channel)
-	}
-}
+		Convey("When the message is a command with args", func() {
+			msg := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultFullArg)
+			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-func TestWithPrefixAndCommandAndArgs(t *testing.T) {
-	IsCommand := true
-	cmd := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultFullArg)
-	res := Parse(cmd, DefaultChannel, DefaultNick)
+			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd.Command, ShouldEqual, DefaultCommand)
+			So(cmd.Channel, ShouldEqual, DefaultChannel)
+			So(cmd.Args, ShouldResemble, DefaultArgs)
+			So(cmd.FullArg, ShouldEqual, DefaultFullArg)
+		})
 
-	if res.IsCommand != IsCommand {
-		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
-	}
-	if res.Command != DefaultCommand {
-		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
-	}
-	if res.Args[0] != DefaultArgs[0] {
-		t.Errorf("Expected %v got %v", DefaultArgs[0], res.Args[0])
-	}
-	if res.FullArg != DefaultFullArg {
-		t.Errorf("Expected %v got %v", DefaultFullArg, res.FullArg)
-	}
-	if res.Channel != DefaultChannel {
-		t.Errorf("Expected %v got %v", DefaultChannel, res.Channel)
-	}
-}
+		Convey("When the message has extra spaces", func() {
+			msg := fmt.Sprintf(" %v %v %v  %v  ", CmdPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
+			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-func TestWithExtraSpaces(t *testing.T) {
-	IsCommand := true
-	cmd := fmt.Sprintf(" %v %v %v  %v  ", CmdPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
-	res := Parse(cmd, DefaultChannel, DefaultNick)
-
-	if res.IsCommand != IsCommand {
-		t.Errorf("Expected %v got %v", IsCommand, res.IsCommand)
-	}
-	if res.Command != DefaultCommand {
-		t.Errorf("Expected %v got %v", DefaultCommand, res.Command)
-	}
-
-	for i := 0; i < len(DefaultArgs); i++ {
-		if res.Args[i] != DefaultArgs[i] {
-			t.Errorf("Expected %v got %v", DefaultArgs[i], res.Args[i])
-		}
-	}
-
-	if res.FullArg != DefaultFullArg {
-		t.Errorf("Expected %v got %v", DefaultFullArg, res.FullArg)
-	}
-	if res.Channel != DefaultChannel {
-		t.Errorf("Expected %v got %v", DefaultChannel, res.Channel)
-	}
+			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd.Command, ShouldEqual, DefaultCommand)
+			So(cmd.Channel, ShouldEqual, DefaultChannel)
+			So(cmd.Args, ShouldResemble, DefaultArgs)
+			So(cmd.FullArg, ShouldEqual, DefaultFullArg)
+		})
+	})
 }
