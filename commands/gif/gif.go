@@ -87,9 +87,7 @@ func gif(command *bot.Cmd) (msg string, err error) {
 	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	fmt.Println("Len(data.Data):", len(data.Data))
 	index := r.Intn(len(data.Data))
-
 	return fmt.Sprintf(data.Data[index].Images.FixedHeight.Url), nil
 }
 
