@@ -3,102 +3,76 @@ package bot
 import (
 	"errors"
 	"fmt"
-	check "gopkg.in/check.v1"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
-func Test(t *testing.T) { check.TestingT(t) }
+func TestCmd(t *testing.T) {
+	Convey("Given a command", t, func() {
+		commands = make(map[string]*CustomCommand)
+		conn := &ircConnectionMock{}
 
-type CmdSuite struct {
-	Mock ircConnectionMock
-}
+		Convey("When the command is not found", func() {
+			cmd1 := &Cmd{
+				Command: "cmd",
+			}
 
-var (
-	_ = check.Suite(&CmdSuite{})
-)
+			err := handleCmd(cmd1, nil)
 
-func (s *CmdSuite) SetUpTest(c *check.C) {
-	commands = make(map[string]*CustomCommand)
-	s.Mock = ircConnectionMock{}
-}
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldEqual, fmt.Sprintf(commandNotAvailable, "cmd"))
+		})
 
-func (s *CmdSuite) TestRegisterCommand(c *check.C) {
-	fn := func(cmd *Cmd) (string, error) { return "", nil }
+		Convey("When the command exists", func() {
+			cmd := &Cmd{
+				Command: "cmd",
+				Channel: "#go-bot",
+			}
 
-	cmd := &CustomCommand{
-		Cmd:     "cmd",
-		CmdFunc: fn,
-	}
-	RegisterCommand(cmd)
+			Convey("it can return an error", func() {
+				cmdError := errors.New("Error")
+				RegisterCommand(&CustomCommand{
+					Cmd:     cmd.Command,
+					CmdFunc: func(c *Cmd) (string, error) { return "", cmdError },
+				})
 
-	c.Check(commands["cmd"], check.Equals, cmd)
-}
+				msg := ""
+				channel := ""
+				conn.PrivMsgFunc = func(c string, m string) {
+					channel = c
+					msg = m
+				}
 
-func (s *CmdSuite) TestErrorExecutingCommand(c *check.C) {
-	cmd := &Cmd{
-		Command: "cmd",
-		Channel: "#go-bot",
-	}
+				err := handleCmd(cmd, conn)
 
-	cmdError := errors.New("Error")
-	fn := func(c *Cmd) (string, error) { return "", cmdError }
+				So(err, ShouldEqual, cmdError)
+				So(channel, ShouldEqual, cmd.Channel)
+				So(msg, ShouldEqual, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
+			})
 
-	RegisterCommand(&CustomCommand{
-		Cmd:     cmd.Command,
-		CmdFunc: fn,
+			Convey("it can return a string", func() {
+				expectedMsg := "msg"
+				RegisterCommand(&CustomCommand{
+					Cmd:     cmd.Command,
+					CmdFunc: func(c *Cmd) (string, error) { return expectedMsg, nil },
+				})
+
+				msg := ""
+				channel := ""
+				conn.PrivMsgFunc = func(c string, m string) {
+					channel = c
+					msg = m
+				}
+
+				err := handleCmd(cmd, conn)
+
+				So(err, ShouldBeNil)
+				So(channel, ShouldEqual, cmd.Channel)
+				So(msg, ShouldEqual, expectedMsg)
+			})
+
+		})
+
 	})
 
-	msg := []string{}
-	channel := ""
-	s.Mock.PrivMsgFunc = func(c string, m string) {
-		channel = c
-		msg = append(msg, m)
-	}
-
-	err := handleCmd(cmd, s.Mock)
-
-	c.Check(err, check.Equals, cmdError)
-
-	c.Check(channel, check.Equals, cmd.Channel)
-	c.Check(msg[0], check.Equals, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
-}
-
-func (s *CmdSuite) TestHandleExistingCommand(c *check.C) {
-	cmd := &Cmd{
-		Command: "cmd",
-		Channel: "#go-bot",
-	}
-	expectedMsg := []string{"msg"}
-	fn := func(c *Cmd) (string, error) {
-		return expectedMsg[0], nil
-	}
-
-	RegisterCommand(&CustomCommand{
-		Cmd:     "cmd",
-		CmdFunc: fn,
-	})
-
-	printedMsg := []string{}
-	channel := ""
-	s.Mock.PrivMsgFunc = func(c string, m string) {
-		channel = c
-		printedMsg = append(printedMsg, m)
-	}
-
-	err := handleCmd(cmd, s.Mock)
-
-	c.Check(err, check.IsNil)
-	c.Check(channel, check.Equals, cmd.Channel)
-	c.Check(printedMsg[0], check.Equals, expectedMsg[0])
-}
-
-func (s *CmdSuite) TestHandleCommandNotFound(c *check.C) {
-	cmd1 := &Cmd{
-		Command: "cmd",
-	}
-
-	err := handleCmd(cmd1, nil)
-
-	c.Check(err, check.NotNil)
-	c.Check(err.Error(), check.Equals, fmt.Sprintf(commandNotAvailable, "cmd"))
 }

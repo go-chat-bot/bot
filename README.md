@@ -9,10 +9,10 @@ IRC bot written in [Go][go] using [go-ircevent][go-ircevent] which can be deploy
 
 # Deploying to heroku
 
-To see an example projeto on how to deploy it to heroku, please see my own bot:
+To see an example project on how to deploy it to heroku, please see my own bot:
 
 https://github.com/fabioxgn/go-bot-heroku
 
 To join channels with passwords just put the password after the channel name separated by a space:
 
-    Channels: "#mychannel mypassword,#go-bot",
+    Channels: []string{"#mychannel mypassword", "#go-bot"}
