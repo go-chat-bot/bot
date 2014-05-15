@@ -12,7 +12,7 @@ const (
 	helpAboutCommand  = "Type: '%shelp <command>' to see details about a specific command."
 )
 
-func help(c *Cmd, conn Connection) {
+func help(c *Cmd, conn ircConnection) {
 	command := commands[c.Command]
 	if command == nil {
 		showAvailabeCommands(c.Channel, conn)
@@ -21,14 +21,14 @@ func help(c *Cmd, conn Connection) {
 	}
 }
 
-func showHelp(c *Cmd, help *CustomCommand, conn Connection) {
+func showHelp(c *Cmd, help *CustomCommand, conn ircConnection) {
 	if help.Description != "" {
 		conn.Privmsg(c.Channel, fmt.Sprintf(helpDescripton, help.Description))
 	}
 	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.Usage))
 }
 
-func showAvailabeCommands(channel string, conn Connection) {
+func showAvailabeCommands(channel string, conn ircConnection) {
 	cmds := make([]string, 0)
 	for k := range commands {
 		cmds = append(cmds, k)

@@ -10,7 +10,7 @@ import (
 func Test(t *testing.T) { check.TestingT(t) }
 
 type CmdSuite struct {
-	Mock ConnectionMock
+	Mock ircConnectionMock
 }
 
 var (
@@ -19,7 +19,7 @@ var (
 
 func (s *CmdSuite) SetUpTest(c *check.C) {
 	commands = make(map[string]*CustomCommand)
-	s.Mock = ConnectionMock{}
+	s.Mock = ircConnectionMock{}
 }
 
 func (s *CmdSuite) TestRegisterCommand(c *check.C) {

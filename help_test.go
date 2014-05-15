@@ -8,7 +8,7 @@ import (
 
 func TestHelp(t *testing.T) {
 	commands = make(map[string]*CustomCommand)
-	Connection := ConnectionMock{}
+	Connection := ircConnectionMock{}
 
 	channel := ""
 	msg := []string{}

@@ -45,7 +45,7 @@ func RegisterCommand(c *CustomCommand) {
 	commands[c.Cmd] = c
 }
 
-func handleCmd(c *Cmd, conn Connection) error {
+func handleCmd(c *Cmd, conn ircConnection) error {
 	customCmd := commands[c.Command]
 
 	if customCmd == nil {

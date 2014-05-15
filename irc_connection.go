@@ -1,6 +1,6 @@
 package bot
 
-type Connection interface {
+type ircConnection interface {
 	Privmsg(target, message string)
 	Notice(target, message string)
 	Join(channel string)
