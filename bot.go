@@ -40,7 +40,7 @@ func onPRIVMSG(e *irc.Event) {
 		command = parse(CmdPrefix+command.FullArg, channel, e.Nick)
 		Help(command, irccon)
 	} else if command.IsCommand {
-		HandleCmd(command, irccon)
+		handleCmd(command, irccon)
 	} else {
 		// It's not a command
 		// TODO: Test for passive commands (parse url, etc) ?

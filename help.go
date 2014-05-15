@@ -13,7 +13,7 @@ const (
 )
 
 func Help(c *Cmd, conn Connection) {
-	command := Commands[c.Command]
+	command := commands[c.Command]
 	if command == nil {
 		showAvailabeCommands(c.Channel, conn)
 	} else {
@@ -30,7 +30,7 @@ func showHelp(c *Cmd, help *CustomCommand, conn Connection) {
 
 func showAvailabeCommands(channel string, conn Connection) {
 	cmds := make([]string, 0)
-	for k := range Commands {
+	for k := range commands {
 		cmds = append(cmds, k)
 	}
 	conn.Privmsg(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix))

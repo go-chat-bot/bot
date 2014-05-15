@@ -18,7 +18,7 @@ var (
 )
 
 func (s *CmdSuite) SetUpTest(c *check.C) {
-	Commands = make(map[string]*CustomCommand)
+	commands = make(map[string]*CustomCommand)
 	s.Mock = ConnectionMock{}
 }
 
@@ -31,7 +31,7 @@ func (s *CmdSuite) TestRegisterCommand(c *check.C) {
 	}
 	RegisterCommand(cmd)
 
-	c.Check(Commands["cmd"], check.Equals, cmd)
+	c.Check(commands["cmd"], check.Equals, cmd)
 }
 
 func (s *CmdSuite) TestErrorExecutingCommand(c *check.C) {
@@ -55,7 +55,7 @@ func (s *CmdSuite) TestErrorExecutingCommand(c *check.C) {
 		msg = append(msg, m)
 	}
 
-	err := HandleCmd(cmd, s.Mock)
+	err := handleCmd(cmd, s.Mock)
 
 	c.Check(err, check.Equals, cmdError)
 
@@ -85,7 +85,7 @@ func (s *CmdSuite) TestHandleExistingCommand(c *check.C) {
 		printedMsg = append(printedMsg, m)
 	}
 
-	err := HandleCmd(cmd, s.Mock)
+	err := handleCmd(cmd, s.Mock)
 
 	c.Check(err, check.IsNil)
 	c.Check(channel, check.Equals, cmd.Channel)
@@ -97,7 +97,7 @@ func (s *CmdSuite) TestHandleCommandNotFound(c *check.C) {
 		Command: "cmd",
 	}
 
-	err := HandleCmd(cmd1, nil)
+	err := handleCmd(cmd1, nil)
 
 	c.Check(err, check.NotNil)
 	c.Check(err.Error(), check.Equals, fmt.Sprintf(commandNotAvailable, "cmd"))

@@ -32,19 +32,19 @@ const (
 )
 
 var (
-	Commands = make(map[string]*CustomCommand)
+	commands = make(map[string]*CustomCommand)
 )
 
 // RegisterCommand must be used to register a command (string) and CommandFunc.
 // The CommandFunc will be executed when a users calls the bot passing the
 // command string as the first argument
 func RegisterCommand(c *CustomCommand) {
-	Commands[c.Cmd] = c
+	commands[c.Cmd] = c
 }
 
 // HandleCmd handles a command
-func HandleCmd(c *Cmd, conn Connection) error {
-	customCmd := Commands[c.Command]
+func handleCmd(c *Cmd, conn Connection) error {
+	customCmd := commands[c.Command]
 
 	if customCmd == nil {
 		log.Printf("Command not found %v", c.Command)

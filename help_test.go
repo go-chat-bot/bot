@@ -7,7 +7,7 @@ import (
 )
 
 func TestHelp(t *testing.T) {
-	Commands = make(map[string]*CustomCommand)
+	commands = make(map[string]*CustomCommand)
 	Connection := ConnectionMock{}
 
 	channel := ""
