@@ -29,7 +29,7 @@ func searchGodoc(text string, get web.GetJSONFunc) (string, error) {
 	}
 
 	if len(data.Results) == 0 {
-		return "", nil
+		return "No packages found.", nil
 	}
 
 	return fmt.Sprintf("%s %s", data.Results[0].Path, data.Results[0].Synopsis), nil
