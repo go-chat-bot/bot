@@ -6,14 +6,20 @@ import (
 	"net/http"
 )
 
-func GetJSON(url string, v interface{}) error {
+type GetBodyFunc func(string) ([]byte, error)
+
+func GetBody(url string) ([]byte, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	return ioutil.ReadAll(res.Body)
+}
+
+func GetJSON(url string, v interface{}) error {
+	body, err := GetBody(url)
 	if err != nil {
 		return err
 	}

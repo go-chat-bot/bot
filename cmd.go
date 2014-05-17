@@ -17,6 +17,12 @@ type Cmd struct {
 	Args    []string // Arguments as array
 }
 
+type PassiveCmd struct {
+	Raw     string
+	Channel string
+	Nick    string
+}
+
 type customCommand struct {
 	Cmd         string
 	CmdFunc     func(cmd *Cmd) (string, error)
@@ -42,8 +48,11 @@ const (
 	helpCommand           = "help"
 )
 
+type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
+
 var (
-	commands = make(map[string]*customCommand)
+	commands        = make(map[string]*customCommand)
+	passiveCommands = make(map[string]passiveCmdFunc)
 )
 
 // RegisterCommand adds a new command to the bot.
@@ -61,6 +70,10 @@ func RegisterCommand(command, description, exampleArgs string, cmdFunc func(cmd 
 	}
 }
 
+func RegisterPassiveCommand(command string, CmdFunc func(cmd *PassiveCmd) (string, error)) {
+	passiveCommands[command] = CmdFunc
+}
+
 func isPrivateMsg(channel, currentNick string) bool {
 	return channel == currentNick
 }
@@ -72,7 +85,11 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 
 	command := parse(text, channel, senderNick)
 	if command == nil {
-		handleMessage(text, channel)
+		handleMessage(&PassiveCmd{
+			Raw:     text,
+			Channel: channel,
+			Nick:    senderNick,
+		})
 		return
 	}
 
@@ -84,8 +101,15 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 
 }
 
-func handleMessage(text, channel string) {
-	//TODO handle passive commands, lik
+func handleMessage(c *PassiveCmd) {
+	for k, v := range passiveCommands {
+		log.Println("Executando: ", k)
+		s, err := v(c)
+		if err != nil {
+			log.Println(err)
+		}
+		irccon.Privmsg(c.Channel, s)
+	}
 }
 
 func handleCmd(c *Cmd, conn ircConnection) {
