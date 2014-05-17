@@ -62,7 +62,7 @@ func configureEvents() {
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
-// Run reads the config, connect to IRC and starts the bot
+// Run reads the Config, connect to IRC and starts the bot
 func Run(c *Config) {
 	config = c
 	connect()

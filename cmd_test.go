@@ -28,7 +28,7 @@ func TestMessageReceived(t *testing.T) {
 			conn = &ircConnectionMock{}
 
 			Convey("it sould send the message with the error to the channel", func() {
-				cmdError := errors.New("Error")
+				cmdError := errors.New("error")
 				RegisterCommand("cmd", "", "",
 					func(c *Cmd) (string, error) {
 						return "", cmdError
