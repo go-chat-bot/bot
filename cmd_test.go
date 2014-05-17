@@ -9,7 +9,7 @@ import (
 
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
-		commands = make(map[string]*CustomCommand)
+		commands = make(map[string]*customCommand)
 		conn := &ircConnectionMock{}
 
 		Convey("When the command is not registered", func() {
@@ -29,10 +29,10 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("it sould send the message with the error to the channel", func() {
 				cmdError := errors.New("Error")
-				RegisterCommand(&CustomCommand{
-					Cmd:     "cmd",
-					CmdFunc: func(c *Cmd) (string, error) { return "", cmdError },
-				})
+				RegisterCommand("cmd", "", "",
+					func(c *Cmd) (string, error) {
+						return "", cmdError
+					})
 
 				messageReceived("#go-bot", "!cmd", "user", conn)
 
@@ -45,18 +45,16 @@ func TestMessageReceived(t *testing.T) {
 		Convey("When the command is valid and registered", func() {
 			conn = &ircConnectionMock{}
 
-			commands = make(map[string]*CustomCommand)
+			commands = make(map[string]*customCommand)
 			expectedMsg := "msg"
-			cmd := &CustomCommand{
-				Cmd: "cmd",
-				CmdFunc: func(c *Cmd) (string, error) {
-					return expectedMsg, nil
-				},
-				Description: "Description",
-				Usage:       "Usage",
-			}
+			cmd := "cmd"
+			cmdDescription := "Command description"
+			cmdExampleArgs := "arg1 arg2"
 
-			RegisterCommand(cmd)
+			RegisterCommand(cmd, cmdDescription, cmdExampleArgs,
+				func(c *Cmd) (string, error) {
+					return expectedMsg, nil
+				})
 
 			Convey("If it is called in the channel, reply on the channel", func() {
 				messageReceived("#go-bot", "!cmd", "user", conn)
@@ -90,8 +88,8 @@ func TestMessageReceived(t *testing.T) {
 
 					So(conn.Channel, ShouldEqual, "#go-bot")
 					So(conn.Messages, ShouldResemble, []string{
-						fmt.Sprintf(helpDescripton, cmd.Description),
-						fmt.Sprintf(helpUsage, CmdPrefix, cmd.Cmd, cmd.Usage),
+						fmt.Sprintf(helpDescripton, cmdDescription),
+						fmt.Sprintf(helpUsage, CmdPrefix, cmd, cmdExampleArgs),
 					})
 
 				})

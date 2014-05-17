@@ -11,9 +11,9 @@ func hello(command *bot.Cmd) (msg string, err error) {
 }
 
 func init() {
-	bot.RegisterCommand(&bot.CustomCommand{
-		Cmd:         "hello",
-		CmdFunc:     hello,
-		Description: "Sends a 'Hello' message to you on the channel.",
-	})
+	bot.RegisterCommand(
+		"hello",
+		"Sends a 'Hello' message to you on the channel.",
+		"",
+		hello)
 }

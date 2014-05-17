@@ -6,18 +6,18 @@ import (
 )
 
 const (
-	CmdPrefix = "!"
+	CmdPrefix = "!" // Prefix used to identify a command. This is identified as a command: !hello
 )
 
-// TODO
+// Config must contain the necessary data to connect to an IRC server
 type Config struct {
-	Server   string
-	Channels []string
-	User     string
-	Nick     string
-	Password string
-	UseTLS   bool
-	Debug    bool
+	Server   string   // IRC server:port. Ex: irc.freenode.org:7000
+	Channels []string // Channels to connect. Ex: []string{"#go-bot", "#channel mypassword"}
+	User     string   // The IRC username the bot will use
+	Nick     string   // The nick the bot will use
+	Password string   // Server password
+	UseTLS   bool     // Should connect using TLS?
+	Debug    bool     // This will log all IRC communication to standad output
 }
 
 type ircConnection interface {
@@ -62,6 +62,7 @@ func configureEvents() {
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
+// Run reads the config, connect to IRC and starts the bot
 func Run(c *Config) {
 	config = c
 	connect()

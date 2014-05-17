@@ -68,10 +68,9 @@ func duplicado(numero int, numeros []int) bool {
 }
 
 func init() {
-	bot.RegisterCommand(&bot.CustomCommand{
-		Cmd:         "megasena",
-		CmdFunc:     megasena,
-		Description: "Gera um jogo da megasena ou mostra os últimos números sorteados.",
-		Usage:       "gerar|resultado",
-	})
+	bot.RegisterCommand(
+		"megasena",
+		"Gera um jogo da megasena ou mostra os últimos números sorteados.",
+		"gerar|resultado",
+		megasena)
 }

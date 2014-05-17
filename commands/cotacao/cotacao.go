@@ -39,9 +39,9 @@ func cotacao(command *bot.Cmd) (msg string, err error) {
 }
 
 func init() {
-	bot.RegisterCommand(&bot.CustomCommand{
-		Cmd:         "cotacao",
-		CmdFunc:     cotacao,
-		Description: "Informa a cotação do Dólar e Euro.",
-	})
+	bot.RegisterCommand(
+		"cotacao",
+		"Informa a cotação do Dólar e Euro.",
+		"",
+		cotacao)
 }

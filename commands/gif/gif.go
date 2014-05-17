@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	URL = "http://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC&limit=50"
+	giphyURL = "http://api.giphy.com/v1/gifs/search?q=%s&api_key=dc6zaTOxFJmzC&limit=50"
 )
 
-type Giphy struct {
+type giphy struct {
 	Data []struct {
 		BitlyUrl string `json:"bitly_url"`
 		Images   struct {
@@ -81,14 +81,14 @@ func gif(command *bot.Cmd) (msg string, err error) {
 		return "http://gwenstephens.files.wordpress.com/2013/03/mullet-hairstyles-mullet.jpg", nil
 	}
 
-	data := &Giphy{}
-	err = web.GetJSON(fmt.Sprintf(URL, url.QueryEscape(command.FullArg)), data)
+	data := &giphy{}
+	err = web.GetJSON(fmt.Sprintf(giphyURL, url.QueryEscape(command.FullArg)), data)
 	if err != nil {
 		return "", err
 	}
 
 	if len(data.Data) == 0 {
-		return ":cry:", nil
+		return "No gifs found. try: !gif cat", nil
 	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -97,10 +97,9 @@ func gif(command *bot.Cmd) (msg string, err error) {
 }
 
 func init() {
-	bot.RegisterCommand(&bot.CustomCommand{
-		Cmd:         "gif",
-		CmdFunc:     gif,
-		Description: "Searchs and posts a random gif url from Giphy.",
-		Usage:       "hell yes",
-	})
+	bot.RegisterCommand(
+		"gif",
+		"Searchs and posts a random gif url from Giphy.",
+		"cat",
+		gif)
 }

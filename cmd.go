@@ -17,12 +17,11 @@ type Cmd struct {
 	Args    []string // Arguments as array
 }
 
-// TODO
-type CustomCommand struct {
+type customCommand struct {
 	Cmd         string
 	CmdFunc     func(cmd *Cmd) (string, error)
 	Description string
-	Usage       string
+	ExampleArgs string
 }
 
 type incomingMessage struct {
@@ -44,16 +43,22 @@ const (
 )
 
 var (
-	commands = make(map[string]*CustomCommand)
+	commands = make(map[string]*customCommand)
 )
 
-// RegisterCommand must be used to register a CustomCommand.
-// The commands must be registered in the Ini() func
-// The CustomCommand must have at least:
-// Cmd: The string which the user will use to execute the command
-// CmdFunc: The function which will be executed when the Cmd string is detected as a command
-func RegisterCommand(c *CustomCommand) {
-	commands[c.Cmd] = c
+// RegisterCommand adds a new command to the bot
+// The command(s) should be registered in the Ini() func of the package
+// command: String which the user will use to execute the command, example: reverse
+// decription: Description of the command to use in !help, example: Reverses a string
+// exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
+// cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value
+func RegisterCommand(command, description, exampleArgs string, cmdFunc func(cmd *Cmd) (string, error)) {
+	commands[command] = &customCommand{
+		Cmd:         command,
+		CmdFunc:     cmdFunc,
+		Description: description,
+		ExampleArgs: exampleArgs,
+	}
 }
 
 func isPrivateMsg(channel, currentNick string) bool {
@@ -122,11 +127,11 @@ func help(c *Cmd, channel, senderNick string, conn ircConnection) {
 	showHelp(cmd, command, conn)
 }
 
-func showHelp(c *Cmd, help *CustomCommand, conn ircConnection) {
+func showHelp(c *Cmd, help *customCommand, conn ircConnection) {
 	if help.Description != "" {
 		conn.Privmsg(c.Channel, fmt.Sprintf(helpDescripton, help.Description))
 	}
-	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.Usage))
+	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs))
 }
 
 func showAvailabeCommands(channel string, conn ircConnection) {

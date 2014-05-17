@@ -15,10 +15,8 @@ func reverse(command *bot.Cmd) (msg string, err error) {
 }
 
 func init() {
-	bot.RegisterCommand(&bot.CustomCommand{
-		Cmd:         "reverse",
-		CmdFunc:     reverse,
-		Description: "Reverses the whole string",
-		Usage:       "all your base are belong to us",
-	})
+	bot.RegisterCommand(
+		"reverse", "Reverses a string",
+		"string to be reversed",
+		reverse)
 }
