@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"errors"
 	"fmt"
 	"log"
 )
@@ -26,6 +25,13 @@ type CustomCommand struct {
 	Usage       string
 }
 
+type incomingMessage struct {
+	Channel        string
+	Text           string
+	SenderNick     string
+	BotCurrentNick string
+}
+
 const (
 	commandNotAvailable   = "Command %v not available."
 	noCommandsAvailable   = "No commands available."
@@ -45,23 +51,46 @@ func RegisterCommand(c *CustomCommand) {
 	commands[c.Cmd] = c
 }
 
-func handleCmd(c *Cmd, conn ircConnection) error {
+func isPrivateMsg(channel, currentNick string) bool {
+	return channel == currentNick
+}
+
+func messageReceived(channel, text, senderNick string, conn ircConnection) {
+	if isPrivateMsg(channel, conn.GetNick()) {
+		channel = senderNick // should reply in private
+	}
+
+	command := parse(text, channel, senderNick)
+	if command.Command == "help" {
+		command = parse(CmdPrefix+command.FullArg, channel, senderNick)
+		help(command, conn)
+	} else if command.IsCommand {
+		handleCmd(command, conn)
+	} else {
+		// It's not a command
+		// TODO: Test for passive commands (parse url, etc) ?
+	}
+}
+
+func handleCmd(c *Cmd, conn ircConnection) {
 	customCmd := commands[c.Command]
 
 	if customCmd == nil {
 		log.Printf("Command not found %v", c.Command)
-		return errors.New(fmt.Sprintf(commandNotAvailable, c.Command))
+		return
 	}
 
-	log.Printf("HandleCmd %v args %v", c.Command, c.FullArg)
-	resultStr, err := customCmd.CmdFunc(c)
+	log.Printf("HandleCmd %v %v", c.Command, c.FullArg)
+
+	result, err := customCmd.CmdFunc(c)
+
 	if err != nil {
-		conn.Privmsg(c.Channel, fmt.Sprintf(errorExecutingCommand, c.Command, err.Error()))
-		return err
+		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
+		log.Printf(errorMsg)
+		conn.Privmsg(c.Channel, errorMsg)
 	}
 
-	if resultStr != "" {
-		conn.Privmsg(c.Channel, resultStr)
+	if result != "" {
+		conn.Privmsg(c.Channel, result)
 	}
-	return nil
 }

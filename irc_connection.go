@@ -6,4 +6,5 @@ type ircConnection interface {
 	Join(channel string)
 	Part(channel string)
 	Quit()
+	GetNick() string
 }

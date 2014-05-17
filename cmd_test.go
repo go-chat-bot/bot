@@ -7,70 +7,83 @@ import (
 	"testing"
 )
 
-func TestCmd(t *testing.T) {
-	Convey("Given a command", t, func() {
+func TestMessageReceived(t *testing.T) {
+	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*CustomCommand)
 		conn := &ircConnectionMock{}
 
 		Convey("When the command is not found", func() {
-			cmd1 := &Cmd{
-				Command: "cmd",
-			}
+			cmdFuncCalled := false
+			RegisterCommand(&CustomCommand{
+				Cmd: "cmd",
+				CmdFunc: func(c *Cmd) (string, error) {
+					cmdFuncCalled = true
+					return "", nil
+				},
+			})
 
-			err := handleCmd(cmd1, nil)
+			messageReceived("#go-bot", "!not_a_cmd", "user", conn)
 
-			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, fmt.Sprintf(commandNotAvailable, "cmd"))
+			So(cmdFuncCalled, ShouldBeFalse)
 		})
 
-		Convey("When the command exists", func() {
-			cmd := &Cmd{
-				Command: "cmd",
-				Channel: "#go-bot",
+		Convey("The command can return an error", func() {
+			cmdError := errors.New("Error")
+			RegisterCommand(&CustomCommand{
+				Cmd:     "cmd",
+				CmdFunc: func(c *Cmd) (string, error) { return "", cmdError },
+			})
+
+			msg := ""
+			channel := ""
+			conn.PrivMsgFunc = func(c string, m string) {
+				channel = c
+				msg = m
 			}
 
-			Convey("it can return an error", func() {
-				cmdError := errors.New("Error")
-				RegisterCommand(&CustomCommand{
-					Cmd:     cmd.Command,
-					CmdFunc: func(c *Cmd) (string, error) { return "", cmdError },
-				})
+			messageReceived("#go-bot", "!cmd", "user", conn)
 
-				msg := ""
-				channel := ""
-				conn.PrivMsgFunc = func(c string, m string) {
-					channel = c
-					msg = m
-				}
+			So(channel, ShouldEqual, "#go-bot")
+			So(msg, ShouldEqual, fmt.Sprintf(errorExecutingCommand, "cmd", cmdError.Error()))
+		})
 
-				err := handleCmd(cmd, conn)
-
-				So(err, ShouldEqual, cmdError)
-				So(channel, ShouldEqual, cmd.Channel)
-				So(msg, ShouldEqual, fmt.Sprintf(errorExecutingCommand, cmd.Command, cmdError.Error()))
+		Convey("The command can return a string", func() {
+			expectedMsg := "msg"
+			RegisterCommand(&CustomCommand{
+				Cmd:     "cmd",
+				CmdFunc: func(c *Cmd) (string, error) { return expectedMsg, nil },
 			})
 
-			Convey("it can return a string", func() {
-				expectedMsg := "msg"
-				RegisterCommand(&CustomCommand{
-					Cmd:     cmd.Command,
-					CmdFunc: func(c *Cmd) (string, error) { return expectedMsg, nil },
-				})
+			msg := ""
+			channel := ""
+			conn.PrivMsgFunc = func(c string, m string) {
+				channel = c
+				msg = m
+			}
 
-				msg := ""
-				channel := ""
-				conn.PrivMsgFunc = func(c string, m string) {
-					channel = c
-					msg = m
-				}
+			messageReceived("#go-bot", "!cmd", "user", conn)
 
-				err := handleCmd(cmd, conn)
+			So(channel, ShouldEqual, "#go-bot")
+			So(msg, ShouldEqual, expectedMsg)
+		})
 
-				So(err, ShouldBeNil)
-				So(channel, ShouldEqual, cmd.Channel)
-				So(msg, ShouldEqual, expectedMsg)
+		Convey("The command can be a private message", func() {
+			RegisterCommand(&CustomCommand{
+				Cmd: "cmd",
+				CmdFunc: func(c *Cmd) (string, error) {
+					return "hi", nil
+				},
 			})
 
+			channel := ""
+			conn.PrivMsgFunc = func(c string, m string) {
+				channel = c
+			}
+
+			conn.Nick = "go-bot"
+			messageReceived("go-bot", "!cmd", "sender-nick", conn)
+
+			So(channel, ShouldEqual, "sender-nick")
 		})
 
 	})

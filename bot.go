@@ -25,27 +25,8 @@ var (
 	config *Config
 )
 
-func isPrivateMsg(channel string) bool {
-	return channel == config.Nick
-}
-
 func onPRIVMSG(e *irc.Event) {
-	channel := e.Arguments[0]
-
-	if isPrivateMsg(channel) {
-		channel = e.Nick //e.Nick is who sent the pvt message
-	}
-
-	command := parse(e.Message(), channel, e.Nick)
-	if command.Command == "help" {
-		command = parse(CmdPrefix+command.FullArg, channel, e.Nick)
-		help(command, irccon)
-	} else if command.IsCommand {
-		handleCmd(command, irccon)
-	} else {
-		// It's not a command
-		// TODO: Test for passive commands (parse url, etc) ?
-	}
+	messageReceived(e.Arguments[0], e.Message(), e.Nick, irccon)
 }
 
 func connect() {
