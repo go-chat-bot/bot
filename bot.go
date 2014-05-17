@@ -1,5 +1,7 @@
 package bot
 
+// Package bot provides a simple to use IRC bot
+
 import (
 	"github.com/thoj/go-ircevent"
 	"log"
@@ -64,7 +66,8 @@ func configureEvents() {
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
-// Run reads the Config, connect to IRC and starts the bot
+// Run reads the Config, connect to the specified IRC server and starts the bot.
+// The bot will automatically join all the channels specified in the configuration
 func Run(c *Config) {
 	config = c
 	connect()

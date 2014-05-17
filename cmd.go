@@ -46,8 +46,8 @@ var (
 	commands = make(map[string]*customCommand)
 )
 
-// RegisterCommand adds a new command to the bot
-// The command(s) should be registered in the Ini() func of the package
+// RegisterCommand adds a new command to the bot.
+// The command(s) should be registered in the Ini() func of your package
 // command: String which the user will use to execute the command, example: reverse
 // decription: Description of the command to use in !help, example: Reverses a string
 // exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
