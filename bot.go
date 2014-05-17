@@ -6,7 +6,9 @@ import (
 )
 
 const (
-	CmdPrefix = "!" // Prefix used to identify a command. This is identified as a command: !hello
+	// CmdPrefix is the prefix used to identify a command.
+	// !hello whould be identified as a command
+	CmdPrefix = "!"
 )
 
 // Config must contain the necessary data to connect to an IRC server
