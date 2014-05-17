@@ -13,7 +13,7 @@ const (
 	minDomainLength = 3
 )
 
-func canBeURLWithouProtocol(text string) bool {
+func canBeURLWithoutProtocol(text string) bool {
 	return len(text) > minDomainLength &&
 		!strings.HasPrefix(text, "http") &&
 		strings.Contains(text, ".")
@@ -22,7 +22,7 @@ func canBeURLWithouProtocol(text string) bool {
 func extractURL(text string) string {
 	extractedURL := ""
 	for _, value := range strings.Split(text, " ") {
-		if canBeURLWithouProtocol(value) {
+		if canBeURLWithoutProtocol(value) {
 			value = "http://" + value
 		}
 
