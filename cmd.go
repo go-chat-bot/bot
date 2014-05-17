@@ -8,14 +8,13 @@ import (
 
 // Cmd holds the parsed user's input for easier handling of commands
 type Cmd struct {
-	Raw       string   // Raw is full string passed to the command
-	Channel   string   // Channel where the command was called
-	Nick      string   // User who sent the message
-	IsCommand bool     // Confirmation if this is a command or just a regular message
-	Message   string   // Full string without the prefix
-	Command   string   // Command is the first argument passed to the bot
-	FullArg   string   // Full argument as a single string
-	Args      []string // Arguments as array
+	Raw     string   // Raw is full string passed to the command
+	Channel string   // Channel where the command was called
+	Nick    string   // User who sent the message
+	Message string   // Full string without the prefix
+	Command string   // Command is the first argument passed to the bot
+	FullArg string   // Full argument as a single string
+	Args    []string // Arguments as array
 }
 
 // TODO
@@ -41,6 +40,7 @@ const (
 	helpUsage             = "Usage: %s%s %s"
 	availableCommands     = "Available commands: %v"
 	helpAboutCommand      = "Type: '%shelp <command>' to see details about a specific command."
+	helpCommand           = "help"
 )
 
 var (
@@ -66,28 +66,34 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 	}
 
 	command := parse(text, channel, senderNick)
-	if command.Command == "help" {
-		command = parse(CmdPrefix+command.FullArg, channel, senderNick)
-		help(command, conn)
-	} else if command.IsCommand {
-		handleCmd(command, conn)
-	} else {
-		// It's not a command
-		// TODO: Test for passive commands (parse url, etc) ?
+	if command == nil {
+		handleMessage(text, channel)
+		return
 	}
+
+	if command.Command == helpCommand {
+		help(command, channel, senderNick, conn)
+	} else {
+		handleCmd(command, conn)
+	}
+
+}
+
+func handleMessage(text, channel string) {
+	//TODO handle passive commands, lik
 }
 
 func handleCmd(c *Cmd, conn ircConnection) {
-	customCmd := commands[c.Command]
+	cmd := commands[c.Command]
 
-	if customCmd == nil {
+	if cmd == nil {
 		log.Printf("Command not found %v", c.Command)
 		return
 	}
 
 	log.Printf("HandleCmd %v %v", c.Command, c.FullArg)
 
-	result, err := customCmd.CmdFunc(c)
+	result, err := cmd.CmdFunc(c)
 
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
@@ -100,13 +106,20 @@ func handleCmd(c *Cmd, conn ircConnection) {
 	}
 }
 
-func help(c *Cmd, conn ircConnection) {
-	command := commands[c.Command]
+func help(c *Cmd, channel, senderNick string, conn ircConnection) {
+	cmd := parse(CmdPrefix+c.FullArg, channel, senderNick)
+	if cmd == nil {
+		showAvailabeCommands(channel, conn)
+		return
+	}
+
+	command := commands[cmd.Command]
 	if command == nil {
 		showAvailabeCommands(c.Channel, conn)
-	} else {
-		showHelp(c, command, conn)
+		return
 	}
+
+	showHelp(cmd, command, conn)
 }
 
 func showHelp(c *Cmd, help *CustomCommand, conn ircConnection) {

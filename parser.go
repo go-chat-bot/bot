@@ -8,24 +8,21 @@ import (
 func parse(s string, channel string, nick string) *Cmd {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
-	c.IsCommand = strings.HasPrefix(s, CmdPrefix)
+
+	if !strings.HasPrefix(s, CmdPrefix) {
+		return nil
+	}
+
 	c.Channel = strings.TrimSpace(channel)
 	c.Nick = strings.TrimSpace(nick)
-
-	// we can stop here if no prefix is detected
-	if !c.IsCommand {
-		c.Message = s
-		return c
-	}
 
 	// Trim the prefix and extra spaces
 	c.Message = strings.TrimPrefix(s, CmdPrefix)
 	c.Message = strings.TrimSpace(c.Message)
 
 	// check if we have the command and not only the prefix
-	c.IsCommand = c.Message != ""
-	if !c.IsCommand {
-		return c
+	if c.Message == "" {
+		return nil
 	}
 
 	// get the command

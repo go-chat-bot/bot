@@ -20,6 +20,11 @@ type Config struct {
 	Debug    bool
 }
 
+type ircConnection interface {
+	Privmsg(target, message string)
+	GetNick() string
+}
+
 var (
 	irccon *irc.Connection
 	config *Config

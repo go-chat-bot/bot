@@ -22,31 +22,27 @@ func TestPaser(t *testing.T) {
 		Convey("When the message is empty", func() {
 			cmd := parse("", DefaultChannel, DefaultNick)
 
-			So(cmd.Command, ShouldEqual, "")
-			So(cmd.IsCommand, ShouldBeFalse)
+			So(cmd, ShouldBeNil)
 		})
 
 		Convey("When the message doesn't have the prefix", func() {
 			Message := "regular message"
 			cmd := parse(Message, DefaultChannel, DefaultNick)
 
-			So(cmd.IsCommand, ShouldBeFalse)
-			So(cmd.Message, ShouldEqual, Message)
-			So(cmd.Channel, ShouldEqual, DefaultChannel)
+			So(cmd, ShouldBeNil)
 		})
 
 		Convey("When the message is only the prefix", func() {
 			cmd := parse(CmdPrefix, DefaultChannel, DefaultNick)
 
-			So(cmd.IsCommand, ShouldBeFalse)
-			So(cmd.Channel, ShouldEqual, DefaultChannel)
+			So(cmd, ShouldBeNil)
 		})
 
 		Convey("When the message is valid command", func() {
 			msg := fmt.Sprintf("%v%v", CmdPrefix, DefaultCommand)
 			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd, ShouldNotBeNil)
 			So(cmd.Command, ShouldEqual, DefaultCommand)
 			So(cmd.Channel, ShouldEqual, DefaultChannel)
 		})
@@ -55,7 +51,7 @@ func TestPaser(t *testing.T) {
 			msg := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultFullArg)
 			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd, ShouldNotBeNil)
 			So(cmd.Command, ShouldEqual, DefaultCommand)
 			So(cmd.Channel, ShouldEqual, DefaultChannel)
 			So(cmd.Args, ShouldResemble, DefaultArgs)
@@ -66,7 +62,7 @@ func TestPaser(t *testing.T) {
 			msg := fmt.Sprintf(" %v %v %v  %v  ", CmdPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
 			cmd := parse(msg, DefaultChannel, DefaultNick)
 
-			So(cmd.IsCommand, ShouldBeTrue)
+			So(cmd, ShouldNotBeNil)
 			So(cmd.Command, ShouldEqual, DefaultCommand)
 			So(cmd.Channel, ShouldEqual, DefaultChannel)
 			So(cmd.Args, ShouldResemble, DefaultArgs)

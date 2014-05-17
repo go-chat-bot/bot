@@ -74,6 +74,16 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("When the command is help", func() {
 
+				Convey("Display the available commands in the channel", func() {
+					messageReceived("#go-bot", "!help", "user", conn)
+
+					So(conn.Channel, ShouldEqual, "#go-bot")
+					So(conn.Messages, ShouldResemble, []string{
+						fmt.Sprintf(helpAboutCommand, CmdPrefix),
+						fmt.Sprintf(availableCommands, "cmd"),
+					})
+				})
+
 				Convey("If the command exists send a message to the channel", func() {
 
 					messageReceived("#go-bot", "!help cmd", "user", conn)
