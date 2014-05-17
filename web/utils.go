@@ -7,6 +7,7 @@ import (
 )
 
 type GetBodyFunc func(string) ([]byte, error)
+type GetJSONFunc func(string, interface{}) error
 
 func GetBody(url string) ([]byte, error) {
 	res, err := http.Get(url)
@@ -23,9 +24,12 @@ func GetJSON(url string, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(body, v)
-	if err != nil {
-		return err
+	return json.Unmarshal(body, v)
+}
+
+func GetJSONFromString(text string, setURL func(string)) func(string, interface{}) error {
+	return func(url string, v interface{}) error {
+		setURL(url)
+		return json.Unmarshal([]byte(text), v)
 	}
-	return nil
 }
