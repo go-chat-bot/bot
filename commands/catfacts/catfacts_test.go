@@ -46,6 +46,22 @@ func TestCatFacts(t *testing.T) {
 			So(url, ShouldEqual, catFactsURL)
 		})
 
+		Convey("When the text does not end with the world or puntuation", func() {
+
+			s, err := getFacts("My name is Catzarina", web.GetJSONFromString(result, setURL))
+
+			So(err, ShouldBeNil)
+			So(s, ShouldEqual, "")
+		})
+
+		Convey("When the text has cat in the middle of a word", func() {
+
+			s, err := getFacts("My name is aCats", web.GetJSONFromString(result, setURL))
+
+			So(err, ShouldBeNil)
+			So(s, ShouldEqual, "")
+		})
+
 		Convey("when the text have gato in the middle of the sentence", func() {
 
 			s, err := getFacts("Eu tenho 2 gatos gordos.", web.GetJSONFromString(result, setURL))

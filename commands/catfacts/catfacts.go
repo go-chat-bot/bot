@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pattern     = "(?i)(%s)(s|z|\\?|\\!|\\.|\\ )"
+	pattern     = "(?i)(\\s*?)(cat|gato|miau|meow|garfield|lolcat)(s|z)?(?![^ ?.!])"
 	catFactsURL = "http://catfacts-api.appspot.com/api/facts?number=1"
 	msgPrefix   = "I love cats! Here's a fact: %s"
 )
@@ -19,23 +19,14 @@ type facts struct {
 }
 
 var (
-	catWords = []string{
-		"cat",
-		"gato",
-		"miau",
-		"meow",
-		"garfield",
-		"lolcat",
-	}
+	re = regexp.MustCompile(pattern)
 )
 
 func getFacts(text string, get web.GetJSONFunc) (string, error) {
-	for _, s := range catWords {
-		match, _ := regexp.MatchString(fmt.Sprintf(pattern, s), text)
-		if match {
-			return getFact(get)
-		}
+	if re.MatchString(text) {
+		return getFact(get)
 	}
+
 	return "", nil
 }
 
