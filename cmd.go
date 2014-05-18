@@ -17,7 +17,7 @@ type Cmd struct {
 	Args    []string // Arguments as array
 }
 
-// Passive Cmd have the basice information for passive commands to work on
+// PassiveCmd holds the information which will be passed to passive commands when receiving a message on the channel
 type PassiveCmd struct {
 	Raw     string // Raw message sent to the channel
 	Channel string // Channel which the message was sent to
