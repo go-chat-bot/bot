@@ -1,6 +1,5 @@
-package bot
-
 // Package bot provides a simple to use IRC bot
+package bot
 
 import (
 	"github.com/thoj/go-ircevent"

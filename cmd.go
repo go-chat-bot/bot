@@ -17,10 +17,11 @@ type Cmd struct {
 	Args    []string // Arguments as array
 }
 
+// Passive Cmd have the basice information for passive commands to work on
 type PassiveCmd struct {
-	Raw     string
-	Channel string
-	Nick    string
+	Raw     string // Raw message sent to the channel
+	Channel string // Channel which the message was sent to
+	Nick    string // Nick of the user which sent the message
 }
 
 type customCommand struct {
@@ -70,8 +71,13 @@ func RegisterCommand(command, description, exampleArgs string, cmdFunc func(cmd 
 	}
 }
 
-func RegisterPassiveCommand(command string, CmdFunc func(cmd *PassiveCmd) (string, error)) {
-	passiveCommands[command] = CmdFunc
+// RegisterPassiveCommand adds a new passive command to the bot.
+// The command(s) should be registered in the Ini() func of your package
+// Passive commands receives all the text posted to a channel without any parsing
+// command: String used to identify the command, for internal use only (ex: logs)
+// cmdFunc: Function which will be executed. It will received the raw message, channel and nick
+func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (string, error)) {
+	passiveCommands[command] = cmdFunc
 }
 
 func isPrivateMsg(channel, currentNick string) bool {
