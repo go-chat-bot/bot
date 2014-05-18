@@ -10,6 +10,7 @@ import (
 const (
 	pattern     = "(?i)(%s)(s|z|\\?|\\!|\\.|\\ )"
 	catFactsURL = "http://catfacts-api.appspot.com/api/facts?number=1"
+	msgPrefix   = "I love cats! Here's a fact: %s"
 )
 
 type facts struct {
@@ -49,7 +50,7 @@ func getFact(get web.GetJSONFunc) (string, error) {
 		return "", nil
 	}
 
-	return data.Facts[0], nil
+	return fmt.Sprintf(msgPrefix, data.Facts[0]), nil
 }
 
 func catfacts(command *bot.PassiveCmd) (string, error) {

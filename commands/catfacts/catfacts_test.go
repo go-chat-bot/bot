@@ -1,6 +1,7 @@
 package catfacts
 
 import (
+	"fmt"
 	"github.com/fabioxgn/go-bot/web"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
@@ -41,7 +42,7 @@ func TestCatFacts(t *testing.T) {
 			s, err := getFacts("I love Catz!", web.GetJSONFromString(result, setURL))
 
 			So(err, ShouldBeNil)
-			So(s, ShouldEqual, "Catz FTW!")
+			So(s, ShouldEqual, fmt.Sprintf(msgPrefix, "Catz FTW!"))
 			So(url, ShouldEqual, catFactsURL)
 		})
 
@@ -50,7 +51,8 @@ func TestCatFacts(t *testing.T) {
 			s, err := getFacts("Eu tenho 2 gatos gordos.", web.GetJSONFromString(result, setURL))
 
 			So(err, ShouldBeNil)
-			So(s, ShouldEqual, "Catz FTW!")
+			So(s, ShouldEqual, fmt.Sprintf(msgPrefix, "Catz FTW!"))
+			So(url, ShouldEqual, catFactsURL)
 		})
 
 	})
