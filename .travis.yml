@@ -1,6 +1,6 @@
 language: go
 go:
-  - tip
+  - 1.2
 install:
   - go get github.com/thoj/go-ircevent
   - go get github.com/smartystreets/goconvey/convey
