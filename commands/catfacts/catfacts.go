@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pattern     = "(?i)(%s)(s|z|\\?|\\!|\\.|\\ )"
+	pattern     = "(?i)\\b(%s)[s|z]{0,1}\\b"
 	catFactsURL = "http://catfacts-api.appspot.com/api/facts?number=1"
 	msgPrefix   = "I love cats! Here's a fact: %s"
 )

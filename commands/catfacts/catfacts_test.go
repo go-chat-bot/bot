@@ -55,5 +55,21 @@ func TestCatFacts(t *testing.T) {
 			So(url, ShouldEqual, catFactsURL)
 		})
 
+		Convey("when the text have 'cat' in the middle of a word (Catzarina)", func() {
+
+			s, err := getFacts("Catzarina.", web.GetJSONFromString(result, setURL))
+
+			So(err, ShouldBeNil)
+			So(s, ShouldEqual, "")
+		})
+
+		Convey("when the text have 'cat' in the middle of a word (acat)", func() {
+
+			s, err := getFacts("acat.", web.GetJSONFromString(result, setURL))
+
+			So(err, ShouldBeNil)
+			So(s, ShouldEqual, "")
+		})
+
 	})
 }
