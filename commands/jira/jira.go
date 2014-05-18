@@ -17,19 +17,18 @@ var (
 )
 
 func getIssue(text string) string {
-	match, _ := regexp.MatchString(pattern, text)
-	if match {
+	if match, _ := regexp.MatchString(pattern, text); match {
 		return regexp.MustCompile(pattern).FindString(text)
 	}
-	return ``
+	return ""
 }
 
 func getIssueURL(text string) (string, error) {
 	issue := getIssue(text)
-	if issue != `` {
+	if issue != "" {
 		return (url + strings.ToUpper(issue)), nil
 	}
-	return ``, nil
+	return "", nil
 }
 
 func jira(command *bot.PassiveCmd) (string, error) {
