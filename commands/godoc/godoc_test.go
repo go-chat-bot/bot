@@ -31,7 +31,7 @@ func TestGoDoc(t *testing.T) {
 			s, err := searchGodoc("non existant package", web.GetJSONFromString(emptyResults, setURL))
 
 			So(err, ShouldBeNil)
-			So(s, ShouldEqual, "")
+			So(s, ShouldEqual, noPackagesFound)
 			So(url, ShouldEqual, fmt.Sprintf(godocSearchURL, "non existant package"))
 		})
 
