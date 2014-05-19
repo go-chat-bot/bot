@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	godocSiteURL    = "http://godoc.org"
 	godocSearchURL  = "http://api.godoc.org/search?q=%s"
 	noPackagesFound = "No packages found."
 )
@@ -33,7 +34,7 @@ func searchGodoc(text string, get web.GetJSONFunc) (string, error) {
 		return noPackagesFound, nil
 	}
 
-	return fmt.Sprintf("%s %s", data.Results[0].Path, data.Results[0].Synopsis), nil
+	return fmt.Sprintf("%s %s/%s", data.Results[0].Synopsis, godocSiteURL, data.Results[0].Path), nil
 
 }
 

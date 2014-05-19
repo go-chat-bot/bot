@@ -39,7 +39,7 @@ func TestGoDoc(t *testing.T) {
 			s, err := searchGodoc("go-bot", web.GetJSONFromString(results, setURL))
 
 			So(err, ShouldBeNil)
-			So(s, ShouldEqual, "github.com/fabioxgn/go-bot IRC bot written in go")
+			So(s, ShouldEqual, "IRC bot written in go http://godoc.org/github.com/fabioxgn/go-bot")
 			So(url, ShouldEqual, fmt.Sprintf(godocSearchURL, "go-bot"))
 		})
 
