@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const (
