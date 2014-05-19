@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -95,6 +96,7 @@ func gif(command *bot.Cmd) (msg string, err error) {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	bot.RegisterCommand(
 		"gif",
 		"Searchs and posts a random gif url from Giphy.",

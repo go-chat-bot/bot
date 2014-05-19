@@ -4,6 +4,7 @@ import (
 	"github.com/fabioxgn/go-bot"
 	"math/rand"
 	"regexp"
+	"time"
 )
 
 const (
@@ -92,6 +93,7 @@ func chucknorris(command *bot.PassiveCmd) (string, error) {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	bot.RegisterPassiveCommand(
 		"chucknorris",
 		chucknorris)
