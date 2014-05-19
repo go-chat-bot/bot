@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pattern = "([A-z]{3}-[0-9]+)"
+	pattern = "\\b[A-z]{3}-[0-9]{3,}\\b"
 	env     = "JIRA_ISSUES_URL"
 )
 
