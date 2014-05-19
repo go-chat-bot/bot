@@ -11,6 +11,7 @@ const (
 )
 
 var (
+	re         = regexp.MustCompile(pattern)
 	chuckFacts = []string{
 		"All arrays Chuck Norris declares are of infinite size, because Chuck Norris knows no bounds.",
 		"Chuck Norris doesn't have disk latency because the hard drive knows to hurry the hell up.",
@@ -80,7 +81,7 @@ var (
 )
 
 func getChuckNorrisFact(text string) (string, error) {
-	if match, _ := regexp.MatchString(pattern, text); match {
+	if re.MatchString(text) {
 		return chuckFacts[rand.Intn(len(chuckFacts))], nil
 	}
 	return "", nil
