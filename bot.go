@@ -4,6 +4,8 @@ package bot
 import (
 	"github.com/thoj/go-ircevent"
 	"log"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -72,4 +74,8 @@ func Run(c *Config) {
 	connect()
 	configureEvents()
 	irccon.Loop()
+}
+
+func Init() {
+	rand.Seed(time.Now().UnixNano())
 }

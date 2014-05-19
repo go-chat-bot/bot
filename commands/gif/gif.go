@@ -91,8 +91,7 @@ func gif(command *bot.Cmd) (msg string, err error) {
 		return "No gifs found. try: !gif cat", nil
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	index := r.Intn(len(data.Data))
+	index := rand.Intn(len(data.Data))
 	return fmt.Sprintf(data.Data[index].Images.FixedHeight.Url), nil
 }
 
