@@ -57,7 +57,7 @@ func onWelcome(e *irc.Event) {
 }
 
 func onEndOfNames(e *irc.Event) {
-	log.Println("onEndOfNames: %v", e.Arguments)
+	log.Printf("onEndOfNames: %v", e.Arguments)
 	irccon.Privmsg(e.Arguments[1], "Hi there.\n")
 }
 

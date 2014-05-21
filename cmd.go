@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 	"sync"
-	// "time"
 )
 
 // Cmd holds the parsed user's input for easier handling of commands
