@@ -76,6 +76,6 @@ func Run(c *Config) {
 	irccon.Loop()
 }
 
-func Init() {
+func init() {
 	rand.Seed(time.Now().UnixNano())
 }
