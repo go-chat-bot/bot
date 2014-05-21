@@ -13,6 +13,10 @@ const (
 	minDomainLength = 3
 )
 
+var (
+	re = regexp.MustCompile("<title>(.*?)\\n*?<\\/title>")
+)
+
 func canBeURLWithoutProtocol(text string) bool {
 	return len(text) > minDomainLength &&
 		!strings.HasPrefix(text, "http") &&
@@ -45,18 +49,19 @@ func getTitle(text string, get web.GetBodyFunc) (string, error) {
 		return "", nil
 	}
 
-	er := regexp.MustCompile("<title>(.*?)<\\/title>")
 	body, err := get(URL)
 	if err != nil {
 		return "", err
 	}
 
-	title := er.FindString(string(body))
+	title := re.FindString(string(body))
 	if title == "" {
 		return "", nil
 	}
 
+	title = strings.Replace(title, "\n", "", -1)
 	title = title[strings.Index(title, ">")+1 : strings.LastIndex(title, "<")]
+
 	return html.UnescapeString(title), nil
 }
 

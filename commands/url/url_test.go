@@ -55,6 +55,16 @@ func TestURL(t *testing.T) {
 			So(title, ShouldEqual, "Google")
 		})
 
+		Convey("If title contains a new line", func() {
+			getExecuted = false
+			getResult = []byte("<title>Google\n</title>")
+			title, err := getTitle("https://google.com", get)
+
+			So(getExecuted, ShouldBeTrue)
+			So(err, ShouldBeNil)
+			So(title, ShouldEqual, "Google")
+		})
+
 		Convey("if the url doesn't have a protocol", func() {
 			getExecuted = false
 			getResult = []byte("<title>Google</title>")
