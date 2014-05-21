@@ -145,7 +145,9 @@ func TestMessageReceived(t *testing.T) {
 				messageReceived("#go-bot", "test", "user", conn)
 
 				So(conn.Channel, ShouldEqual, "#go-bot")
-				So(conn.Messages, ShouldResemble, []string{"test", "pong"})
+				So(len(conn.Messages), ShouldEqual, 2)
+				So(conn.Messages, ShouldContain, "test")
+				So(conn.Messages, ShouldContain, "pong")
 			})
 
 			Convey("If it is a private message, reply to the user", func() {
@@ -153,7 +155,9 @@ func TestMessageReceived(t *testing.T) {
 				messageReceived("go-bot", "test", "sender-nick", conn)
 
 				So(conn.Channel, ShouldEqual, "sender-nick")
-				So(conn.Messages, ShouldResemble, []string{"test", "pong"})
+				So(len(conn.Messages), ShouldEqual, 2)
+				So(conn.Messages, ShouldContain, "test")
+				So(conn.Messages, ShouldContain, "pong")
 			})
 		})
 	})
