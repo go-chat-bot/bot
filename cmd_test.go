@@ -7,6 +7,21 @@ import (
 	"testing"
 )
 
+type ircConnectionMock struct {
+	Channel  string
+	Messages []string
+	Nick     string
+}
+
+func (m *ircConnectionMock) Privmsg(target, message string) {
+	m.Channel = target
+	m.Messages = append(m.Messages, message)
+}
+
+func (m ircConnectionMock) GetNick() string {
+	return m.Nick
+}
+
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)
