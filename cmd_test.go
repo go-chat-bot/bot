@@ -121,6 +121,41 @@ func TestMessageReceived(t *testing.T) {
 			})
 
 		})
+
+		Convey("When the command is passive", func() {
+			conn = &ircConnectionMock{}
+
+			passiveCommands = make(map[string]passiveCmdFunc)
+
+			echo := func(cmd *PassiveCmd) (string, error) {
+				return cmd.Raw, nil
+			}
+			ping := func(cmd *PassiveCmd) (string, error) {
+				return "pong", nil
+			}
+			errored := func(cmd *PassiveCmd) (string, error) {
+				return "", errors.New("error")
+			}
+
+			RegisterPassiveCommand("echo", echo)
+			RegisterPassiveCommand("ping", ping)
+			RegisterPassiveCommand("errored", errored)
+
+			Convey("If it is called in the channel, reply on the channel", func() {
+				messageReceived("#go-bot", "test", "user", conn)
+
+				So(conn.Channel, ShouldEqual, "#go-bot")
+				So(conn.Messages, ShouldResemble, []string{"test", "pong"})
+			})
+
+			Convey("If it is a private message, reply to the user", func() {
+				conn.Nick = "go-bot"
+				messageReceived("go-bot", "test", "sender-nick", conn)
+
+				So(conn.Channel, ShouldEqual, "sender-nick")
+				So(conn.Messages, ShouldResemble, []string{"test", "pong"})
+			})
+		})
 	})
 
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
+	// "time"
 )
 
 // Cmd holds the parsed user's input for easier handling of commands
@@ -91,11 +93,11 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 
 	command := parse(text, channel, senderNick)
 	if command == nil {
-		handleMessage(&PassiveCmd{
+		executePassiveCommands(&PassiveCmd{
 			Raw:     text,
 			Channel: channel,
 			Nick:    senderNick,
-		})
+		}, conn)
 		return
 	}
 
@@ -107,15 +109,29 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 
 }
 
-func handleMessage(c *PassiveCmd) {
+func executePassiveCommands(cmd *PassiveCmd, conn ircConnection) {
+	var wg sync.WaitGroup
+
 	for k, v := range passiveCommands {
-		log.Println("Executando: ", k)
-		s, err := v(c)
-		if err != nil {
-			log.Println(err)
-		}
-		irccon.Privmsg(c.Channel, s)
+		cmdName := k
+		cmdFunc := v
+
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			log.Println("Executing passive command: ", cmdName)
+			result, err := cmdFunc(cmd)
+			if err != nil {
+				log.Println(err)
+			} else {
+				conn.Privmsg(cmd.Channel, result)
+			}
+		}()
 	}
+
+	wg.Wait()
 }
 
 func handleCmd(c *Cmd, conn ircConnection) {
