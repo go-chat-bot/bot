@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	re = regexp.MustCompile("<title>(.*?)\\n*?<\\/title>")
+	re = regexp.MustCompile("<title>\\n*?(.*?)\\n*?<\\/title>")
 )
 
 func canBeURLWithoutProtocol(text string) bool {
