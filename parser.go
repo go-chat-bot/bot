@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+var (
+	re = regexp.MustCompile("\\s+") // Matches one or more spaces
+)
+
 func parse(s string, channel string, nick string) *Cmd {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
@@ -39,6 +43,5 @@ func parse(s string, channel string, nick string) *Cmd {
 }
 
 func removeExtraSpaces(args string) string {
-	reg := regexp.MustCompile("\\s+") // Matches one or more spaces
-	return reg.ReplaceAllString(strings.TrimSpace(args), " ")
+	return re.ReplaceAllString(strings.TrimSpace(args), " ")
 }
