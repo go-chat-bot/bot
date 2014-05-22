@@ -48,6 +48,12 @@ const (
 	availableCommands     = "Available commands: %v"
 	helpAboutCommand      = "Type: '%shelp <command>' to see details about a specific command."
 	helpCommand           = "help"
+	joinCommand           = "join"
+	joinUsage             = "Usage: !join #channel pass"
+	joinMessage           = "Hello humans! My master %s sent me here!"
+	partMessage           = "As you wish, master!"
+	partCommand           = "part"
+	partUsage             = "Usage: !part"
 )
 
 type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
@@ -100,9 +106,14 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 		return
 	}
 
-	if command.Command == helpCommand {
+	switch command.Command {
+	case helpCommand:
 		help(command, channel, senderNick, conn)
-	} else {
+	case joinCommand:
+		join(command, channel, senderNick, conn)
+	case partCommand:
+		part(command, channel, senderNick, conn)
+	default:
 		handleCmd(command, conn)
 	}
 
@@ -154,6 +165,21 @@ func handleCmd(c *Cmd, conn ircConnection) {
 	if result != "" {
 		conn.Privmsg(c.Channel, result)
 	}
+}
+
+func join(c *Cmd, channel, senderNick string, conn ircConnection) {
+	channelToJoin := strings.TrimSpace(c.FullArg)
+	if channelToJoin == "" {
+		conn.Privmsg(channel, joinUsage)
+	} else {
+		conn.Join(channelToJoin)
+		conn.Privmsg(c.Args[0], fmt.Sprintf(joinMessage, senderNick))
+	}
+}
+
+func part(c *Cmd, channel, senderNick string, conn ircConnection) {
+	conn.Privmsg(channel, partMessage)
+	conn.Part(channel)
 }
 
 func help(c *Cmd, channel, senderNick string, conn ircConnection) {

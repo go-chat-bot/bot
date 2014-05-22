@@ -11,6 +11,8 @@ type ircConnectionMock struct {
 	Channel  string
 	Messages []string
 	Nick     string
+	Joined   string
+	Parted   string
 }
 
 func (m *ircConnectionMock) Privmsg(target, message string) {
@@ -22,10 +24,49 @@ func (m ircConnectionMock) GetNick() string {
 	return m.Nick
 }
 
+func (m *ircConnectionMock) Join(target string) {
+	m.Joined = target
+}
+
+func (m *ircConnectionMock) Part(target string) {
+	m.Parted = target
+}
+
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)
 		conn := &ircConnectionMock{}
+
+		Convey("When the command is join", func() {
+
+			Reset(func() {
+				conn.Messages = []string{}
+			})
+
+			Convey("if the channel is not specified", func() {
+				messageReceived("#go-bot", "!join    ", "user", conn)
+
+				So(conn.Messages, ShouldResemble, []string{joinUsage})
+			})
+
+			Convey("if the channel is specified", func() {
+				messageReceived("#go-bot", "!join #channel pass", "user", conn)
+
+				So(conn.Joined, ShouldEqual, "#channel pass")
+				So(conn.Channel, ShouldEqual, "#channel")
+				So(conn.Messages, ShouldResemble,
+					[]string{fmt.Sprintf(joinMessage, "user")})
+			})
+		})
+
+		Convey("When the command is part", func() {
+			Convey("it should part the channel", func() {
+				messageReceived("#go-bot", "!part    ", "user", conn)
+
+				So(conn.Parted, ShouldEqual, "#go-bot")
+				So(conn.Messages, ShouldResemble, []string{partMessage})
+			})
+		})
 
 		Convey("When the command is not registered", func() {
 			conn = &ircConnectionMock{}

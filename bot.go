@@ -28,6 +28,8 @@ type Config struct {
 type ircConnection interface {
 	Privmsg(target, message string)
 	GetNick() string
+	Join(target string)
+	Part(target string)
 }
 
 var (
@@ -58,7 +60,6 @@ func onWelcome(e *irc.Event) {
 
 func onEndOfNames(e *irc.Event) {
 	log.Printf("onEndOfNames: %v", e.Arguments)
-	irccon.Privmsg(e.Arguments[1], "Hi there.\n")
 }
 
 func configureEvents() {
