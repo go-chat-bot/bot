@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 )
 
@@ -43,17 +42,6 @@ const (
 	commandNotAvailable   = "Command %v not available."
 	noCommandsAvailable   = "No commands available."
 	errorExecutingCommand = "Error executing %s: %s"
-	helpDescripton        = "Description: %s"
-	helpUsage             = "Usage: %s%s %s"
-	availableCommands     = "Available commands: %v"
-	helpAboutCommand      = "Type: '%shelp <command>' to see details about a specific command."
-	helpCommand           = "help"
-	joinCommand           = "join"
-	joinUsage             = "Usage: !join #channel pass"
-	joinMessage           = "Hello humans! My master %s sent me here!"
-	partMessage           = "As you wish, master!"
-	partCommand           = "part"
-	partUsage             = "Usage: !part"
 )
 
 type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
@@ -165,51 +153,4 @@ func handleCmd(c *Cmd, conn ircConnection) {
 	if result != "" {
 		conn.Privmsg(c.Channel, result)
 	}
-}
-
-func join(c *Cmd, channel, senderNick string, conn ircConnection) {
-	channelToJoin := strings.TrimSpace(c.FullArg)
-	if channelToJoin == "" {
-		conn.Privmsg(channel, joinUsage)
-	} else {
-		conn.Join(channelToJoin)
-		conn.Privmsg(c.Args[0], fmt.Sprintf(joinMessage, senderNick))
-	}
-}
-
-func part(c *Cmd, channel, senderNick string, conn ircConnection) {
-	conn.Privmsg(channel, partMessage)
-	conn.Part(channel)
-}
-
-func help(c *Cmd, channel, senderNick string, conn ircConnection) {
-	cmd := parse(CmdPrefix+c.FullArg, channel, senderNick)
-	if cmd == nil {
-		showAvailabeCommands(channel, conn)
-		return
-	}
-
-	command := commands[cmd.Command]
-	if command == nil {
-		showAvailabeCommands(c.Channel, conn)
-		return
-	}
-
-	showHelp(cmd, command, conn)
-}
-
-func showHelp(c *Cmd, help *customCommand, conn ircConnection) {
-	if help.Description != "" {
-		conn.Privmsg(c.Channel, fmt.Sprintf(helpDescripton, help.Description))
-	}
-	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs))
-}
-
-func showAvailabeCommands(channel string, conn ircConnection) {
-	cmds := make([]string, 0)
-	for k := range commands {
-		cmds = append(cmds, k)
-	}
-	conn.Privmsg(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix))
-	conn.Privmsg(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")))
 }
