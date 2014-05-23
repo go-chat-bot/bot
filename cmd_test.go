@@ -60,11 +60,26 @@ func TestMessageReceived(t *testing.T) {
 		})
 
 		Convey("When the command is part", func() {
-			Convey("it should part the channel", func() {
-				messageReceived("#go-bot", "!part    ", "user", conn)
+			config = &Config{
+				Channels: []string{"#go-bot"},
+			}
 
-				So(conn.Parted, ShouldEqual, "#go-bot")
+			Reset(func() {
+				conn.Parted = ""
+				conn.Messages = []string{}
+			})
+
+			Convey("it should part the channel", func() {
+				messageReceived("#mychannel", "!part    ", "user", conn)
+
+				So(conn.Parted, ShouldEqual, "#mychannel")
 				So(conn.Messages, ShouldResemble, []string{partMessage})
+			})
+
+			Convey("if the channel is in the config", func() {
+				messageReceived("#Go-Bot", "!part    ", "user", conn)
+				So(conn.Parted, ShouldEqual, "")
+				So(conn.Messages, ShouldResemble, []string{partNotAllowed})
 			})
 		})
 
