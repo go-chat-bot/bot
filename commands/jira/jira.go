@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pattern = "\\b[A-z]{3}-[0-9]{3,}\\b"
+	pattern = "\\b[A-z]{3}-[0-9]+\\b"
 	env     = "JIRA_ISSUES_URL"
 )
 
@@ -23,16 +23,18 @@ func getIssue(text string) string {
 	return ""
 }
 
-func getIssueURL(text string) (string, error) {
-	issue := getIssue(text)
-	if issue != "" {
-		return (url + strings.ToUpper(issue)), nil
+func getIssueURL(nick, text string) (string, error) {
+	if !strings.Contains(nick, "bot") {
+		issue := getIssue(text)
+		if issue != "" {
+			return (url + strings.ToUpper(issue)), nil
+		}
 	}
 	return "", nil
 }
 
 func jira(command *bot.PassiveCmd) (string, error) {
-	return getIssueURL(command.Raw)
+	return getIssueURL(command.Nick, command.Raw)
 }
 
 func init() {
