@@ -8,17 +8,18 @@ import (
 )
 
 const (
-	pattern = "\\b[A-z]{3}-[0-9]{3,}\\b"
+	pattern = "(^|\\s)+[A-z]{3}-[0-9]+\\b"
 	env     = "JIRA_ISSUES_URL"
 )
 
 var (
 	url string
+	re  = regexp.MustCompile(pattern)
 )
 
 func getIssue(text string) string {
-	if match, _ := regexp.MatchString(pattern, text); match {
-		return regexp.MustCompile(pattern).FindString(text)
+	if re.MatchString(text) {
+		return re.FindString(text)
 	}
 	return ""
 }
@@ -26,8 +27,9 @@ func getIssue(text string) string {
 func getIssueURL(text string) (string, error) {
 	issue := getIssue(text)
 	if issue != "" {
-		return (url + strings.ToUpper(issue)), nil
+		return url + strings.ToUpper(strings.TrimSpace(issue)), nil
 	}
+
 	return "", nil
 }
 
