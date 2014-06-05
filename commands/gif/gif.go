@@ -6,7 +6,6 @@ import (
 	"github.com/fabioxgn/go-bot/web"
 	"math/rand"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -77,10 +76,6 @@ type giphy struct {
 }
 
 func gif(command *bot.Cmd) (msg string, err error) {
-	if command.Nick == "nathan" || (strings.Contains(strings.ToLower(command.FullArg), "nathan")) {
-		return "http://gwenstephens.files.wordpress.com/2013/03/mullet-hairstyles-mullet.jpg", nil
-	}
-
 	data := &giphy{}
 	err = web.GetJSON(fmt.Sprintf(giphyURL, url.QueryEscape(command.FullArg)), data)
 	if err != nil {
