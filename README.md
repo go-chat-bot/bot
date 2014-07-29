@@ -92,9 +92,9 @@ To join channels with passwords just put the password after the channel name sep
 
     Channels: []string{"#mychannel mypassword", "#go-bot"}
 
-[go]: golang.org
+[go]: http://golang.org
 [go-ircevent]: https://github.com/thoj/go-ircevent
-[slack]: slack.com
-[heroku]: heroku.com
-[giphy.com]: giphy.com
-[thecatapi.com]: thecatapi.com
+[slack]: http://slack.com
+[heroku]: http://heroku.com
+[giphy.com]: http://giphy.com
+[thecatapi.com]: http://thecatapi.com

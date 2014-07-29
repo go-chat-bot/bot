@@ -61,7 +61,7 @@ func TestMessageReceived(t *testing.T) {
 
 		Convey("When the command is part", func() {
 			config = &Config{
-				Channels: []string{"#go-bot"},
+				Channels: []string{"#go-bot", "#safechan passwd"},
 			}
 
 			Reset(func() {
@@ -78,6 +78,12 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("if the channel is in the config", func() {
 				messageReceived("#Go-Bot", "!part    ", "user", conn)
+				So(conn.Parted, ShouldEqual, "")
+				So(conn.Messages, ShouldResemble, []string{partNotAllowed})
+			})
+
+			Convey("if the channel is in the config and has a password", func() {
+				messageReceived("#safechan", "!part", "user", conn)
 				So(conn.Parted, ShouldEqual, "")
 				So(conn.Messages, ShouldResemble, []string{partNotAllowed})
 			})
