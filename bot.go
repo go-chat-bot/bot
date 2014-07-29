@@ -45,6 +45,7 @@ func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
+	irccon.TLSConfig.ServerName = config.Server
 	irccon.VerboseCallbackHandler = config.Debug
 	err := irccon.Connect(config.Server)
 	if err != nil {
