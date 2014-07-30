@@ -2,9 +2,11 @@
 package bot
 
 import (
+	"crypto/tls"
 	"github.com/thoj/go-ircevent"
 	"log"
 	"math/rand"
+	"net/url"
 	"time"
 )
 
@@ -41,10 +43,24 @@ func onPRIVMSG(e *irc.Event) {
 	messageReceived(e.Arguments[0], e.Message(), e.Nick, irccon)
 }
 
+func getTLSConfig() *tls.Config {
+	url, err := url.Parse(config.Server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &tls.Config{
+		ServerName: url.Host,
+	}
+}
+
 func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
+	if irccon.UseTLS {
+		irccon.TLSConfig = getTLSConfig()
+	}
 	irccon.TLSConfig.ServerName = config.Server
 	irccon.VerboseCallbackHandler = config.Debug
 	err := irccon.Connect(config.Server)
