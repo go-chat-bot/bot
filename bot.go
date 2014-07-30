@@ -6,7 +6,6 @@ import (
 	"github.com/thoj/go-ircevent"
 	"log"
 	"math/rand"
-	"net/url"
 	"time"
 )
 
@@ -18,13 +17,14 @@ const (
 
 // Config must contain the necessary data to connect to an IRC server
 type Config struct {
-	Server   string   // IRC server:port. Ex: irc.freenode.org:7000
-	Channels []string // Channels to connect. Ex: []string{"#go-bot", "#channel mypassword"}
-	User     string   // The IRC username the bot will use
-	Nick     string   // The nick the bot will use
-	Password string   // Server password
-	UseTLS   bool     // Should connect using TLS?
-	Debug    bool     // This will log all IRC communication to standad output
+	Server        string   // IRC server:port. Ex: irc.freenode.org:7000
+	Channels      []string // Channels to connect. Ex: []string{"#go-bot", "#channel mypassword"}
+	User          string   // The IRC username the bot will use
+	Nick          string   // The nick the bot will use
+	Password      string   // Server password
+	UseTLS        bool     // Should connect using TLS?
+	TLSServerName string   // Must supply if UseTLS is true
+	Debug         bool     // This will log all IRC communication to standad output
 }
 
 type ircConnection interface {
@@ -43,23 +43,12 @@ func onPRIVMSG(e *irc.Event) {
 	messageReceived(e.Arguments[0], e.Message(), e.Nick, irccon)
 }
 
-func getTLSConfig() *tls.Config {
-	url, err := url.Parse(config.Server)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &tls.Config{
-		ServerName: url.Host,
-	}
-}
-
 func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
-	if irccon.UseTLS {
-		irccon.TLSConfig = getTLSConfig()
+	irccon.TLSConfig = &tls.Config{
+		ServerName: config.TLSServerName,
 	}
 	irccon.TLSConfig.ServerName = config.Server
 	irccon.VerboseCallbackHandler = config.Debug
