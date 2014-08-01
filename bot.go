@@ -6,6 +6,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"log"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -43,14 +44,22 @@ func onPRIVMSG(e *irc.Event) {
 	messageReceived(e.Arguments[0], e.Message(), e.Nick, irccon)
 }
 
+func getServerName() string {
+	separatorIndex := strings.LastIndex(config.Server, ":")
+	if separatorIndex != -1 {
+		return config.Server[:separatorIndex]
+	} else {
+		return config.Server
+	}
+}
+
 func connect() {
 	irccon = irc.IRC(config.User, config.Nick)
 	irccon.Password = config.Password
 	irccon.UseTLS = config.UseTLS
 	irccon.TLSConfig = &tls.Config{
-		ServerName: config.TLSServerName,
+		ServerName: getServerName(),
 	}
-	irccon.TLSConfig.ServerName = config.Server
 	irccon.VerboseCallbackHandler = config.Debug
 	err := irccon.Connect(config.Server)
 	if err != nil {
