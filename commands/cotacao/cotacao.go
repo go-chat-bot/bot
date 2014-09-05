@@ -6,11 +6,11 @@ import (
 	"github.com/fabioxgn/go-bot/web"
 )
 
-const (
-	URL = "http://developers.agenciaideias.com.br/cotacoes/json"
+var (
+	url = "http://developers.agenciaideias.com.br/cotacoes/json"
 )
 
-type Cotacao struct {
+type retorno struct {
 	Bovespa struct {
 		Cotacao  string `json:"cotacao"`
 		Variacao string `json:"variacao"`
@@ -27,8 +27,8 @@ type Cotacao struct {
 }
 
 func cotacao(command *bot.Cmd) (msg string, err error) {
-	data := &Cotacao{}
-	err = web.GetJSON(URL, data)
+	data := &retorno{}
+	err = web.GetJSON(url, data)
 	if err != nil {
 		return "", err
 	}
