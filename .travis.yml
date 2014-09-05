@@ -1,6 +1,13 @@
 language: go
 go:
   - tip
+before_install:
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/mattn/goveralls
+  - go get code.google.com/p/go.tools/cmd/cover
+script:
+    - $HOME/gopath/bin/goveralls -repotoken secure: "TYOPd/44GqQ/7n3WljIj8ua2zvRwhcXGKTnbGQ6A5efzdWitsRc4KEEsyqE+YPJorHEKQSUQ6W3EmzxUJm6erW5BdTWSiY30FV0Xac5CY8FzaBHG3kSlOnsbaWfiL6cDEnXSPTyBbwOb1dEJX9pn2kVKK9qfxrj2Ow4L
+7xtF3Ak="
 install:
   - go get github.com/thoj/go-ircevent
   - go get github.com/smartystreets/goconvey/convey
