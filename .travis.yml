@@ -6,7 +6,7 @@ before_install:
 - go get github.com/mattn/goveralls
 - go get code.google.com/p/go.tools/cmd/cover
 script:
-- $HOME/gopath/bin/goveralls -repotoken $GOVERALLS_TOKEN
+- ./test-coverage.sh
 install:
 - go get github.com/thoj/go-ircevent
 - go get github.com/smartystreets/goconvey/convey
