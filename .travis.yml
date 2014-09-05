@@ -2,15 +2,7 @@ language: go
 go:
   - tip
 install:
-  - go get github.com/motain/gocheck
   - go get github.com/thoj/go-ircevent
-  - go get github.com/yvasiyarov/gorelic
+  - go get github.com/smartystreets/goconvey/convey
 notifications:
   irc: chat.freenode.net#go-bot
-deploy:
-  provider: heroku
-  buildpack: https://github.com/kr/heroku-buildpack-go.git
-  api_key:
-    secure: oTOgjhzz+f8b5oYUwQcqYWfOcx1AqYnocHJzjlfJ7vtk5VcXg5RgAfH0oq8SHz5lyp6SgJSnIp1XB/LQodJwaTCq3oLFjhbO7oHbCF1FMQcN+jKd+nNWmOV0oaCi40vC1yOCCJ6mslZ6ulZpqnS8gYn9FoV+rcViF/d/lbwpK4o=
-  app: go-irc-bot
-  on: master 
