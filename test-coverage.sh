@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "mode: set" > acc.out
-for Dir in $(find ./* -maxdepth 10 -type d ); 
+for Dir in $(find . -type d ); 
 do
 	if ls $Dir/*.go &> /dev/null;
 	then
