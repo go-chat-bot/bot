@@ -1,12 +1,12 @@
 # go-bot
 
-[![Build Status](https://travis-ci.org/fabioxgn/go-bot.png?branch=master)](https://travis-ci.org/fabioxgn/go-bot) [![GoDoc](https://godoc.org/github.com/fabioxgn/go-bot?status.png)](https://godoc.org/github.com/fabioxgn/go-bot)
+[![Build Status](https://travis-ci.org/fabioxgn/go-bot.png?branch=master)](https://travis-ci.org/fabioxgn/go-bot) [![GoDoc](https://godoc.org/github.com/fabioxgn/go-bot?status.png)](https://godoc.org/github.com/fabioxgn/go-bot) [![Coverage Status](https://img.shields.io/coveralls/fabioxgn/go-bot.svg)](https://coveralls.io/r/fabioxgn/go-bot?branch=master)
 
 Nice to meet you! I'm a IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity.
 
 I can be deployed to [heroku][heroku] and used in [slack][slack] to overpower slackbot.
 
-## Please test me out!
+## #go-bot @ irc.freenode.org
 
 I'm always hanging out as **go-bot** in the channel **#go-bot @ irc.freenode.org**
 
