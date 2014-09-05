@@ -18,7 +18,7 @@ do
     	fi	
     fi
 done
-if [ -n "$COVERALLS" ]
+if [ -n "$GOVERALLS_TOKEN" ]
 then
     $HOME/gopath/bin/goveralls -coverprofile=acc.out -repotoken $GOVERALLS_TOKEN
 fi	
