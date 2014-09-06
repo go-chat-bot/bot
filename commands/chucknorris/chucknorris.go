@@ -81,15 +81,11 @@ var (
 	}
 )
 
-func getChuckNorrisFact(text string) (string, error) {
-	if re.MatchString(text) {
+func chucknorris(command *bot.PassiveCmd) (string, error) {
+	if re.MatchString(command.Raw) {
 		return chuckFacts[rand.Intn(len(chuckFacts))], nil
 	}
 	return "", nil
-}
-
-func chucknorris(command *bot.PassiveCmd) (string, error) {
-	return getChuckNorrisFact(command.Raw)
 }
 
 func init() {

@@ -1,24 +1,26 @@
 package chucknorris
 
 import (
+	"github.com/fabioxgn/go-bot"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestChuckNorris(t *testing.T) {
 	Convey("Given a text", t, func() {
+		cmd := &bot.PassiveCmd{}
 		Convey("When the text does not match a chuck norris name", func() {
-
-			s, err := getChuckNorrisFact("My name is go-bot, I am awesome.")
+			cmd.Raw = "My name is go-bot, I am awesome."
+			s, err := chucknorris(cmd)
 
 			So(err, ShouldBeNil)
 			So(s, ShouldEqual, "")
 		})
 
 		Convey("When the text match a chuck name", func() {
-			text := "My name is chuck"
+			cmd.Raw = "My name is chuck"
 
-			s, err := getChuckNorrisFact(text)
+			s, err := chucknorris(cmd)
 
 			So(err, ShouldBeNil)
 			So(s, ShouldNotEqual, "")
