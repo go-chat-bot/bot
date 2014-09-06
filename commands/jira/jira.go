@@ -24,17 +24,13 @@ func getIssue(text string) string {
 	return ""
 }
 
-func getIssueURL(text string) (string, error) {
-	issue := getIssue(text)
+func jira(cmd *bot.PassiveCmd) (string, error) {
+	issue := getIssue(cmd.Raw)
 	if issue != "" {
 		return url + strings.ToUpper(strings.TrimSpace(issue)), nil
 	}
 
 	return "", nil
-}
-
-func jira(command *bot.PassiveCmd) (string, error) {
-	return getIssueURL(command.Raw)
 }
 
 func init() {
