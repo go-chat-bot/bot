@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	digitosJogo = 6 
+	digitosJogo      = 6
 	msgOpcaoInvalida = "Informe uma opção: gerar ou resultado"
 )
 
 func megasena(command *bot.Cmd) (msg string, err error) {
 	if len(command.Args) == 0 {
-		msg = msgOpcaoInvalida 
+		msg = msgOpcaoInvalida
 	} else {
 		switch command.Args[0] {
 		case "gerar":

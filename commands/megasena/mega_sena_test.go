@@ -1,18 +1,17 @@
 package megasena
 
 import (
+	"fmt"
 	"github.com/fabioxgn/go-bot"
 	. "github.com/smartystreets/goconvey/convey"
-	"regexp"
-	"testing"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
+	"testing"
 )
 
 const (
-  retornoJSON = 
-  `{"concurso":{
+	retornoJSON = `{"concurso":{
     "numero":"1636",
     "data":"17\/09\/2014",
     "cidade":"OSASCO-SP",
@@ -54,53 +53,53 @@ const (
 )
 
 func TestSortear(t *testing.T) {
-    Convey("Sortear", t, func() {
-    	So(sortear(6), ShouldEqual, "01 02 03 04 05 06")
-    })
+	Convey("Sortear", t, func() {
+		So(sortear(6), ShouldEqual, "01 02 03 04 05 06")
+	})
 }
 
 func TestMegaSena(t *testing.T) {
-    Convey("Megasena", t, func() {
-        
-    	cmd := &bot.Cmd{
-    		Command: "megasena",
-    		Nick:    "nick",
-    	}
+	Convey("Megasena", t, func() {
 
-      Convey("Quando não é passado argumento", func() {
-        cmd.Args = []string{}
-        got, err := megasena(cmd)
-        
-        So(err, ShouldBeNil)
-        So(got, ShouldEqual, fmt.Sprintf("%s: %s", cmd.Nick, msgOpcaoInvalida))
-      })
-      
-	    Convey("Quando o argumento for gerar", func() {
-	        cmd.Args = []string{"gerar"}
-	        got, err := megasena(cmd)
+		cmd := &bot.Cmd{
+			Command: "megasena",
+			Nick:    "nick",
+		}
 
-	        So(err, ShouldBeNil)
+		Convey("Quando não é passado argumento", func() {
+			cmd.Args = []string{}
+			got, err := megasena(cmd)
 
-	        match, err := regexp.MatchString("nick: (\\d{2} {1}){5}\\d{2}", got)
-	        
-	        So(err, ShouldBeNil)
-	        So(match, ShouldBeTrue)
-	    })
-	    
-	    Convey("Quando o argumento for resultado", func() {
-	      ts := httptest.NewServer(
-		      http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			      fmt.Fprintln(w, retornoJSON)
-		      }))
-	      defer ts.Close()
+			So(err, ShouldBeNil)
+			So(got, ShouldEqual, fmt.Sprintf("%s: %s", cmd.Nick, msgOpcaoInvalida))
+		})
 
-	      url = ts.URL
-	      
-	      cmd.Args = []string{"resultado"}
-	      got, err := megasena(cmd)
-	      
-	      So(err, ShouldBeNil)
-	      So(got, ShouldEqual, "nick: Sorteio 1636 de 17/09/2014: [19 26 33 35 51 52] - 0 premiado(s) R$ 0,00.")
-	    })
-    })
+		Convey("Quando o argumento for gerar", func() {
+			cmd.Args = []string{"gerar"}
+			got, err := megasena(cmd)
+
+			So(err, ShouldBeNil)
+
+			match, err := regexp.MatchString("nick: (\\d{2} {1}){5}\\d{2}", got)
+
+			So(err, ShouldBeNil)
+			So(match, ShouldBeTrue)
+		})
+
+		Convey("Quando o argumento for resultado", func() {
+			ts := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprintln(w, retornoJSON)
+				}))
+			defer ts.Close()
+
+			url = ts.URL
+
+			cmd.Args = []string{"resultado"}
+			got, err := megasena(cmd)
+
+			So(err, ShouldBeNil)
+			So(got, ShouldEqual, "nick: Sorteio 1636 de 17/09/2014: [19 26 33 35 51 52] - 0 premiado(s) R$ 0,00.")
+		})
+	})
 }
