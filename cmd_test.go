@@ -61,7 +61,7 @@ func TestMessageReceived(t *testing.T) {
 
 		Convey("When the command is part", func() {
 			config = &Config{
-				Channels: []string{"#go-bot", "#safechan passwd"},
+				Channels: []string{"#go-bot", "#safechan passwd", ""},
 			}
 
 			Reset(func() {
