@@ -5,11 +5,11 @@ import (
 	"github.com/fabioxgn/go-bot/web"
 )
 
-const (
-	URL = "http://developers.agenciaideias.com.br/loterias/megasena/json"
+var (
+	url = "http://developers.agenciaideias.com.br/loterias/megasena/json"
 )
 
-type Retorno struct {
+type retorno struct {
 	Concurso struct {
 		Numero           string   `json:"numero"`
 		Data             string   `json:"data"`
@@ -45,8 +45,8 @@ type Retorno struct {
 }
 
 func Resultado() string {
-	data := &Retorno{}
-	err := web.GetJSON(URL, data)
+	data := &retorno{}
+	err := web.GetJSON(url, data)
 	if err != nil {
 		return err.Error()
 	}

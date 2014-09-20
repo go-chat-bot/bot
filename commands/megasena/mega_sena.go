@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	DigitosJogo = 6 //TODO: Suportar até 15 números
+	digitosJogo = 6 
+	msgOpcaoInvalida = "Informe uma opção: gerar ou resultado"
 )
 
 func megasena(command *bot.Cmd) (msg string, err error) {
 	if len(command.Args) == 0 {
-		msg = "Informe uma opção: gerar ou resultado"
+		msg = msgOpcaoInvalida 
 	} else {
 		switch command.Args[0] {
 		case "gerar":
@@ -32,8 +33,8 @@ func megasena(command *bot.Cmd) (msg string, err error) {
 func sortear(limit int) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	numeros := make([]int, DigitosJogo)
-	for i := 0; i < DigitosJogo; i++ {
+	numeros := make([]int, digitosJogo)
+	for i := 0; i < digitosJogo; i++ {
 		for {
 			numero := r.Intn(limit + 1)
 			if duplicado(numero, numeros) {
