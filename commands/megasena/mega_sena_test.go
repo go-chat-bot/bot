@@ -2,36 +2,35 @@ package megasena
 
 import (
 	"github.com/fabioxgn/go-bot"
+	. "github.com/smartystreets/goconvey/convey"
 	"regexp"
 	"testing"
 )
 
 func TestSortear(t *testing.T) {
-	want := "01 02 03 04 05 06"
-	got := sortear(6)
-
-	if want != got {
-		t.Errorf("Expected %v got %v", want, got)
-	}
+    Convey("Sortear", t, func() {
+    	So(sortear(6), ShouldEqual, "01 02 03 04 05 06")
+    })
 }
 
 func TestMegaSena(t *testing.T) {
-	cmd := &bot.Cmd{
-		Command: "megasena",
-		Nick:    "nick",
-		Args:    []string{"gerar"},
-	}
-	got, err := megasena(cmd)
+    Convey("Megasena", t, func() {
+        
+    	cmd := &bot.Cmd{
+    		Command: "megasena",
+    		Nick:    "nick",
+    	}
+	
+	    Convey("Quando o argumento for gerar", func() {
+	        cmd.Args = []string{"gerar"}
+	        got, err := megasena(cmd)
 
-	if err != nil {
-		t.Errorf("Expected '%v' got '%v'", nil, err)
-	}
+	        So(err, ShouldBeNil)
 
-	match, err := regexp.MatchString("nick: (\\d{2} {1}){5}\\d{2}", got)
-	if !match {
-		t.Errorf("got %v", got)
-	}
-	if err != nil {
-		t.Errorf(err.Error())
-	}
+	        match, err := regexp.MatchString("nick: (\\d{2} {1}){5}\\d{2}", got)
+	        
+	        So(err, ShouldBeNil)
+	        So(match, ShouldBeTrue)
+	    })
+    })
 }

@@ -15,7 +15,6 @@ const (
 )
 
 func megasena(command *bot.Cmd) (msg string, err error) {
-	//TODO: ter um método genérico "PrintUsage"
 	if len(command.Args) == 0 {
 		msg = "Informe uma opção: gerar ou resultado"
 	} else {
