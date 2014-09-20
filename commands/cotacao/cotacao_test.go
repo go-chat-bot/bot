@@ -28,23 +28,37 @@ const (
 )
 
 func TestCotacao(t *testing.T) {
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, expectedJSON)
-		}))
-	defer ts.Close()
-
-	url = ts.URL
 
 	Convey("Ao executar o comando cotação", t, func() {
 		cmd := &bot.Cmd{}
 
 		Convey("Deve responder com a cotação do dólar e euro", func() {
+			ts := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprintln(w, expectedJSON)
+				}))
+			defer ts.Close()
+
+			url = ts.URL
+
 			c, err := cotacao(cmd)
 
 			So(err, ShouldBeNil)
 			So(c, ShouldEqual, "Dólar: 2.2430 (+0.36), Euro: 2.9018 (-1.21)")
 		})
 
+		Convey("Quando o webservice retornar algo inválido deve retornar erro", func() {
+			ts := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprintln(w, "invalid")
+				}))
+			defer ts.Close()
+
+			url = ts.URL
+
+			_, err := cotacao(cmd)
+
+			So(err, ShouldNotBeNil)
+		})
 	})
 }
