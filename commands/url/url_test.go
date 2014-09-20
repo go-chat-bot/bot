@@ -98,7 +98,7 @@ func TestURL(t *testing.T) {
 		})
 
 		Convey("if the url is invalid", func() {
-			So(extractURL("http&:google.com"), ShouldEqual, "")
+			So(extractURL(":googlecom"), ShouldEqual, "")
 		})
 
 	})
