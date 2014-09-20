@@ -42,14 +42,14 @@ func extractURL(text string) string {
 	return extractedURL
 }
 
-func getTitle(text string, get web.GetBodyFunc) (string, error) {
-	URL := extractURL(text)
+func urlTitle(cmd *bot.PassiveCmd) (string, error) {
+	URL := extractURL(cmd.Raw)
 
 	if URL == "" {
 		return "", nil
 	}
 
-	body, err := get(URL)
+	body, err := web.GetBody(URL)
 	if err != nil {
 		return "", err
 	}
@@ -63,10 +63,6 @@ func getTitle(text string, get web.GetBodyFunc) (string, error) {
 	title = title[strings.Index(title, ">")+1 : strings.LastIndex(title, "<")]
 
 	return html.UnescapeString(title), nil
-}
-
-func urlTitle(command *bot.PassiveCmd) (string, error) {
-	return getTitle(command.Raw, web.GetBody)
 }
 
 func init() {

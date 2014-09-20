@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-type GetBodyFunc func(string) ([]byte, error)
 type GetJSONFunc func(string, interface{}) error
 
 func GetBody(url string) ([]byte, error) {

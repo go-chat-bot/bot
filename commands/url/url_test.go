@@ -1,85 +1,104 @@
 package url
 
 import (
+	"fmt"
+	"github.com/fabioxgn/go-bot"
 	. "github.com/smartystreets/goconvey/convey"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
 func TestURL(t *testing.T) {
-	Convey("Give a text", t, func() {
-		getExecuted := false
-		getResult := []byte{}
-		get := func(string) ([]byte, error) {
+	cmd := &bot.PassiveCmd{}
+	getExecuted := false
+	getResult := ""
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			getExecuted = true
-			return getResult, nil
-		}
+			fmt.Fprintln(w, getResult)
+		}))
+
+	url := ts.URL
+
+	Convey("Given a text", t, func() {
+
+		Reset(func() {
+			getExecuted = false
+			getResult = ""
+		})
 
 		Convey("If the text is not a URL", func() {
-			getExecuted = false
-			title, err := getTitle("foo bar", get)
+			cmd.Raw = "foo bar"
+			title, err := urlTitle(cmd)
 
 			So(getExecuted, ShouldBeFalse)
 			So(err, ShouldBeNil)
 			So(title, ShouldBeBlank)
 		})
 
-		Convey("If the text contains a http URL", func() {
+		Convey("If the url contains no title", func() {
+			cmd.Raw = "foo " + url
 
-			Convey("If the url contains no title", func() {
-				getExecuted = false
-				title, err := getTitle("foo http://google.com bar", get)
+			title, err := urlTitle(cmd)
 
-				So(getExecuted, ShouldBeTrue)
-				So(err, ShouldBeNil)
-				So(title, ShouldBeBlank)
-			})
+			So(getExecuted, ShouldBeTrue)
+			So(err, ShouldBeNil)
+			So(title, ShouldBeBlank)
+		})
 
-			Convey("If the url contains a title", func() {
-				getExecuted = false
-				getResult = []byte("<title>Google</title>")
-				title, err := getTitle("foo http://google.com bar", get)
+		Convey("If the url contains a title", func() {
+			getResult = "<title>Google</title>"
+			cmd.Raw = fmt.Sprintf("foo %s bar", url)
 
-				So(getExecuted, ShouldBeTrue)
-				So(err, ShouldBeNil)
-				So(title, ShouldEqual, "Google")
-			})
+			title, err := urlTitle(cmd)
+
+			So(getExecuted, ShouldBeTrue)
+			So(err, ShouldBeNil)
+			So(title, ShouldEqual, "Google")
 		})
 
 		Convey("If the text is a https URL", func() {
-			getExecuted = false
-			getResult = []byte("<title>Google</title>")
-			title, err := getTitle("foo https://google.com bar", get)
+			httpsURL := "https://google.com"
 
-			So(getExecuted, ShouldBeTrue)
-			So(err, ShouldBeNil)
-			So(title, ShouldEqual, "Google")
+			extractedURL := extractURL(fmt.Sprintf("foo %s bar", httpsURL))
+
+			So(extractedURL, ShouldEqual, httpsURL)
 		})
 
 		Convey("If title starts or ends with a new line", func() {
-			getExecuted = false
-			getResult = []byte("<title>\nGoogle\n</title>")
-			title, err := getTitle("https://google.com", get)
+			getResult = "<title>\nGoogle\n</title>"
+			cmd.Raw = url
 
-			So(getExecuted, ShouldBeTrue)
+			title, err := urlTitle(cmd)
+
 			So(err, ShouldBeNil)
 			So(title, ShouldEqual, "Google")
+		})
+
+		Convey("If an error occurs while fetching the url", func() {
+			cmd.Raw = "127.0.0.1:0"
+
+			_, err := urlTitle(cmd)
+
+			So(err, ShouldNotBeNil)
 		})
 
 		Convey("if the url doesn't have a protocol", func() {
-			getExecuted = false
-			getResult = []byte("<title>Google</title>")
-			title, err := getTitle("foo google.com bar", get)
+			noProtocolURL := "google.com"
 
-			So(getExecuted, ShouldBeTrue)
-			So(err, ShouldBeNil)
-			So(title, ShouldEqual, "Google")
+			extractedURL := extractURL(fmt.Sprintf("foo %s bar", noProtocolURL))
+
+			So(extractedURL, ShouldEqual, "http://google.com")
 		})
 
 		Convey("if the text has fewer than 4 characters", func() {
-			getExecuted = false
-			_, _ = getTitle("a.a", get)
+			So(extractURL("a.a"), ShouldEqual, "")
+		})
 
-			So(getExecuted, ShouldBeFalse)
+		Convey("if the url is invalid", func() {
+			So(extractURL("http&:google.com"), ShouldEqual, "")
 		})
 
 	})
