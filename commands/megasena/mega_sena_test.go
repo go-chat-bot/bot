@@ -101,5 +101,20 @@ func TestMegaSena(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(got, ShouldEqual, "nick: Sorteio 1636 de 17/09/2014: [19 26 33 35 51 52] - 0 premiado(s) R$ 0,00.")
 		})
+
+		Convey("Quando o argumento for resultado e o retorno for inválido", func() {
+			ts := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprintln(w, "invalid")
+				}))
+			defer ts.Close()
+
+			url = ts.URL
+
+			cmd.Args = []string{"resultado"}
+			_, err := megasena(cmd)
+
+			So(err, ShouldNotBeNil)
+		})
 	})
 }

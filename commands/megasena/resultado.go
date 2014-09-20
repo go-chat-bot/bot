@@ -44,11 +44,11 @@ type retorno struct {
 	MegaViradaValorAcumulado string `json:"mega_virada_valor_acumulado"`
 }
 
-func Resultado() string {
+func Resultado() (string, error) {
 	data := &retorno{}
 	err := web.GetJSON(url, data)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	return fmt.Sprintf("Sorteio %s de %s: %s - %s premiado(s) R$ %s.",
@@ -56,5 +56,5 @@ func Resultado() string {
 		data.Concurso.Data,
 		data.Concurso.NumerosSorteados,
 		data.Concurso.Premiacao.Sena.Ganhadores,
-		data.Concurso.Premiacao.Sena.ValorPago)
+		data.Concurso.Premiacao.Sena.ValorPago), nil
 }
