@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"github.com/fabioxgn/go-bot"
 	"github.com/fabioxgn/go-bot/web"
+	"net/url"
 )
 
 const (
 	godocSiteURL    = "http://godoc.org"
-	godocSearchURL  = "http://api.godoc.org/search?q=%s"
 	noPackagesFound = "No packages found."
+)
+
+var (
+	godocSearchURL = "http://api.godoc.org/search"
 )
 
 type godocResults struct {
@@ -19,13 +23,19 @@ type godocResults struct {
 	} `json:"results"`
 }
 
-func searchGodoc(text string, get web.GetJSONFunc) (string, error) {
-	if text == "" {
+func search(cmd *bot.Cmd) (string, error) {
+	if cmd.FullArg == "" {
 		return "", nil
 	}
 
 	data := &godocResults{}
-	err := get(fmt.Sprintf(godocSearchURL, text), data)
+
+	url, _ := url.Parse(godocSearchURL)
+	q := url.Query()
+	q.Set("q", cmd.FullArg)
+	url.RawQuery = q.Encode()
+
+	err := web.GetJSON(url.String(), data)
 	if err != nil {
 		return "", err
 	}
@@ -35,11 +45,6 @@ func searchGodoc(text string, get web.GetJSONFunc) (string, error) {
 	}
 
 	return fmt.Sprintf("%s %s/%s", data.Results[0].Synopsis, godocSiteURL, data.Results[0].Path), nil
-
-}
-
-func search(command *bot.Cmd) (msg string, err error) {
-	return searchGodoc(command.FullArg, web.GetJSON)
 }
 
 func init() {
