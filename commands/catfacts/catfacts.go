@@ -8,9 +8,8 @@ import (
 )
 
 const (
-	pattern     = "(?i)\\b(cat|gato|miau|meow|garfield|lolcat)[s|z]{0,1}\\b"
-	catFactsURL = "http://catfacts-api.appspot.com/api/facts?number=1"
-	msgPrefix   = "I love cats! Here's a fact: %s"
+	pattern   = "(?i)\\b(cat|gato|miau|meow|garfield|lolcat)[s|z]{0,1}\\b"
+	msgPrefix = "I love cats! Here's a fact: %s"
 )
 
 type facts struct {
@@ -19,19 +18,16 @@ type facts struct {
 }
 
 var (
-	re = regexp.MustCompile(pattern)
+	re          = regexp.MustCompile(pattern)
+	catFactsURL = "http://catfacts-api.appspot.com/api/facts?number=1"
 )
 
-func getFacts(text string, get web.GetJSONFunc) (string, error) {
-	if re.MatchString(text) {
-		return getFact(get)
+func catFacts(command *bot.PassiveCmd) (string, error) {
+	if !re.MatchString(command.Raw) {
+		return "", nil
 	}
-	return "", nil
-}
-
-func getFact(get web.GetJSONFunc) (string, error) {
 	data := &facts{}
-	err := get(catFactsURL, data)
+	err := web.GetJSON(catFactsURL, data)
 	if err != nil {
 		return "", err
 	}
@@ -43,12 +39,8 @@ func getFact(get web.GetJSONFunc) (string, error) {
 	return fmt.Sprintf(msgPrefix, data.Facts[0]), nil
 }
 
-func catfacts(command *bot.PassiveCmd) (string, error) {
-	return getFacts(command.Raw, web.GetJSON)
-}
-
 func init() {
 	bot.RegisterPassiveCommand(
 		"catfacts",
-		catfacts)
+		catFacts)
 }
