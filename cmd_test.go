@@ -184,6 +184,24 @@ func TestMessageReceived(t *testing.T) {
 
 		})
 
+		Convey("When the command is V2", func() {
+			conn = &ircConnectionMock{}
+
+			Convey("it sould send the message with the error to the channel", func() {
+				RegisterCommandV2("cmd", "", "",
+					func(c *Cmd) (CmdResult, error) {
+						return CmdResult{
+							Channel: "#channel",
+							Message: "message"}, nil
+					})
+
+				messageReceived("#go-bot", "!cmd", "user", conn)
+
+				So(conn.Channel, ShouldEqual, "#channel")
+				So(conn.Messages, ShouldResemble, []string{"message"})
+			})
+		})
+
 		Convey("When the command is passive", func() {
 			conn = &ircConnectionMock{}
 
