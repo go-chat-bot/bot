@@ -25,8 +25,10 @@ type PassiveCmd struct {
 }
 
 type customCommand struct {
+	Version     int
 	Cmd         string
-	CmdFunc     func(cmd *Cmd) (string, error)
+	CmdFuncV1   activeCmdFuncV1
+	CmdFuncV2   activeCmdFuncV2
 	Description string
 	ExampleArgs string
 }
@@ -38,6 +40,11 @@ type incomingMessage struct {
 	BotCurrentNick string
 }
 
+type CmdResult struct {
+	Channel string
+	Message string
+}
+
 const (
 	commandNotAvailable   = "Command %v not available."
 	noCommandsAvailable   = "No commands available."
@@ -45,6 +52,8 @@ const (
 )
 
 type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
+type activeCmdFuncV1 func(cmd *Cmd) (string, error)
+type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
 
 var (
 	commands        = make(map[string]*customCommand)
@@ -57,10 +66,27 @@ var (
 // decription: Description of the command to use in !help, example: Reverses a string
 // exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
 // cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value
-func RegisterCommand(command, description, exampleArgs string, cmdFunc func(cmd *Cmd) (string, error)) {
+func RegisterCommand(command, description, exampleArgs string, cmdFunc activeCmdFuncV1) {
 	commands[command] = &customCommand{
+		Version:     1,
 		Cmd:         command,
-		CmdFunc:     cmdFunc,
+		CmdFuncV1:   cmdFunc,
+		Description: description,
+		ExampleArgs: exampleArgs,
+	}
+}
+
+// RegisterCommandV2 adds a new command to the bot.
+// The command(s) should be registered in the Ini() func of your package
+// command: String which the user will use to execute the command, example: reverse
+// decription: Description of the command to use in !help, example: Reverses a string
+// exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
+// cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value and should return a CmdResult struct
+func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeCmdFuncV2) {
+	commands[command] = &customCommand{
+		Version:     2,
+		Cmd:         command,
+		CmdFuncV2:   cmdFunc,
 		Description: description,
 		ExampleArgs: exampleArgs,
 	}
@@ -142,15 +168,31 @@ func handleCmd(c *Cmd, conn ircConnection) {
 
 	log.Printf("HandleCmd %v %v", c.Command, c.FullArg)
 
-	result, err := cmd.CmdFunc(c)
+	switch cmd.Version {
+	case 1:
+		message, err := cmd.CmdFuncV1(c)
+		checkCmdError(err, c, conn)
+		if message != "" {
+			conn.Privmsg(c.Channel, message)
+		}
+	case 2:
+		result, err := cmd.CmdFuncV2(c)
+		checkCmdError(err, c, conn)
+		if result.Channel == "" {
+			result.Channel = c.Channel
+		}
 
+		if result.Message != "" {
+			conn.Privmsg(result.Channel, result.Message)
+		}
+	}
+
+}
+
+func checkCmdError(err error, c *Cmd, conn ircConnection) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
 		conn.Privmsg(c.Channel, errorMsg)
-	}
-
-	if result != "" {
-		conn.Privmsg(c.Channel, result)
 	}
 }
