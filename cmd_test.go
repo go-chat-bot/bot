@@ -187,7 +187,7 @@ func TestMessageReceived(t *testing.T) {
 		Convey("When the command is V2", func() {
 			conn = &ircConnectionMock{}
 
-			Convey("it sould send the message with the error to the channel", func() {
+			Convey("it should send the message with the error to the channel", func() {
 				RegisterCommandV2("cmd", "", "",
 					func(c *Cmd) (CmdResult, error) {
 						return CmdResult{
@@ -198,6 +198,19 @@ func TestMessageReceived(t *testing.T) {
 				messageReceived("#go-bot", "!cmd", "user", conn)
 
 				So(conn.Channel, ShouldEqual, "#channel")
+				So(conn.Messages, ShouldResemble, []string{"message"})
+			})
+
+			Convey("it should reply to the current channel if the command does not specify one", func() {
+				RegisterCommandV2("cmd", "", "",
+					func(c *Cmd) (CmdResult, error) {
+						return CmdResult{
+							Message: "message"}, nil
+					})
+
+				messageReceived("#go-bot", "!cmd", "user", conn)
+
+				So(conn.Channel, ShouldEqual, "#go-bot")
 				So(conn.Messages, ShouldResemble, []string{"message"})
 			})
 		})
