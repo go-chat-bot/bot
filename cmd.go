@@ -40,10 +40,16 @@ type incomingMessage struct {
 	BotCurrentNick string
 }
 
+// CmdResult is the result message of V2 commands
 type CmdResult struct {
-	Channel string
-	Message string
+	Channel string // The channel where the bot should send the message
+	Message string // The message to be sent
 }
+
+const (
+	v1 = iota
+	v2
+)
 
 const (
 	commandNotAvailable   = "Command %v not available."
@@ -68,7 +74,7 @@ var (
 // cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value
 func RegisterCommand(command, description, exampleArgs string, cmdFunc activeCmdFuncV1) {
 	commands[command] = &customCommand{
-		Version:     1,
+		Version:     v1,
 		Cmd:         command,
 		CmdFuncV1:   cmdFunc,
 		Description: description,
@@ -84,7 +90,7 @@ func RegisterCommand(command, description, exampleArgs string, cmdFunc activeCmd
 // cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value and should return a CmdResult struct
 func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeCmdFuncV2) {
 	commands[command] = &customCommand{
-		Version:     2,
+		Version:     v2,
 		Cmd:         command,
 		CmdFuncV2:   cmdFunc,
 		Description: description,
@@ -169,13 +175,13 @@ func handleCmd(c *Cmd, conn ircConnection) {
 	log.Printf("HandleCmd %v %v", c.Command, c.FullArg)
 
 	switch cmd.Version {
-	case 1:
+	case v1:
 		message, err := cmd.CmdFuncV1(c)
 		checkCmdError(err, c, conn)
 		if message != "" {
 			conn.Privmsg(c.Channel, message)
 		}
-	case 2:
+	case v2:
 		result, err := cmd.CmdFuncV2(c)
 		checkCmdError(err, c, conn)
 		if result.Channel == "" {
