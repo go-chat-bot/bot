@@ -6,29 +6,34 @@ import (
 	"testing"
 )
 
-func TestCotacao(t *testing.T) {
-
+func TestPuppet(t *testing.T) {
 	Convey("When say", t, func() {
 		cmd := &bot.Cmd{}
 
-		Convey("Should return error if less than 2 arguments", func() {
+		Convey("Should return usage if less than 3 arguments", func() {
 			cmd.Args = []string{
 				"say",
+				"#go-bot",
 			}
-			_, err := sendMessage(cmd)
+			cmd.Channel = "#channel"
+			result, err := sendMessage(cmd)
 
-			So(err, ShouldNotBeNil)
+			So(err, ShouldBeNil)
+			So(result.Message, ShouldEqual, seeUsage)
+			So(result.Channel, ShouldBeEmpty)
 		})
 
-		Convey("Should return error if the first argument is not say or me", func() {
+		Convey("Should return error if the first argument is not say or act", func() {
 			cmd.Args = []string{
 				"hi",
 				"#channel",
 				"go-bot",
 			}
-			_, err := sendMessage(cmd)
+			result, err := sendMessage(cmd)
 
-			So(err, ShouldNotBeNil)
+			So(err, ShouldBeNil)
+			So(result.Message, ShouldEqual, seeUsage)
+			So(result.Channel, ShouldBeEmpty)
 		})
 
 		Convey("Should send a message to the specific channel", func() {
