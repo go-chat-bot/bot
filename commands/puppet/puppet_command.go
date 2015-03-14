@@ -33,7 +33,7 @@ func validCommand(cmd string) bool {
 func init() {
 	bot.RegisterCommandV2(
 		"puppet",
-		"Allows you to control what the bot says or acts",
-		"say|me your message",
+		"Allows you to send messages through the bot",
+		"say|me #channel your message",
 		sendMessage)
 }
