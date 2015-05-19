@@ -1,8 +1,9 @@
 package puppet
 
 import (
-	"github.com/fabioxgn/go-bot"
 	"strings"
+
+	"github.com/fabioxgn/go-bot"
 )
 
 const (
@@ -34,6 +35,6 @@ func init() {
 	bot.RegisterCommandV2(
 		"puppet",
 		"Allows you to send messages through the bot",
-		"say|me #channel your message",
+		"say #channel your message",
 		sendMessage)
 }
