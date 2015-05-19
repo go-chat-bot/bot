@@ -19,7 +19,7 @@ To see what I can do, type **!help** in the channel or send me a private message
 * **!gif**: Posts a random gif url from [giphy.com][giphy.com]. Try it with: **!gif cat**
 * **!catgif**: Posts a random cat gif url from [thecatapi.com][thecatapi.com]
 * **!godoc**: Searches packages in godoc.org. Try it with: **!godoc net/http**
-* **!puppet**: Allows you to send messages through the bot: Try it with: **!puppet #go-bot Hello!**
+* **!puppet**: Allows you to send messages through the bot: Try it with: **!puppet say #go-bot Hello!**
 
 ### Passive commands (triggers)
 
