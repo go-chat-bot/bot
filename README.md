@@ -36,7 +36,7 @@ I also have some brazilian commands which only apply to Brazil:
 
 * **megasena**: Gera um número da megasena ou mostra o último resultado
 * **cotacao**: Informa a cotação atual do Dólar e Euro
-* **dilma** (passive): Diz alguma frase da Dilma quando a palavra "dilma" é citada
+* **dilma** (passivo): Diz alguma frase da Dilma quando a palavra "dilma" é citada
 
 ### Example commands
 
