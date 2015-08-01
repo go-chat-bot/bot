@@ -3,8 +3,8 @@ package dilma
 import (
 	"github.com/fabioxgn/go-bot"
 	. "github.com/smartystreets/goconvey/convey"
+	"strings"
 	"testing"
-  "strings"
 )
 
 func TestDilma(t *testing.T) {
@@ -26,7 +26,7 @@ func TestDilma(t *testing.T) {
 
 			So(err, ShouldBeNil)
 			So(s, ShouldNotEqual, "")
-      So(strings.HasPrefix(s, ":dilma: "), ShouldBeTrue)
+			So(strings.HasPrefix(s, ":dilma: "), ShouldBeTrue)
 		})
 	})
 }
