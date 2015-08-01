@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pattern = "(?i)\\b(chuck)\\b"
+	pattern = "(?i)\\b(chuck|norris)\\b"
 )
 
 var (

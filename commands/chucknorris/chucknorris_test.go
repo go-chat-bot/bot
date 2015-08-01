@@ -25,5 +25,14 @@ func TestChuckNorris(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(s, ShouldNotEqual, "")
 		})
+
+    Convey("When the text match norris", func() {
+			cmd.Raw = "Hi, I'm Mr. Norris"
+
+			s, err := chucknorris(cmd)
+
+			So(err, ShouldBeNil)
+			So(s, ShouldNotEqual, "")
+		})
 	})
 }
