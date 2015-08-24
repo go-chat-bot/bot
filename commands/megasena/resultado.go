@@ -44,7 +44,7 @@ type retorno struct {
 	MegaViradaValorAcumulado string `json:"mega_virada_valor_acumulado"`
 }
 
-func Resultado() (string, error) {
+func resultado() (string, error) {
 	data := &retorno{}
 	err := web.GetJSON(url, data)
 	if err != nil {

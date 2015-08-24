@@ -26,3 +26,6 @@ _testmain.go
 # Sublime Text
 
 *.sublime-*
+
+# vim swap files
+*.swp

@@ -37,7 +37,7 @@ func showHelp(c *Cmd, help *customCommand, conn ircConnection) {
 }
 
 func showAvailabeCommands(channel string, conn ircConnection) {
-	cmds := make([]string, 0)
+	var cmds []string
 	for k := range commands {
 		cmds = append(cmds, k)
 	}

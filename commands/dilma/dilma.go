@@ -5,7 +5,6 @@ import (
 	"github.com/fabioxgn/go-bot"
 	"math/rand"
 	"regexp"
-	"time"
 )
 
 const (
@@ -45,7 +44,6 @@ func dilma(command *bot.PassiveCmd) (string, error) {
 }
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
 	bot.RegisterPassiveCommand(
 		"dilma",
 		dilma)

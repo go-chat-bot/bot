@@ -48,9 +48,8 @@ func getServerName() string {
 	separatorIndex := strings.LastIndex(config.Server, ":")
 	if separatorIndex != -1 {
 		return config.Server[:separatorIndex]
-	} else {
-		return config.Server
 	}
+	return config.Server
 }
 
 func connect() {

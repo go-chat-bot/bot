@@ -23,7 +23,7 @@ func megasena(command *bot.Cmd) (msg string, err error) {
 		case "gerar":
 			msg = sortear(60)
 		case "resultado":
-			msg, err = Resultado()
+			msg, err = resultado()
 		}
 	}
 	msg = fmt.Sprintf("%s: %s", command.Nick, msg)
