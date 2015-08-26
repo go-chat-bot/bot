@@ -23,7 +23,9 @@ To see what I can do, type **!help** in the channel or send me a private message
 
 ### Passive commands (triggers)
 
-I also have some commands, which are triggered by keywords, urls, etc
+Passive commands are triggered by keywords, urls, etc.
+
+These commands differ from the active commands as they are executed for every match in any text. Ex: The Chuck Norris command, replies with a Chuck Norris fact every time the words "chuck" or "norris" are mentioned on a channel.
 
 * **url**: Detects url and gets it's title (very naive implementation, works sometimes)
 * **catfacts**: Tells a random cat fact based on some cat keywords
@@ -32,7 +34,7 @@ I also have some commands, which are triggered by keywords, urls, etc
 
 ### Brazilian commands (pt-br)
 
-I also have some brazilian commands which only apply to Brazil:
+I also have some brazilian commands which only makes sense to brazillians:
 
 * **megasena**: Gera um número da megasena ou mostra o último resultado
 * **cotacao**: Informa a cotação atual do Dólar e Euro
@@ -44,19 +46,48 @@ If you wish to write your own commands, start with the 2 example commands, they 
 
 ## Joining and parting channels
 
+### IRC
+
 If you want me to join your channel, send me a private message with:
 
     !join #channel pass
 
 If I'm boring you, just send a **!part** command in a channel I'm in.
 
-## Deploying to heroku
+### Slack
 
-To see an example project on how to deploy it to heroku, please see my own configuration:
+!join and !part does not work on slack (yet), so use the slack commands like `/invite` and `/remove`
 
-https://github.com/fabioxgn/go-bot-heroku
+## Connecting Slack
 
-## Deploying your own clone of me
+To deploy your go-bot to slack, you need to:
+
+* [Create a new bot user](https://my.slack.com/services/new/bot) integration on slack and get your token
+* Import the package bot
+* Import the commands you would like to use
+* Call Bot.RunSlack(token)
+
+Here is a full example reading the slack token from the `SLACK_TOKEN env var:
+
+```Go
+package main
+
+import (
+    "os"
+
+    "github.com/fabioxgn/go-bot"
+    _ "github.com/fabioxgn/go-bot/commands/catfacts"
+    _ "github.com/fabioxgn/go-bot/commands/catgif"
+    _ "github.com/fabioxgn/go-bot/commands/chucknorris"
+    // Import all the commands you wish to use
+)
+
+func main() {
+    bot.RunSlack(os.Getenv("SLACK_TOKEN")
+}
+```
+
+## Connecting to IRC
 
 To deploy your own go-bot, you need to:
 
@@ -93,6 +124,12 @@ Here is a full example:
 To join channels with passwords just put the password after the channel name separated by a space:
 
     Channels: []string{"#mychannel mypassword", "#go-bot"}
+
+## Deploying to heroku
+
+To see an example project on how to deploy it to heroku, please see my own configuration:
+
+https://github.com/fabioxgn/go-bot-heroku
 
 [go]: http://golang.org
 [go-ircevent]: https://github.com/thoj/go-ircevent
