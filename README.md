@@ -56,9 +56,9 @@ If I'm boring you, just send a **!part** command in a channel I'm in.
 
 ### Slack
 
-!join and !part does not work on slack (yet), so use the slack commands like `/invite` and `/remove`
+`!join` and `!part` does not work on slack (yet), so use the slack commands like `/invite` and `/remove` to invite the bot to the desired channels.
 
-## Connecting Slack
+## Connecting to Slack
 
 To deploy your go-bot to slack, you need to:
 
