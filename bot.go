@@ -3,11 +3,12 @@ package bot
 
 import (
 	"crypto/tls"
-	"github.com/thoj/go-ircevent"
 	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/thoj/go-ircevent"
 )
 
 const (
@@ -72,13 +73,8 @@ func onWelcome(e *irc.Event) {
 	}
 }
 
-func onEndOfNames(e *irc.Event) {
-	log.Printf("onEndOfNames: %v", e.Arguments)
-}
-
 func configureEvents() {
 	irccon.AddCallback("001", onWelcome)
-	irccon.AddCallback("366", onEndOfNames)
 	irccon.AddCallback("PRIVMSG", onPRIVMSG)
 }
 
