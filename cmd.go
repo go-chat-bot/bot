@@ -17,7 +17,7 @@ type Cmd struct {
 	Args    []string // Arguments as array
 }
 
-// PassiveCmd holds the information which will be passed to passive commands when receiving a message on the channel
+// PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
 	Raw     string // Raw message sent to the channel
 	Channel string // Channel which the message was sent to
@@ -67,7 +67,7 @@ var (
 )
 
 // RegisterCommand adds a new command to the bot.
-// The command(s) should be registered in the Ini() func of your package
+// The command(s) should be registered in the Init() func of your package
 // command: String which the user will use to execute the command, example: reverse
 // decription: Description of the command to use in !help, example: Reverses a string
 // exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
@@ -83,11 +83,7 @@ func RegisterCommand(command, description, exampleArgs string, cmdFunc activeCmd
 }
 
 // RegisterCommandV2 adds a new command to the bot.
-// The command(s) should be registered in the Ini() func of your package
-// command: String which the user will use to execute the command, example: reverse
-// decription: Description of the command to use in !help, example: Reverses a string
-// exampleArgs: Example args to be displayed in !help <command>, example: string to be reversed
-// cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value and should return a CmdResult struct
+// It is the same as RegisterCommand but the command can specify the channel to reply to
 func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeCmdFuncV2) {
 	commands[command] = &customCommand{
 		Version:     v2,
@@ -99,7 +95,7 @@ func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeC
 }
 
 // RegisterPassiveCommand adds a new passive command to the bot.
-// The command(s) should be registered in the Ini() func of your package
+// The command should be registered in the Init() func of your package
 // Passive commands receives all the text posted to a channel without any parsing
 // command: String used to identify the command, for internal use only (ex: logs)
 // cmdFunc: Function which will be executed. It will received the raw message, channel and nick
@@ -111,7 +107,7 @@ func isPrivateMsg(channel, currentNick string) bool {
 	return channel == currentNick
 }
 
-func messageReceived(channel, text, senderNick string, conn ircConnection) {
+func messageReceived(channel, text, senderNick string, conn connection) {
 	if isPrivateMsg(channel, conn.GetNick()) {
 		channel = senderNick // should reply in private
 	}
@@ -136,10 +132,9 @@ func messageReceived(channel, text, senderNick string, conn ircConnection) {
 	default:
 		handleCmd(command, conn)
 	}
-
 }
 
-func executePassiveCommands(cmd *PassiveCmd, conn ircConnection) {
+func executePassiveCommands(cmd *PassiveCmd, conn connection) {
 	var wg sync.WaitGroup
 
 	for k, v := range passiveCommands {
@@ -164,7 +159,7 @@ func executePassiveCommands(cmd *PassiveCmd, conn ircConnection) {
 	wg.Wait()
 }
 
-func handleCmd(c *Cmd, conn ircConnection) {
+func handleCmd(c *Cmd, conn connection) {
 	cmd := commands[c.Command]
 
 	if cmd == nil {
@@ -195,7 +190,7 @@ func handleCmd(c *Cmd, conn ircConnection) {
 
 }
 
-func checkCmdError(err error, c *Cmd, conn ircConnection) {
+func checkCmdError(err error, c *Cmd, conn connection) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
