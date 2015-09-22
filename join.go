@@ -11,7 +11,7 @@ const (
 	joinMessage = "Hello humans o/ My master %s called me here"
 )
 
-func join(c *Cmd, channel, senderNick string, conn ircConnection) {
+func join(c *Cmd, channel, senderNick string, conn connection) {
 	channelToJoin := strings.TrimSpace(c.FullArg)
 	if channelToJoin == "" {
 		conn.Privmsg(channel, joinUsage)
