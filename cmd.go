@@ -103,10 +103,6 @@ func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (strin
 	passiveCommands[command] = cmdFunc
 }
 
-func isPrivateMsg(channel, currentNick string) bool {
-	return channel == currentNick
-}
-
 func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
 	mutex := &sync.Mutex{}
