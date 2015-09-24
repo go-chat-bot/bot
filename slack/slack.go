@@ -16,7 +16,7 @@ func (c slackConnection) MessageReceived(target, message, sender string) {
 }
 
 // RunSlack connects to slack RTM API using the provided token
-func RunSlack(token string) {
+func Run(token string) {
 	api := slack.New(token)
 
 	conn := new(slackConnection)
