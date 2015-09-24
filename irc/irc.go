@@ -21,19 +21,19 @@ type Config struct {
 	Debug         bool     // This will log all IRC communication to standad output
 }
 
+var (
+	ircConn *ircevent.Connection
+	gobot   *bot.Bot
+	config  *Config
+)
+
 func messageHandler(target, message, sender string) {
 	channel := target
-	if conn.GetNick() == target {
+	if ircConn.GetNick() == target {
 		channel = sender
 	}
-	conn.Privmsg(channel, message)
+	ircConn.Privmsg(channel, message)
 }
-
-var (
-	conn   *ircevent.Connection
-	gobot  *bot.Bot
-	config *Config
-)
 
 func onPRIVMSG(e *ircevent.Event) {
 	gobot.MessageReceived(e.Arguments[0], e.Message(), e.Nick)
@@ -49,7 +49,7 @@ func getServerName(server string) string {
 
 func onWelcome(e *ircevent.Event) {
 	for _, channel := range config.Channels {
-		conn.Join(channel)
+		ircConn.Join(channel)
 	}
 }
 
@@ -58,22 +58,22 @@ func onWelcome(e *ircevent.Event) {
 func Run(c *Config) {
 	config = c
 
-	ircConn := ircevent.IRC(c.User, c.Nick)
+	ircConn = ircevent.IRC(c.User, c.Nick)
 	ircConn.Password = c.Password
 	ircConn.UseTLS = c.UseTLS
 	ircConn.TLSConfig = &tls.Config{
 		ServerName: getServerName(c.Server),
 	}
 	ircConn.VerboseCallbackHandler = c.Debug
-	err := ircConn.Connect(c.Server)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	gobot = bot.NewBot(messageHandler, c.Channels)
 
 	ircConn.AddCallback("001", onWelcome)
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)
 
-	gobot = bot.NewBot(messageHandler, c.Channels)
-
+	err := ircConn.Connect(c.Server)
+	if err != nil {
+		log.Fatal(err)
+	}
 	ircConn.Loop()
 }
