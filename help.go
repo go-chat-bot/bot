@@ -13,34 +13,34 @@ const (
 	helpCommand       = "help"
 )
 
-func help(c *Cmd, channel, senderNick string, conn connection) {
-	cmd := parse(CmdPrefix+c.FullArg, channel, senderNick)
+func (b *Bot) help(c *Cmd) {
+	cmd := parse(CmdPrefix+c.FullArg, c.Channel, c.Nick)
 	if cmd == nil {
-		showAvailabeCommands(channel, conn)
+		b.showAvailabeCommands(c.Channel, c.Nick)
 		return
 	}
 
 	command := commands[cmd.Command]
 	if command == nil {
-		showAvailabeCommands(c.Channel, conn)
+		b.showAvailabeCommands(c.Channel, c.Nick)
 		return
 	}
 
-	showHelp(cmd, command, conn)
+	b.showHelp(cmd, command)
 }
 
-func showHelp(c *Cmd, help *customCommand, conn connection) {
+func (b *Bot) showHelp(c *Cmd, help *customCommand) {
 	if help.Description != "" {
-		conn.Privmsg(c.Channel, fmt.Sprintf(helpDescripton, help.Description))
+		b.messageHandler(c.Channel, fmt.Sprintf(helpDescripton, help.Description), c.Nick)
 	}
-	conn.Privmsg(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs))
+	b.messageHandler(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs), c.Nick)
 }
 
-func showAvailabeCommands(channel string, conn connection) {
+func (b *Bot) showAvailabeCommands(channel, sender string) {
 	var cmds []string
 	for k := range commands {
 		cmds = append(cmds, k)
 	}
-	conn.Privmsg(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix))
-	conn.Privmsg(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")))
+	b.messageHandler(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix), sender)
+	b.messageHandler(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")), sender)
 }
