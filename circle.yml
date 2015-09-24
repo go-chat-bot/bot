@@ -1,0 +1,10 @@
+test:
+  pre:
+    - go get github.com/mattn/goveralls
+  override:
+    - go test -v -cover -race -coverprofile=/home/ubuntu/coverage.out
+    - go test -v ./irc/ -cover -race -coverprofile=/home/ubuntu/irc_coverage.out
+    - go test -v ./slack/ -cover -race -coverprofile=/home/ubuntu/slack_coverage.out
+  post:
+    - cat /home/ubuntu/*_coverage.out | grep -v "mode: set" >> /home/ubuntu/coverage.out
+    - /home/ubuntu/bin/goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
