@@ -107,35 +107,9 @@ func isPrivateMsg(channel, currentNick string) bool {
 	return channel == currentNick
 }
 
-func messageReceived(channel, text, senderNick string, conn connection) {
-	if isPrivateMsg(channel, conn.GetNick()) {
-		channel = senderNick // should reply in private
-	}
-
-	command := parse(text, channel, senderNick)
-	if command == nil {
-		executePassiveCommands(&PassiveCmd{
-			Raw:     text,
-			Channel: channel,
-			Nick:    senderNick,
-		}, conn)
-		return
-	}
-
-	switch command.Command {
-	case helpCommand:
-		help(command, channel, senderNick, conn)
-	case joinCommand:
-		join(command, channel, senderNick, conn)
-	case partCommand:
-		part(command, channel, senderNick, conn)
-	default:
-		handleCmd(command, conn)
-	}
-}
-
-func executePassiveCommands(cmd *PassiveCmd, conn connection) {
+func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
+	mutex := &sync.Mutex{}
 
 	for k, v := range passiveCommands {
 		cmdName := k
@@ -151,7 +125,9 @@ func executePassiveCommands(cmd *PassiveCmd, conn connection) {
 			if err != nil {
 				log.Println(err)
 			} else {
-				conn.Privmsg(cmd.Channel, result)
+				mutex.Lock()
+				b.messageHandler(cmd.Channel, result, cmd.Nick)
+				mutex.Unlock()
 			}
 		}()
 	}
@@ -159,7 +135,7 @@ func executePassiveCommands(cmd *PassiveCmd, conn connection) {
 	wg.Wait()
 }
 
-func handleCmd(c *Cmd, conn connection) {
+func (b *Bot) handleCmd(c *Cmd) {
 	cmd := commands[c.Command]
 
 	if cmd == nil {
@@ -172,28 +148,28 @@ func handleCmd(c *Cmd, conn connection) {
 	switch cmd.Version {
 	case v1:
 		message, err := cmd.CmdFuncV1(c)
-		checkCmdError(err, c, conn)
+		b.checkCmdError(err, c)
 		if message != "" {
-			conn.Privmsg(c.Channel, message)
+			b.messageHandler(c.Channel, message, c.Nick)
 		}
 	case v2:
 		result, err := cmd.CmdFuncV2(c)
-		checkCmdError(err, c, conn)
+		b.checkCmdError(err, c)
 		if result.Channel == "" {
 			result.Channel = c.Channel
 		}
 
 		if result.Message != "" {
-			conn.Privmsg(result.Channel, result.Message)
+			b.messageHandler(result.Channel, result.Message, c.Nick)
 		}
 	}
 
 }
 
-func checkCmdError(err error, c *Cmd, conn connection) {
+func (b *Bot) checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
-		conn.Privmsg(c.Channel, errorMsg)
+		b.messageHandler(c.Channel, errorMsg, c.Nick)
 	}
 }

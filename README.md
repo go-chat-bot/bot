@@ -1,8 +1,8 @@
 # go-bot
 
-[![Build Status](https://travis-ci.org/fabioxgn/go-bot.png?branch=master)](https://travis-ci.org/fabioxgn/go-bot) [![GoDoc](https://godoc.org/github.com/fabioxgn/go-bot?status.png)](https://godoc.org/github.com/fabioxgn/go-bot) [![Coverage Status](https://img.shields.io/coveralls/fabioxgn/go-bot.svg)](https://coveralls.io/r/fabioxgn/go-bot?branch=master)
+[![Circle CI](https://circleci.com/gh/go-chat-bot/bot/tree/master.svg?style=svg)](https://circleci.com/gh/go-chat-bot/bot/tree/master) [![GoDoc](https://godoc.org/github.com/go-chat-bot/bot?status.png)](https://godoc.org/github.com/go-chat-bot/bot) [![Coverage Status](https://img.shields.io/coveralls/go-chat-bot/bot.svg)](https://coveralls.io/r/go-chat-bot/bot?branch=master)
 
-Nice to meet you! I'm a IRC bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity.
+Nice to meet you! I'm a IRC & Slack bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity and [nlopes/slack](https://github.com/nlopes/slack) for the Slack API.
 
 I can be deployed to [heroku][heroku] and used in [slack][slack] to overpower slackbot.
 
@@ -10,7 +10,7 @@ I can be deployed to [heroku][heroku] and used in [slack][slack] to overpower sl
 
 I'm always hanging out as **go-bot** in the channel **#go-bot @ irc.freenode.org**
 
-To see what I can do, type **!help** in the channel or send me a private message.
+To see what I can do, type **!help** in the channel or send me !help in private message.
 
 ## My awesome commands
 
@@ -63,9 +63,9 @@ If I'm boring you, just send a **!part** command in a channel I'm in.
 To deploy your go-bot to slack, you need to:
 
 * [Create a new bot user](https://my.slack.com/services/new/bot) integration on slack and get your token
-* Import the package bot
+* Import the package `github.com/go-chat-bot/bot/slack`
 * Import the commands you would like to use
-* Call Bot.RunSlack(token)
+* Call slack.Run(token)
 
 Here is a full example reading the slack token from the `SLACK_TOKEN env var:
 
@@ -75,15 +75,15 @@ package main
 import (
     "os"
 
-    "github.com/fabioxgn/go-bot"
-    _ "github.com/fabioxgn/go-bot/commands/catfacts"
-    _ "github.com/fabioxgn/go-bot/commands/catgif"
-    _ "github.com/fabioxgn/go-bot/commands/chucknorris"
+    "github.com/go-chat-bot/bot/slack"
+    _ "github.com/go-chat-bot/plugins/catfacts"
+    _ "github.com/go-chat-bot/plugins/catgif"
+    _ "github.com/go-chat-bot/plugins/chucknorris"
     // Import all the commands you wish to use
 )
 
 func main() {
-    bot.RunSlack(os.Getenv("SLACK_TOKEN")
+    slack.Run(os.Getenv("SLACK_TOKEN")
 }
 ```
 
@@ -91,26 +91,26 @@ func main() {
 
 To deploy your own go-bot, you need to:
 
-* Import the package bot
+* Import the package `github.com/go-chat-bot/bot/irc`
 * Import the commands you would like to use
 * Fill the Config struct
-* Call Bot.Run(config)
+* Call `irc.Run(config)`
 
 Here is a full example:
 ```Go
 package main
 	import (
-		"github.com/fabioxgn/go-bot"
-		_ "github.com/fabioxgn/go-bot/commands/catfacts"
-		_ "github.com/fabioxgn/go-bot/commands/catgif"
-		_ "github.com/fabioxgn/go-bot/commands/chucknorris"
+		"github.com/go-chat-bot/bot/irc"
+		_ "github.com/go-chat-bot/plugins/catfacts"
+		_ "github.com/go-chat-bot/plugins/catgif"
+		_ "github.com/go-chat-bot/plugins/chucknorris"
 		// Import all the commands you wish to use
 		"os"
 		"strings"
 	)
 
 	func main() {
-		bot.Run(&bot.Config{
+		irc.Run(&bot.Config{
 			Server:   os.Getenv("IRC_SERVER"),
 			Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
 			User:     os.Getenv("IRC_USER"),
@@ -127,7 +127,7 @@ To join channels with passwords just put the password after the channel name sep
 
 ## Deploying to heroku
 
-To see an example project on how to deploy it to heroku, please see my own configuration:
+To see an example project on how to deploy your bot, please see my own configuration:
 
 - **IRC**: https://github.com/fabioxgn/go-bot-heroku
 - **Slack**: https://github.com/fabioxgn/go-bot-slack

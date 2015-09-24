@@ -1,8 +1,9 @@
-package bot
+package slack
 
 import (
 	"fmt"
 
+	"github.com/go-chat-bot/bot"
 	"github.com/nlopes/slack"
 )
 
@@ -10,22 +11,19 @@ type slackConnection struct {
 	rtm *slack.RTM
 }
 
-func (c *slackConnection) GetNick() string {
-	return ""
-}
-func (c slackConnection) Join(channel string) {}
-func (c slackConnection) Part(channel string) {}
-
-func (c slackConnection) Privmsg(target, message string) {
+func (c slackConnection) MessageReceived(target, message, sender string) {
 	c.rtm.SendMessage(c.rtm.NewOutgoingMessage(message, target))
 }
 
 // RunSlack connects to slack RTM API using the provided token
-func RunSlack(token string) {
+func Run(token string) {
 	api := slack.New(token)
 
 	conn := new(slackConnection)
 	conn.rtm = api.NewRTM()
+
+	gobot := bot.NewBot(conn.MessageReceived, []string{})
+
 	go conn.rtm.ManageConnection()
 
 Loop:
@@ -34,7 +32,7 @@ Loop:
 		case msg := <-conn.rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slack.MessageEvent:
-				messageReceived(ev.Channel, ev.Text, ev.User, conn)
+				gobot.MessageReceived(ev.Channel, ev.Text, ev.User)
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())
