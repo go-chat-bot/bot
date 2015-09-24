@@ -7,4 +7,4 @@ test:
     - go test -v ./slack/ -cover -race -coverprofile=/home/ubuntu/slack_coverage.out
   post:
     - ./join_build_coverage.sh
-    - /home/ubuntu/bin/goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    - goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
