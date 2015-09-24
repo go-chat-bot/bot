@@ -109,6 +109,7 @@ func isPrivateMsg(channel, currentNick string) bool {
 
 func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
+	mutex := &sync.Mutex{}
 
 	for k, v := range passiveCommands {
 		cmdName := k
@@ -124,7 +125,9 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 			if err != nil {
 				log.Println(err)
 			} else {
+				mutex.Lock()
 				b.messageHandler(cmd.Channel, result, cmd.Nick)
+				mutex.Unlock()
 			}
 		}()
 	}
