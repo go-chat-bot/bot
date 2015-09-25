@@ -8,35 +8,32 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-type connMock struct {
-	Channel  string
-	Messages []string
-	Nick     string
+var (
+	channel  string
+	replies  []string
+	nick     string
 	channels []string
+)
+
+func responseHandler(target, message, sender string) {
+	channel = target
+	nick = sender
+	replies = append(replies, message)
 }
 
-func (m *connMock) MessageReceived(target, message, sender string) {
-	m.Channel = target
-	m.Nick = sender
-	m.Messages = append(m.Messages, message)
-}
-
-func (m *connMock) Channels() []string {
-	return m.channels
-}
-
-func TestMessageReceived(t *testing.T) {
+func TestmessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)
-		conn := &connMock{}
-		b := NewBot(conn.MessageReceived, conn.Channels())
+		New(&Handlers{
+			Response: responseHandler,
+		})
 
 		Convey("When the command is not registered", func() {
 			Convey("It should not post to the channel", func() {
 
-				b.MessageReceived("#go-bot", "!not_a_cmd", "user")
+				responseHandler("#go-bot", "!not_a_cmd", "user")
 
-				So(conn.Messages, ShouldBeEmpty)
+				So(replies, ShouldBeEmpty)
 			})
 		})
 
@@ -48,10 +45,10 @@ func TestMessageReceived(t *testing.T) {
 						return "", cmdError
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", "user")
+				responseHandler("#go-bot", "!cmd", "user")
 
-				So(conn.Channel, ShouldEqual, "#go-bot")
-				So(conn.Messages, ShouldResemble,
+				So(channel, ShouldEqual, "#go-bot")
+				So(replies, ShouldResemble,
 					[]string{fmt.Sprintf(errorExecutingCommand, "cmd", cmdError.Error())})
 			})
 		})
@@ -69,45 +66,45 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived("#go-bot", "!cmd", "user")
+				responseHandler("#go-bot", "!cmd", "user")
 
-				So(conn.Channel, ShouldEqual, "#go-bot")
-				So(conn.Messages, ShouldResemble, []string{expectedMsg})
+				So(channel, ShouldEqual, "#go-bot")
+				So(replies, ShouldResemble, []string{expectedMsg})
 			})
 
 			Convey("If it is a private message, reply to the user", func() {
-				conn.Nick = "go-bot"
-				b.MessageReceived("go-bot", "!cmd", "sender-nick")
+				nick = "go-bot"
+				responseHandler("go-bot", "!cmd", "sender-nick")
 
-				So(conn.Nick, ShouldEqual, "sender-nick")
+				So(nick, ShouldEqual, "sender-nick")
 			})
 
 			Convey("When the command is help", func() {
 				Convey("Display the available commands in the channel", func() {
-					b.MessageReceived("#go-bot", "!help", "user")
+					responseHandler("#go-bot", "!help", "user")
 
-					So(conn.Channel, ShouldEqual, "#go-bot")
-					So(conn.Messages, ShouldResemble, []string{
+					So(channel, ShouldEqual, "#go-bot")
+					So(replies, ShouldResemble, []string{
 						fmt.Sprintf(helpAboutCommand, CmdPrefix),
 						fmt.Sprintf(availableCommands, "cmd"),
 					})
 				})
 
 				Convey("If the command exists send a message to the channel", func() {
-					b.MessageReceived("#go-bot", "!help cmd", "user")
+					responseHandler("#go-bot", "!help cmd", "user")
 
-					So(conn.Channel, ShouldEqual, "#go-bot")
-					So(conn.Messages, ShouldResemble, []string{
+					So(channel, ShouldEqual, "#go-bot")
+					So(replies, ShouldResemble, []string{
 						fmt.Sprintf(helpDescripton, cmdDescription),
 						fmt.Sprintf(helpUsage, CmdPrefix, cmd, cmdExampleArgs),
 					})
 				})
 
 				Convey("If the command does not exists, display the generic help", func() {
-					b.MessageReceived("#go-bot", "!help not_a_command", "user")
+					responseHandler("#go-bot", "!help not_a_command", "user")
 
-					So(conn.Channel, ShouldEqual, "#go-bot")
-					So(conn.Messages, ShouldResemble, []string{
+					So(channel, ShouldEqual, "#go-bot")
+					So(replies, ShouldResemble, []string{
 						fmt.Sprintf(helpAboutCommand, CmdPrefix),
 						fmt.Sprintf(availableCommands, "cmd"),
 					})
@@ -124,10 +121,10 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", "user")
+				responseHandler("#go-bot", "!cmd", "user")
 
-				So(conn.Channel, ShouldEqual, "#channel")
-				So(conn.Messages, ShouldResemble, []string{"message"})
+				So(channel, ShouldEqual, "#channel")
+				So(replies, ShouldResemble, []string{"message"})
 			})
 
 			Convey("it should reply to the current channel if the command does not specify one", func() {
@@ -137,10 +134,10 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", "user")
+				responseHandler("#go-bot", "!cmd", "user")
 
-				So(conn.Channel, ShouldEqual, "#go-bot")
-				So(conn.Messages, ShouldResemble, []string{"message"})
+				So(channel, ShouldEqual, "#go-bot")
+				So(replies, ShouldResemble, []string{"message"})
 			})
 		})
 
@@ -162,22 +159,22 @@ func TestMessageReceived(t *testing.T) {
 			RegisterPassiveCommand("errored", errored)
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived("#go-bot", "test", "user")
+				responseHandler("#go-bot", "test", "user")
 
-				So(conn.Channel, ShouldEqual, "#go-bot")
-				So(len(conn.Messages), ShouldEqual, 2)
-				So(conn.Messages, ShouldContain, "test")
-				So(conn.Messages, ShouldContain, "pong")
+				So(channel, ShouldEqual, "#go-bot")
+				So(len(replies), ShouldEqual, 2)
+				So(replies, ShouldContain, "test")
+				So(replies, ShouldContain, "pong")
 			})
 
 			Convey("If it is a private message, reply to the user", func() {
-				conn.Nick = "go-bot"
-				b.MessageReceived("go-bot", "test", "sender-nick")
+				nick = "go-bot"
+				responseHandler("go-bot", "test", "sender-nick")
 
-				So(conn.Nick, ShouldEqual, "sender-nick")
-				So(len(conn.Messages), ShouldEqual, 2)
-				So(conn.Messages, ShouldContain, "test")
-				So(conn.Messages, ShouldContain, "pong")
+				So(nick, ShouldEqual, "sender-nick")
+				So(len(replies), ShouldEqual, 2)
+				So(replies, ShouldContain, "test")
+				So(replies, ShouldContain, "pong")
 			})
 		})
 	})

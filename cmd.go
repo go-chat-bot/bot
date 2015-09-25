@@ -103,12 +103,11 @@ func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (strin
 	passiveCommands[command] = cmdFunc
 }
 
-func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
+func executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
 	mutex := &sync.Mutex{}
 
-	for k, v := range passiveCommands {
-		cmdName := k
+	for _, v := range passiveCommands {
 		cmdFunc := v
 
 		wg.Add(1)
@@ -116,13 +115,12 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 		go func() {
 			defer wg.Done()
 
-			log.Println("Executing passive command: ", cmdName)
 			result, err := cmdFunc(cmd)
 			if err != nil {
 				log.Println(err)
 			} else {
 				mutex.Lock()
-				b.messageHandler(cmd.Channel, result, cmd.Nick)
+				handlers.Response(cmd.Channel, result, cmd.Nick)
 				mutex.Unlock()
 			}
 		}()
@@ -131,7 +129,7 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	wg.Wait()
 }
 
-func (b *Bot) handleCmd(c *Cmd) {
+func handleCmd(c *Cmd) {
 	cmd := commands[c.Command]
 
 	if cmd == nil {
@@ -144,28 +142,27 @@ func (b *Bot) handleCmd(c *Cmd) {
 	switch cmd.Version {
 	case v1:
 		message, err := cmd.CmdFuncV1(c)
-		b.checkCmdError(err, c)
+		checkCmdError(err, c)
 		if message != "" {
-			b.messageHandler(c.Channel, message, c.Nick)
+			handlers.Response(c.Channel, message, c.Nick)
 		}
 	case v2:
 		result, err := cmd.CmdFuncV2(c)
-		b.checkCmdError(err, c)
+		checkCmdError(err, c)
 		if result.Channel == "" {
 			result.Channel = c.Channel
 		}
 
 		if result.Message != "" {
-			b.messageHandler(result.Channel, result.Message, c.Nick)
+			handlers.Response(result.Channel, result.Message, c.Nick)
 		}
 	}
-
 }
 
-func (b *Bot) checkCmdError(err error, c *Cmd) {
+func checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
-		b.messageHandler(c.Channel, errorMsg, c.Nick)
+		handlers.Response(c.Channel, errorMsg, c.Nick)
 	}
 }

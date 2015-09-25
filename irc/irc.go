@@ -23,11 +23,10 @@ type Config struct {
 
 var (
 	ircConn *ircevent.Connection
-	gobot   *bot.Bot
 	config  *Config
 )
 
-func messageHandler(target, message, sender string) {
+func responseHandler(target, message, sender string) {
 	channel := target
 	if ircConn.GetNick() == target {
 		channel = sender
@@ -36,7 +35,7 @@ func messageHandler(target, message, sender string) {
 }
 
 func onPRIVMSG(e *ircevent.Event) {
-	gobot.MessageReceived(e.Arguments[0], e.Message(), e.Nick)
+	bot.MessageReceived(e.Arguments[0], e.Message(), e.Nick)
 }
 
 func getServerName(server string) string {
@@ -66,7 +65,9 @@ func Run(c *Config) {
 	}
 	ircConn.VerboseCallbackHandler = c.Debug
 
-	gobot = bot.NewBot(messageHandler, c.Channels)
+	bot.New(&bot.Handlers{
+		Response: responseHandler,
+	})
 
 	ircConn.AddCallback("001", onWelcome)
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)
