@@ -7,32 +7,32 @@ import (
 	"github.com/nlopes/slack"
 )
 
-type slackConnection struct {
+var (
 	rtm *slack.RTM
+)
+
+func responseHandler(target, message, sender string) {
+	rtm.SendMessage(rtm.NewOutgoingMessage(message, target))
 }
 
-func (c slackConnection) MessageReceived(target, message, sender string) {
-	c.rtm.SendMessage(c.rtm.NewOutgoingMessage(message, target))
-}
-
-// RunSlack connects to slack RTM API using the provided token
+// Run connects to slack RTM API using the provided token
 func Run(token string) {
 	api := slack.New(token)
+	rtm = api.NewRTM()
 
-	conn := new(slackConnection)
-	conn.rtm = api.NewRTM()
+	bot.New(&bot.Handlers{
+		Response: responseHandler,
+	})
 
-	gobot := bot.NewBot(conn.MessageReceived, []string{})
-
-	go conn.rtm.ManageConnection()
+	go rtm.ManageConnection()
 
 Loop:
 	for {
 		select {
-		case msg := <-conn.rtm.IncomingEvents:
+		case msg := <-rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slack.MessageEvent:
-				gobot.MessageReceived(ev.Channel, ev.Text, ev.User)
+				bot.MessageReceived(ev.Channel, ev.Text, ev.User)
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())

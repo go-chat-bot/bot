@@ -12,26 +12,28 @@ const (
 	CmdPrefix = "!"
 )
 
-type MessageHandler func(target, message, sender string)
-type NickHandler func() string
+// ResponseHandler must be implemented by the protocol to handle the bot responses
+type ResponseHandler func(target, message, sender string)
 
-type Bot struct {
-	channels       []string
-	messageHandler MessageHandler
+// Handlers that must be registered to receive callbacks from the bot
+type Handlers struct {
+	Response ResponseHandler
 }
 
-func NewBot(messageHandler MessageHandler, channels []string) *Bot {
-	b := &Bot{}
-	b.messageHandler = messageHandler
-	b.channels = channels
-	return b
+var (
+	handlers *Handlers
+)
+
+// New configures a new bot instance
+func New(h *Handlers) {
+	handlers = h
 }
 
-// MessageReceived must be called by the protocol handler upon receiving a message
-func (b *Bot) MessageReceived(channel, text, sender string) {
+// MessageReceived must be called by the protocol upon receiving a message
+func MessageReceived(channel, text, sender string) {
 	command := parse(text, channel, sender)
 	if command == nil {
-		b.executePassiveCommands(&PassiveCmd{
+		executePassiveCommands(&PassiveCmd{
 			Raw:     text,
 			Channel: channel,
 			Nick:    sender,
@@ -41,9 +43,9 @@ func (b *Bot) MessageReceived(channel, text, sender string) {
 
 	switch command.Command {
 	case helpCommand:
-		b.help(command)
+		help(command)
 	default:
-		b.handleCmd(command)
+		handleCmd(command)
 	}
 }
 
