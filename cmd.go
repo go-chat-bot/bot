@@ -137,8 +137,6 @@ func handleCmd(c *Cmd) {
 		return
 	}
 
-	log.Printf("HandleCmd %v %v", c.Command, c.FullArg)
-
 	switch cmd.Version {
 	case v1:
 		message, err := cmd.CmdFuncV1(c)
