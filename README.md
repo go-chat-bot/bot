@@ -2,7 +2,7 @@
 
 [![Circle CI](https://circleci.com/gh/go-chat-bot/bot/tree/master.svg?style=svg)](https://circleci.com/gh/go-chat-bot/bot/tree/master) [![GoDoc](https://godoc.org/github.com/go-chat-bot/bot?status.png)](https://godoc.org/github.com/go-chat-bot/bot) [![Coverage Status](https://img.shields.io/coveralls/go-chat-bot/bot.svg)](https://coveralls.io/r/go-chat-bot/bot?branch=master)
 
-Nice to meet you! I'm a IRC & Slack bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity and [nlopes/slack](https://github.com/nlopes/slack) for the Slack API.
+Nice to meet you! I'm a IRC, Slack & Telegram bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity, [nlopes/slack](https://github.com/nlopes/slack) for Slack and [Syfaro/telegram-bot-api](https://github.com/Syfaro/telegram-bot-api) for Telegram.
 
 I can be deployed to [heroku][heroku] and used in [slack][slack] to overpower slackbot.
 
@@ -65,9 +65,9 @@ To deploy your go-bot to slack, you need to:
 * [Create a new bot user](https://my.slack.com/services/new/bot) integration on slack and get your token
 * Import the package `github.com/go-chat-bot/bot/slack`
 * Import the commands you would like to use
-* Call slack.Run(token)
+* Call `slack.Run(token)`
 
-Here is a full example reading the slack token from the `SLACK_TOKEN env var:
+Here is a full example reading the slack token from the `SLACK_TOKEN` env var:
 
 ```Go
 package main
@@ -83,7 +83,7 @@ import (
 )
 
 func main() {
-    slack.Run(os.Getenv("SLACK_TOKEN")
+    slack.Run(os.Getenv("SLACK_TOKEN"))
 }
 ```
 
@@ -124,6 +124,37 @@ package main
 To join channels with passwords just put the password after the channel name separated by a space:
 
     Channels: []string{"#mychannel mypassword", "#go-bot"}
+
+### Telegram
+
+## Connecting to Telegram
+
+To deploy your go-bot to slack, you need to:
+
+* Follow Telegram instructions to [create a new bot user](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and get your token
+* Import the package `github.com/go-chat-bot/bot/telegram`
+* Import the commands you would like to use
+* Call `telegram.Run(token, debug)`
+
+Here is a full example reading the telegram token from the `TELEGRAM_TOKEN` env var:
+
+```Go
+package main
+
+import (
+    "os"
+
+    "github.com/go-chat-bot/bot/telegram"
+    _ "github.com/go-chat-bot/plugins/catfacts"
+    _ "github.com/go-chat-bot/plugins/catgif"
+    _ "github.com/go-chat-bot/plugins/chucknorris"
+    // Import all the commands you wish to use
+)
+
+func main() {
+    telegram.Run(os.Getenv("TELEGRAM_TOKEN"), os.Getenv("DEBUG") != "")
+}
+```
 
 ## Deploying to heroku
 
