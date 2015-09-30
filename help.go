@@ -14,7 +14,7 @@ const (
 )
 
 func help(c *Cmd) {
-	cmd := parse(CmdPrefix+c.FullArg, c.Channel, c.Nick)
+	cmd := parse(CmdPrefix+c.RawArgs, c.Channel, c.Nick)
 	if cmd == nil {
 		showAvailabeCommands(c.Channel, c.Nick)
 		return

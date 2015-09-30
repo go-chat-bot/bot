@@ -2,15 +2,16 @@ package bot
 
 import (
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
 	DefaultChannel = "#go-bot"
 	DefaultNick    = "user123"
 	DefaultCommand = "command"
-	DefaultFullArg = "arg1 arg2"
+	DefaultRawArgs = "arg1  arg2"
 	DefaultArgs    = []string{
 		"arg1",
 		"arg2",
@@ -48,14 +49,14 @@ func TestPaser(t *testing.T) {
 		})
 
 		Convey("When the message is a command with args", func() {
-			msg := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultFullArg)
+			msg := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultRawArgs)
 			cmd := parse(msg, DefaultChannel, DefaultNick)
 
 			So(cmd, ShouldNotBeNil)
 			So(cmd.Command, ShouldEqual, DefaultCommand)
 			So(cmd.Channel, ShouldEqual, DefaultChannel)
 			So(cmd.Args, ShouldResemble, DefaultArgs)
-			So(cmd.FullArg, ShouldEqual, DefaultFullArg)
+			So(cmd.RawArgs, ShouldEqual, DefaultRawArgs)
 		})
 
 		Convey("When the message has extra spaces", func() {
@@ -66,7 +67,7 @@ func TestPaser(t *testing.T) {
 			So(cmd.Command, ShouldEqual, DefaultCommand)
 			So(cmd.Channel, ShouldEqual, DefaultChannel)
 			So(cmd.Args, ShouldResemble, DefaultArgs)
-			So(cmd.FullArg, ShouldEqual, DefaultFullArg)
+			So(cmd.RawArgs, ShouldEqual, DefaultRawArgs)
 		})
 	})
 }

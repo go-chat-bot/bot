@@ -13,7 +13,7 @@ type Cmd struct {
 	Nick    string   // User who sent the message
 	Message string   // Full string without the prefix
 	Command string   // Command is the first argument passed to the bot
-	FullArg string   // Full argument as a single string
+	RawArgs string   // Raw arguments after the command
 	Args    []string // Arguments as array
 }
 
