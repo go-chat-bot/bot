@@ -9,10 +9,9 @@ import (
 )
 
 var (
-	channel  string
-	replies  []string
-	nick     string
-	channels []string
+	channel string
+	replies []string
+	nick    string
 )
 
 func responseHandler(target, message, sender string) {
@@ -21,17 +20,22 @@ func responseHandler(target, message, sender string) {
 	replies = append(replies, message)
 }
 
-func TestmessageReceived(t *testing.T) {
+func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)
 		New(&Handlers{
 			Response: responseHandler,
 		})
 
+		Reset(func() {
+			channel = ""
+			nick = ""
+			replies = []string{}
+		})
+
 		Convey("When the command is not registered", func() {
 			Convey("It should not post to the channel", func() {
-
-				responseHandler("#go-bot", "!not_a_cmd", "user")
+				MessageReceived("#go-bot", "!not_a_cmd", "user")
 
 				So(replies, ShouldBeEmpty)
 			})
@@ -45,7 +49,7 @@ func TestmessageReceived(t *testing.T) {
 						return "", cmdError
 					})
 
-				responseHandler("#go-bot", "!cmd", "user")
+				MessageReceived("#go-bot", "!cmd", "user")
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble,
@@ -66,7 +70,7 @@ func TestmessageReceived(t *testing.T) {
 				})
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				responseHandler("#go-bot", "!cmd", "user")
+				MessageReceived("#go-bot", "!cmd", "user")
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{expectedMsg})
@@ -74,14 +78,14 @@ func TestmessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				nick = "go-bot"
-				responseHandler("go-bot", "!cmd", "sender-nick")
+				MessageReceived("go-bot", "!cmd", "sender-nick")
 
 				So(nick, ShouldEqual, "sender-nick")
 			})
 
 			Convey("When the command is help", func() {
 				Convey("Display the available commands in the channel", func() {
-					responseHandler("#go-bot", "!help", "user")
+					MessageReceived("#go-bot", "!help", "user")
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -91,7 +95,7 @@ func TestmessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command exists send a message to the channel", func() {
-					responseHandler("#go-bot", "!help cmd", "user")
+					MessageReceived("#go-bot", "!help cmd", "user")
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -101,7 +105,7 @@ func TestmessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command does not exists, display the generic help", func() {
-					responseHandler("#go-bot", "!help not_a_command", "user")
+					MessageReceived("#go-bot", "!help not_a_command", "user")
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -121,7 +125,7 @@ func TestmessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				responseHandler("#go-bot", "!cmd", "user")
+				MessageReceived("#go-bot", "!cmd", "user")
 
 				So(channel, ShouldEqual, "#channel")
 				So(replies, ShouldResemble, []string{"message"})
@@ -134,7 +138,7 @@ func TestmessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				responseHandler("#go-bot", "!cmd", "user")
+				MessageReceived("#go-bot", "!cmd", "user")
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{"message"})
@@ -159,7 +163,7 @@ func TestmessageReceived(t *testing.T) {
 			RegisterPassiveCommand("errored", errored)
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				responseHandler("#go-bot", "test", "user")
+				MessageReceived("#go-bot", "test", "user")
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(len(replies), ShouldEqual, 2)
@@ -169,7 +173,7 @@ func TestmessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				nick = "go-bot"
-				responseHandler("go-bot", "test", "sender-nick")
+				MessageReceived("go-bot", "test", "sender-nick")
 
 				So(nick, ShouldEqual, "sender-nick")
 				So(len(replies), ShouldEqual, 2)
