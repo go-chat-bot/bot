@@ -2,63 +2,23 @@
 
 [![Circle CI](https://circleci.com/gh/go-chat-bot/bot/tree/master.svg?style=svg)](https://circleci.com/gh/go-chat-bot/bot/tree/master) [![GoDoc](https://godoc.org/github.com/go-chat-bot/bot?status.png)](https://godoc.org/github.com/go-chat-bot/bot) [![Coverage Status](https://img.shields.io/coveralls/go-chat-bot/bot.svg)](https://coveralls.io/r/go-chat-bot/bot?branch=master)
 
-Nice to meet you! I'm a IRC, Slack & Telegram bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity, [nlopes/slack](https://github.com/nlopes/slack) for Slack and [Syfaro/telegram-bot-api](https://github.com/Syfaro/telegram-bot-api) for Telegram.
+IRC, Slack & Telegram bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity, [nlopes/slack](https://github.com/nlopes/slack) for Slack and [Syfaro/telegram-bot-api](https://github.com/Syfaro/telegram-bot-api) for Telegram.
 
-I can be deployed to [heroku][heroku] and used in [slack][slack] to overpower slackbot.
+## See the bot in action on IRC
 
-## #go-bot @ irc.freenode.org
+To see the bot in action, send a private message to **go-bot** on Freenode or join the channel **#go-bot @ irc.freenode.org**.
 
-I'm always hanging out as **go-bot** in the channel **#go-bot @ irc.freenode.org**
+Type `!help` in the channel or send `!help` in private message.
 
-To see what I can do, type **!help** in the channel or send me !help in private message.
+## Plugins
 
-## My awesome commands
+Please see the [plugins repository](https://github.com/go-chat-bot/plugins) for a complete list of plugins.
 
-### Active commands
+You can also write your own, it's really simple.
 
-* **!gif**: Posts a random gif url from [giphy.com][giphy.com]. Try it with: **!gif cat**
-* **!catgif**: Posts a random cat gif url from [thecatapi.com][thecatapi.com]
-* **!godoc**: Searches packages in godoc.org. Try it with: **!godoc net/http**
-* **!puppet**: Allows you to send messages through the bot: Try it with: **!puppet say #go-bot Hello!**
-
-### Passive commands (triggers)
-
-Passive commands are triggered by keywords, urls, etc.
-
-These commands differ from the active commands as they are executed for every match in any text. Ex: The Chuck Norris command, replies with a Chuck Norris fact every time the words "chuck" or "norris" are mentioned on a channel.
-
-* **url**: Detects url and gets it's title (very naive implementation, works sometimes)
-* **catfacts**: Tells a random cat fact based on some cat keywords
-* **jira**: Detects jira issue numbers and posts the url (necessary to configure the JIRA URL)
-* **chucknorris**: Shows a random chuck norris quote every time the word "chuck" is mentioned
-
-### Brazilian commands (pt-br)
-
-I also have some brazilian commands which only makes sense to brazillians:
-
-* **megasena**: Gera um número da megasena ou mostra o último resultado
-* **cotacao**: Informa a cotação atual do Dólar e Euro
-* **dilma** (passivo): Diz alguma frase da Dilma quando a palavra "dilma" é citada
-
-### Example commands
-
-If you wish to write your own commands, start with the 2 example commands, they are in the example directory.
-
-## Joining and parting channels
-
-### IRC
-
-If you want me to join your channel, send me a private message with:
-
-    !join #channel pass
-
-If I'm boring you, just send a **!part** command in a channel I'm in.
+## Protocols
 
 ### Slack
-
-`!join` and `!part` does not work on slack (yet), so use the slack commands like `/invite` and `/remove` to invite the bot to the desired channels.
-
-## Connecting to Slack
 
 To deploy your go-bot to slack, you need to:
 
@@ -87,7 +47,7 @@ func main() {
 }
 ```
 
-## Connecting to IRC
+### IRC
 
 To deploy your own go-bot, you need to:
 
@@ -127,8 +87,6 @@ To join channels with passwords just put the password after the channel name sep
 
 ### Telegram
 
-## Connecting to Telegram
-
 To deploy your go-bot to slack, you need to:
 
 * Follow Telegram instructions to [create a new bot user](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and get your token
@@ -156,7 +114,7 @@ func main() {
 }
 ```
 
-## Deploying to heroku
+## Deploying your own bot
 
 To see an example project on how to deploy your bot, please see my own configuration:
 
@@ -166,6 +124,5 @@ To see an example project on how to deploy your bot, please see my own configura
 [go]: http://golang.org
 [go-ircevent]: https://github.com/thoj/go-ircevent
 [slack]: http://slack.com
-[heroku]: http://heroku.com
 [giphy.com]: http://giphy.com
 [thecatapi.com]: http://thecatapi.com
