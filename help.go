@@ -14,15 +14,15 @@ const (
 )
 
 func help(c *Cmd) {
-	cmd := parse(CmdPrefix+c.RawArgs, c.Channel, c.Nick)
+	cmd := parse(CmdPrefix+c.RawArgs, c.Channel, c.User)
 	if cmd == nil {
-		showAvailabeCommands(c.Channel, c.Nick)
+		showAvailabeCommands(c.Channel, c.User)
 		return
 	}
 
 	command := commands[cmd.Command]
 	if command == nil {
-		showAvailabeCommands(c.Channel, c.Nick)
+		showAvailabeCommands(c.Channel, c.User)
 		return
 	}
 
@@ -31,12 +31,12 @@ func help(c *Cmd) {
 
 func showHelp(c *Cmd, help *customCommand) {
 	if help.Description != "" {
-		handlers.Response(c.Channel, fmt.Sprintf(helpDescripton, help.Description), c.Nick)
+		handlers.Response(c.Channel, fmt.Sprintf(helpDescripton, help.Description), c.User)
 	}
-	handlers.Response(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs), c.Nick)
+	handlers.Response(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs), c.User)
 }
 
-func showAvailabeCommands(channel, sender string) {
+func showAvailabeCommands(channel string, sender *User) {
 	var cmds []string
 	for k := range commands {
 		cmds = append(cmds, k)

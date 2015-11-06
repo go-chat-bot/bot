@@ -11,7 +11,7 @@ var (
 	rtm *slack.RTM
 )
 
-func responseHandler(target, message, sender string) {
+func responseHandler(target string, message string, sender *bot.User) {
 	rtm.SendMessage(rtm.NewOutgoingMessage(message, target))
 }
 
@@ -32,7 +32,7 @@ Loop:
 		case msg := <-rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slack.MessageEvent:
-				bot.MessageReceived(ev.Channel, ev.Text, ev.User)
+				bot.MessageReceived(ev.Channel, ev.Text, &bot.User{Nick: ev.User})
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())

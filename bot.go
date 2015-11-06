@@ -13,7 +13,7 @@ const (
 )
 
 // ResponseHandler must be implemented by the protocol to handle the bot responses
-type ResponseHandler func(target, message, sender string)
+type ResponseHandler func(target, message string, sender *User)
 
 // Handlers that must be registered to receive callbacks from the bot
 type Handlers struct {
@@ -30,13 +30,13 @@ func New(h *Handlers) {
 }
 
 // MessageReceived must be called by the protocol upon receiving a message
-func MessageReceived(channel, text, sender string) {
+func MessageReceived(channel string, text string, sender *User) {
 	command := parse(text, channel, sender)
 	if command == nil {
 		executePassiveCommands(&PassiveCmd{
 			Raw:     text,
 			Channel: channel,
-			Nick:    sender,
+			User:    sender,
 		})
 		return
 	}

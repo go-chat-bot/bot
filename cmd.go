@@ -10,7 +10,7 @@ import (
 type Cmd struct {
 	Raw     string   // Raw is full string passed to the command
 	Channel string   // Channel where the command was called
-	Nick    string   // User who sent the message
+	User	*User    // User who sent the message
 	Message string   // Full string without the prefix
 	Command string   // Command is the first argument passed to the bot
 	RawArgs string   // Raw arguments after the command
@@ -21,7 +21,13 @@ type Cmd struct {
 type PassiveCmd struct {
 	Raw     string // Raw message sent to the channel
 	Channel string // Channel which the message was sent to
-	Nick    string // Nick of the user which sent the message
+	User    *User  // User who sent this message
+}
+
+// User holds user id (nick) and real name
+type User struct {
+	Nick		string
+	RealName	string
 }
 
 type customCommand struct {
@@ -34,10 +40,10 @@ type customCommand struct {
 }
 
 type incomingMessage struct {
-	Channel        string
-	Text           string
-	SenderNick     string
-	BotCurrentNick string
+	Channel			string
+	Text			string
+	User			*User
+	BotCurrentNick	string
 }
 
 // CmdResult is the result message of V2 commands
@@ -120,7 +126,7 @@ func executePassiveCommands(cmd *PassiveCmd) {
 				log.Println(err)
 			} else {
 				mutex.Lock()
-				handlers.Response(cmd.Channel, result, cmd.Nick)
+				handlers.Response(cmd.Channel, result, cmd.User)
 				mutex.Unlock()
 			}
 		}()
@@ -142,7 +148,7 @@ func handleCmd(c *Cmd) {
 		message, err := cmd.CmdFuncV1(c)
 		checkCmdError(err, c)
 		if message != "" {
-			handlers.Response(c.Channel, message, c.Nick)
+			handlers.Response(c.Channel, message, c.User)
 		}
 	case v2:
 		result, err := cmd.CmdFuncV2(c)
@@ -152,7 +158,7 @@ func handleCmd(c *Cmd) {
 		}
 
 		if result.Message != "" {
-			handlers.Response(result.Channel, result.Message, c.Nick)
+			handlers.Response(result.Channel, result.Message, c.User)
 		}
 	}
 }
@@ -161,6 +167,6 @@ func checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
-		handlers.Response(c.Channel, errorMsg, c.Nick)
+		handlers.Response(c.Channel, errorMsg, c.User)
 	}
 }
