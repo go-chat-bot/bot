@@ -18,7 +18,7 @@ func parse(s string, channel string, user *User) *Cmd {
 	}
 
 	c.Channel = strings.TrimSpace(channel)
-	// c.Nick = strings.TrimSpace(nick)
+	c.User = user
 
 	// Trim the prefix and extra spaces
 	c.Message = strings.TrimPrefix(s, CmdPrefix)
