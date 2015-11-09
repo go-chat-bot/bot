@@ -26,16 +26,16 @@ var (
 	config  *Config
 )
 
-func responseHandler(target, message, sender string) {
+func responseHandler(target string, message string, sender *bot.User) {
 	channel := target
 	if ircConn.GetNick() == target {
-		channel = sender
+		channel = sender.Nick
 	}
 	ircConn.Privmsg(channel, message)
 }
 
 func onPRIVMSG(e *ircevent.Event) {
-	bot.MessageReceived(e.Arguments[0], e.Message(), e.Nick)
+	bot.MessageReceived(e.Arguments[0], e.Message(), &bot.User{Nick: e.Nick})
 }
 
 func getServerName(server string) string {

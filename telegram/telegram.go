@@ -12,7 +12,7 @@ var (
 	tg *tgbotapi.BotAPI
 )
 
-func responseHandler(target, message, sender string) {
+func responseHandler(target string, message string, sender *bot.User) {
 	id, err := strconv.Atoi(target)
 	if err != nil {
 		log.Println(err)
@@ -51,6 +51,6 @@ func Run(token string, debug bool) {
 	for update := range tg.Updates {
 		target := strconv.Itoa(update.Message.Chat.ID)
 		sender := strconv.Itoa(update.Message.From.ID)
-		bot.MessageReceived(target, update.Message.Text, sender)
+		bot.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
 	}
 }

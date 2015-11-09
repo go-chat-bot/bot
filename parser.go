@@ -9,7 +9,7 @@ var (
 	re = regexp.MustCompile("\\s+") // Matches one or more spaces
 )
 
-func parse(s string, channel string, nick string) *Cmd {
+func parse(s string, channel string, user *User) *Cmd {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
 
@@ -18,7 +18,7 @@ func parse(s string, channel string, nick string) *Cmd {
 	}
 
 	c.Channel = strings.TrimSpace(channel)
-	c.Nick = strings.TrimSpace(nick)
+	c.User = user
 
 	// Trim the prefix and extra spaces
 	c.Message = strings.TrimPrefix(s, CmdPrefix)
