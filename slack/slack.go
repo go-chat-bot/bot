@@ -9,15 +9,26 @@ import (
 
 var (
 	rtm *slack.RTM
+	api *slack.Client
 )
 
 func responseHandler(target string, message string, sender *bot.User) {
 	rtm.SendMessage(rtm.NewOutgoingMessage(message, target))
 }
 
+// Extracts user information from slack API
+func extractUser(userId string) *bot.User {
+	slackUser, err := api.GetUserInfo(userId)
+	if err != nil {
+		fmt.Printf("Error retrieving slack user: %s\n", err)
+		return &bot.User{Nick: userId}
+	}
+	return &bot.User{Nick: userId, RealName: slackUser.Profile.RealName}
+}
+
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
-	api := slack.New(token)
+	api = slack.New(token)
 	rtm = api.NewRTM()
 
 	bot.New(&bot.Handlers{
@@ -32,7 +43,7 @@ Loop:
 		case msg := <-rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slack.MessageEvent:
-				bot.MessageReceived(ev.Channel, ev.Text, &bot.User{Nick: ev.User})
+				bot.MessageReceived(ev.Channel, ev.Text, extractUser(ev.User))
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())
