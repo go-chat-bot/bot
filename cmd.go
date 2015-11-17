@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"github.com/robfig/cron"
 )
 
 // Cmd holds the parsed user's input for easier handling of commands
@@ -19,9 +20,15 @@ type Cmd struct {
 
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
-	Raw     string // Raw message sent to the channel
-	Channel string // Channel which the message was sent to
-	User    *User  // User who sent this message
+	Raw     string	// Raw message sent to the channel
+	Channel string	// Channel which the message was sent to
+	User    *User	// User who sent this message
+}
+
+// PeriodicConfig holds a cron specification for periodically notifying the configured channels
+type PeriodicConfig struct {
+	CronSpec string		// CronSpec that schedules some function
+	Channels []string	// A list of channels to notify
 }
 
 // User holds user id (nick) and real name
@@ -70,6 +77,7 @@ type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
 var (
 	commands        = make(map[string]*customCommand)
 	passiveCommands = make(map[string]passiveCmdFunc)
+	c = cron.New()
 )
 
 // RegisterCommand adds a new command to the bot.
@@ -107,6 +115,28 @@ func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeC
 // cmdFunc: Function which will be executed. It will received the raw message, channel and nick
 func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (string, error)) {
 	passiveCommands[command] = cmdFunc
+}
+
+// RegisterPeriodicCommand adds a command that is run periodically.
+// The command should be registered in the Init() func of your package
+// config: PeriodicConfig which specify CronSpec and a channel list
+// cmdFunc: A no-arg function which gets triggered periodically
+func RegisterPeriodicCommand(config *PeriodicConfig, cmdFunc func() (string, error)) {
+	c.AddFunc(config.CronSpec, func() {
+		message, err := cmdFunc()
+		if err != nil {
+			log.Print("Periodic command failed ", err)
+			return
+		}
+		if message != "" {
+			for _, channel := range(config.Channels) {
+				handlers.Response(channel, message, nil)
+			}
+		}
+	})
+	if len(c.Entries()) == 1 {
+		c.Start()
+	}
 }
 
 func executePassiveCommands(cmd *PassiveCmd) {
