@@ -17,13 +17,13 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 // Extracts user information from slack API
-func extractUser(userId string) *bot.User {
-	slackUser, err := api.GetUserInfo(userId)
+func extractUser(userID string) *bot.User {
+	slackUser, err := api.GetUserInfo(userID)
 	if err != nil {
 		fmt.Printf("Error retrieving slack user: %s\n", err)
-		return &bot.User{Nick: userId}
+		return &bot.User{Nick: userID}
 	}
-	return &bot.User{Nick: userId, RealName: slackUser.Profile.RealName}
+	return &bot.User{Nick: userID, RealName: slackUser.Profile.RealName}
 }
 
 // Run connects to slack RTM API using the provided token
