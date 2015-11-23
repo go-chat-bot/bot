@@ -20,14 +20,14 @@ You can also write your own, it's really simple.
 
 ### Slack
 
-To deploy your go-bot to slack, you need to:
+To deploy your go-bot to Slack, you need to:
 
-* [Create a new bot user](https://my.slack.com/services/new/bot) integration on slack and get your token
+* [Create a new bot user](https://my.slack.com/services/new/bot) integration on Slack and get your token
 * Import the package `github.com/go-chat-bot/bot/slack`
 * Import the commands you would like to use
 * Call `slack.Run(token)`
 
-Here is a full example reading the slack token from the `SLACK_TOKEN` env var:
+Here is a full example reading the Slack token from the `SLACK_TOKEN` env var:
 
 ```Go
 package main
@@ -49,7 +49,7 @@ func main() {
 
 ### IRC
 
-To deploy your own go-bot, you need to:
+To deploy your own go-bot to IRC, you need to:
 
 * Import the package `github.com/go-chat-bot/bot/irc`
 * Import the commands you would like to use
@@ -87,7 +87,7 @@ To join channels with passwords just put the password after the channel name sep
 
 ### Telegram
 
-To deploy your go-bot to slack, you need to:
+To deploy your go-bot to Telegram, you need to:
 
 * Follow Telegram instructions to [create a new bot user](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and get your token
 * Import the package `github.com/go-chat-bot/bot/telegram`
