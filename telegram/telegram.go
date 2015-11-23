@@ -21,7 +21,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 	msg := tgbotapi.NewMessage(id, message)
 	msg.ReplyToMessageID = msg.ReplyToMessageID
 
-	tg.SendMessage(msg)
+	tg.Send(msg)
 }
 
 // Run executes the bot and connects to Telegram using the provided token. Use the debug flag if you wish to see all trafic logged
@@ -39,7 +39,7 @@ func Run(token string, debug bool) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	err = tg.UpdatesChan(u)
+	updates, err := tg.GetUpdatesChan(u)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func Run(token string, debug bool) {
 		Response: responseHandler,
 	})
 
-	for update := range tg.Updates {
+	for update := range updates {
 		target := strconv.Itoa(update.Message.Chat.ID)
 		sender := strconv.Itoa(update.Message.From.ID)
 		bot.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
