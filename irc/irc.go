@@ -24,6 +24,7 @@ type Config struct {
 var (
 	ircConn *ircevent.Connection
 	config  *Config
+	b       *bot.Bot
 )
 
 func responseHandler(target string, message string, sender *bot.User) {
@@ -35,7 +36,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 func onPRIVMSG(e *ircevent.Event) {
-	bot.MessageReceived(e.Arguments[0], e.Message(), &bot.User{Nick: e.Nick})
+	b.MessageReceived(e.Arguments[0], e.Message(), &bot.User{Nick: e.Nick})
 }
 
 func getServerName(server string) string {
@@ -65,7 +66,7 @@ func Run(c *Config) {
 	}
 	ircConn.VerboseCallbackHandler = c.Debug
 
-	bot.New(&bot.Handlers{
+	b = bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
 

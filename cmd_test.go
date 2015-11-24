@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -22,7 +23,7 @@ func responseHandler(target string, message string, sender *User) {
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)
-		New(&Handlers{
+		b := New(&Handlers{
 			Response: responseHandler,
 		})
 
@@ -34,7 +35,7 @@ func TestMessageReceived(t *testing.T) {
 
 		Convey("When the command is not registered", func() {
 			Convey("It should not post to the channel", func() {
-				MessageReceived("#go-bot", "!not_a_cmd", &User{})
+				b.MessageReceived("#go-bot", "!not_a_cmd", &User{})
 
 				So(replies, ShouldBeEmpty)
 			})
@@ -48,7 +49,7 @@ func TestMessageReceived(t *testing.T) {
 						return "", cmdError
 					})
 
-				MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble,
@@ -69,7 +70,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{expectedMsg})
@@ -77,13 +78,13 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				user = &User{Nick: "go-bot"}
-				MessageReceived("go-bot", "!cmd", &User{Nick: "sender-nick"})
+				b.MessageReceived("go-bot", "!cmd", &User{Nick: "sender-nick"})
 				So(user.Nick, ShouldEqual, "sender-nick")
 			})
 
 			Convey("When the command is help", func() {
 				Convey("Display the available commands in the channel", func() {
-					MessageReceived("#go-bot", "!help", &User{Nick: "user"})
+					b.MessageReceived("#go-bot", "!help", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -93,7 +94,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command exists send a message to the channel", func() {
-					MessageReceived("#go-bot", "!help cmd", &User{Nick: "user"})
+					b.MessageReceived("#go-bot", "!help cmd", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -103,7 +104,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command does not exists, display the generic help", func() {
-					MessageReceived("#go-bot", "!help not_a_command", &User{Nick: "user"})
+					b.MessageReceived("#go-bot", "!help not_a_command", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -123,7 +124,7 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#channel")
 				So(replies, ShouldResemble, []string{"message"})
@@ -136,7 +137,7 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{"message"})
@@ -161,7 +162,7 @@ func TestMessageReceived(t *testing.T) {
 			RegisterPassiveCommand("errored", errored)
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				MessageReceived("#go-bot", "test", &User{Nick: "user"})
+				b.MessageReceived("#go-bot", "test", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(len(replies), ShouldEqual, 2)
@@ -171,7 +172,7 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				user = &User{Nick: "go-bot"}
-				MessageReceived("go-bot", "test", &User{Nick: "sender-nick"})
+				b.MessageReceived("go-bot", "test", &User{Nick: "sender-nick"})
 
 				So(user.Nick, ShouldEqual, "sender-nick")
 				So(len(replies), ShouldEqual, 2)

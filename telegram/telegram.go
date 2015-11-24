@@ -44,13 +44,13 @@ func Run(token string, debug bool) {
 		log.Fatal(err)
 	}
 
-	bot.New(&bot.Handlers{
+	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
 
 	for update := range updates {
 		target := strconv.Itoa(update.Message.Chat.ID)
 		sender := strconv.Itoa(update.Message.From.ID)
-		bot.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
+		b.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
 	}
 }
