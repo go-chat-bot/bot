@@ -23,7 +23,7 @@ func extractUser(userID string) *bot.User {
 		fmt.Printf("Error retrieving slack user: %s\n", err)
 		return &bot.User{Nick: userID}
 	}
-	return &bot.User{Nick: userID, RealName: slackUser.Profile.RealName}
+	return &bot.User{Nick: slackUser.Name, RealName: slackUser.Profile.RealName}
 }
 
 // Run connects to slack RTM API using the provided token
