@@ -1,4 +1,4 @@
-// Package bot provides a simple to use IRC bot
+// Package bot provides a simple to use IRC, Slack and Telegram bot
 package bot
 
 import (
