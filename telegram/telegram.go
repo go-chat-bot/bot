@@ -1,3 +1,4 @@
+// Package telegram implements Telegram handlers for github.com/go-chat-bot/bot
 package telegram
 
 import (

@@ -1,3 +1,4 @@
+// Package slack implements Slack handlers for github.com/go-chat-bot/bot
 package slack
 
 import (
