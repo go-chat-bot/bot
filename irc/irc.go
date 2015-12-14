@@ -1,3 +1,4 @@
+// Package irc implements IRC handlers for github.com/go-chat-bot/bot
 package irc
 
 import (
