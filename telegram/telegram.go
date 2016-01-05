@@ -48,6 +48,7 @@ func Run(token string, debug bool) {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
+	b.Disable([]string{"url"})
 
 	for update := range updates {
 		target := strconv.Itoa(update.Message.Chat.ID)
