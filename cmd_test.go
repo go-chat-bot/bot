@@ -20,6 +20,39 @@ func responseHandler(target string, message string, sender *User) {
 	replies = append(replies, message)
 }
 
+func TestDisableCommands(t *testing.T) {
+	Convey("Allow disabling commands", t, func() {
+		commands = make(map[string]*customCommand)
+		b := New(&Handlers{
+			Response: responseHandler,
+		})
+
+		RegisterCommand("cmd", "", "",
+			func(c *Cmd) (string, error) {
+				return "active", nil
+			})
+
+		RegisterPassiveCommand("passive",
+			func(cmd *PassiveCmd) (string, error) {
+				return "passive", nil
+			})
+
+		Convey("When the disabled command is active", func() {
+			b.Disable([]string{"cmd"})
+			b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+
+			So(replies, ShouldBeEmpty)
+		})
+
+		Convey("When the disabled command is passive", func() {
+			b.Disable([]string{"passive"})
+			b.MessageReceived("#go-bot", "regular message", &User{Nick: "user"})
+
+			So(replies, ShouldBeEmpty)
+		})
+	})
+}
+
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
 		commands = make(map[string]*customCommand)

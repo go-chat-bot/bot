@@ -125,13 +125,23 @@ func RegisterPeriodicCommand(command string, config PeriodicConfig) {
 	periodicCommands[command] = config
 }
 
+// Disable allows disabling commands that were registered.
+// It is usefull when running multiple bot instances to disabled some plugins like url which
+// is already present on some protocols.
+func (b *Bot) Disable(cmds []string) {
+	b.disabledCmds = append(b.disabledCmds, cmds...)
+}
+
 func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
 	mutex := &sync.Mutex{}
 
-	for _, v := range passiveCommands {
-		cmdFunc := v
+	for k, v := range passiveCommands {
+		if b.isDisabled(k) {
+			continue
+		}
 
+		cmdFunc := v
 		wg.Add(1)
 
 		go func() {
@@ -147,8 +157,16 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 			}
 		}()
 	}
-
 	wg.Wait()
+}
+
+func (b *Bot) isDisabled(cmd string) bool {
+	for _, c := range b.disabledCmds {
+		if c == cmd {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *Bot) handleCmd(c *Cmd) {
@@ -156,6 +174,10 @@ func (b *Bot) handleCmd(c *Cmd) {
 
 	if cmd == nil {
 		log.Printf("Command not found %v", c.Command)
+		return
+	}
+
+	if b.isDisabled(c.Command) {
 		return
 	}
 

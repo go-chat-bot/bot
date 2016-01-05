@@ -35,6 +35,7 @@ func Run(token string) {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
+	b.Disable([]string{"url"})
 
 	go rtm.ManageConnection()
 
