@@ -17,8 +17,9 @@ const (
 
 // Bot handles the bot instance
 type Bot struct {
-	handlers *Handlers
-	cron     *cron.Cron
+	handlers     *Handlers
+	cron         *cron.Cron
+	disabledCmds []string
 }
 
 // ResponseHandler must be implemented by the protocol to handle the bot responses
