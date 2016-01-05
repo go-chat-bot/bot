@@ -20,8 +20,38 @@ func responseHandler(target string, message string, sender *User) {
 	replies = append(replies, message)
 }
 
+func resetResponses() {
+	channel = ""
+	user = &User{Nick: ""}
+	replies = []string{}
+}
+
+func TestPeriodicCommands(t *testing.T) {
+	Convey("Periodic Commands", t, func() {
+		Reset(resetResponses)
+		RegisterPeriodicCommand("morning",
+			PeriodicConfig{
+				CronSpec: "0 0 08 * * mon-fri",
+				Channels: []string{"#channel"},
+				CmdFunc:  func() (string, error) { return "ok", nil },
+			})
+
+		b := New(&Handlers{Response: responseHandler})
+
+		entries := b.cron.Entries()
+		So(entries, ShouldHaveLength, 1)
+		So(entries[0].Next.Hour(), ShouldEqual, 8)
+
+		entries[0].Job.Run()
+
+		So(replies, ShouldHaveLength, 1)
+		So(replies[0], ShouldEqual, "ok")
+	})
+}
+
 func TestDisableCommands(t *testing.T) {
 	Convey("Allow disabling commands", t, func() {
+		Reset(resetResponses)
 		commands = make(map[string]*customCommand)
 		b := New(&Handlers{
 			Response: responseHandler,
@@ -55,15 +85,10 @@ func TestDisableCommands(t *testing.T) {
 
 func TestMessageReceived(t *testing.T) {
 	Convey("Given a new message in the channel", t, func() {
+		Reset(resetResponses)
 		commands = make(map[string]*customCommand)
 		b := New(&Handlers{
 			Response: responseHandler,
-		})
-
-		Reset(func() {
-			channel = ""
-			user = &User{Nick: ""}
-			replies = []string{}
 		})
 
 		Convey("When the command is not registered", func() {
