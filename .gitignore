@@ -29,3 +29,6 @@ _testmain.go
 
 # vim swap files
 *.swp
+
+# test coverage report file
+coverage.out
