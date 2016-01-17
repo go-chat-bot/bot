@@ -4,6 +4,8 @@
 
 IRC, Slack & Telegram bot written in [Go][go] using [go-ircevent][go-ircevent] for IRC connectivity, [nlopes/slack](https://github.com/nlopes/slack) for Slack and [Syfaro/telegram-bot-api](https://github.com/Syfaro/telegram-bot-api) for Telegram.
 
+![2016-01-17 11 21 38 036](https://cloud.githubusercontent.com/assets/1084729/12377689/5bf7d5f2-bd0d-11e5-87d9-525481f01c3a.gif)
+
 ## See the bot in action on IRC
 
 To see the bot in action, send a private message to **go-bot** on Freenode or join the channel **#go-bot @ irc.freenode.org**.
