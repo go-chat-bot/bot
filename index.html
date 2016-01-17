@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>go-chat-bot by go-chat-bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">go-chat-bot</h1>
+      <h2 class="project-tagline">IRC, Slack and Telegram bot written in go</h2>
+      <a href="https://github.com/go-chat-bot/bot" class="btn">View on GitHub</a>
+      <a href="https://github.com/go-chat-bot/bot/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/go-chat-bot/bot/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p>IRC, Slack &amp; Telegram bot written in <a href="http://golang.org">Go</a> using <a href="https://github.com/thoj/go-ircevent">go-ircevent</a> for IRC connectivity, <a href="https://github.com/nlopes/slack">nlopes/slack</a> for Slack and <a href="https://github.com/Syfaro/telegram-bot-api">Syfaro/telegram-bot-api</a> for Telegram.</p>
+
+<h2>
+<a id="see-the-bot-in-action-on-irc" class="anchor" href="#see-the-bot-in-action-on-irc" aria-hidden="true"><span class="octicon octicon-link"></span></a>See the bot in action on IRC</h2>
+
+<p>To see the bot in action, send a private message to <strong>go-bot</strong> on Freenode or join the channel <strong>#go-bot @ irc.freenode.org</strong>.</p>
+
+<p>Type <code>!help</code> in the channel or send <code>!help</code> in private message.</p>
+
+<h2>
+<a id="plugins" class="anchor" href="#plugins" aria-hidden="true"><span class="octicon octicon-link"></span></a>Plugins</h2>
+
+<p>Please see the <a href="https://github.com/go-chat-bot/plugins">plugins repository</a> for a complete list of plugins.</p>
+
+<p>You can also write your own, it's really simple.</p>
+
+<h2>
+<a id="protocols" class="anchor" href="#protocols" aria-hidden="true"><span class="octicon octicon-link"></span></a>Protocols</h2>
+
+<h3>
+<a id="slack" class="anchor" href="#slack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Slack</h3>
+
+<p>To deploy your go-bot to Slack, you need to:</p>
+
+<ul>
+<li>
+<a href="https://my.slack.com/services/new/bot">Create a new bot user</a> integration on Slack and get your token</li>
+<li>Import the package <code>github.com/go-chat-bot/bot/slack</code>
+</li>
+<li>Import the commands you would like to use</li>
+<li>Call <code>slack.Run(token)</code>
+</li>
+</ul>
+
+<p>Here is a full example reading the Slack token from the <code>SLACK_TOKEN</code> env var:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>os<span class="pl-pds">"</span></span>
+
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/bot/slack<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catfacts<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catgif<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/chucknorris<span class="pl-pds">"</span></span>
+    <span class="pl-c">// Import all the commands you wish to use</span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    slack.<span class="pl-c1">Run</span>(os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>SLACK_TOKEN<span class="pl-pds">"</span></span>))
+}</pre></div>
+
+<h3>
+<a id="irc" class="anchor" href="#irc" aria-hidden="true"><span class="octicon octicon-link"></span></a>IRC</h3>
+
+<p>To deploy your own go-bot to IRC, you need to:</p>
+
+<ul>
+<li>Import the package <code>github.com/go-chat-bot/bot/irc</code>
+</li>
+<li>Import the commands you would like to use</li>
+<li>Fill the Config struct</li>
+<li>Call <code>irc.Run(config)</code>
+</li>
+</ul>
+
+<p>Here is a full example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
+    <span class="pl-k">import</span> (
+        <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/bot/irc<span class="pl-pds">"</span></span>
+        _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catfacts<span class="pl-pds">"</span></span>
+        _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catgif<span class="pl-pds">"</span></span>
+        _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/chucknorris<span class="pl-pds">"</span></span>
+        <span class="pl-c">// Import all the commands you wish to use</span>
+        <span class="pl-s"><span class="pl-pds">"</span>os<span class="pl-pds">"</span></span>
+        <span class="pl-s"><span class="pl-pds">"</span>strings<span class="pl-pds">"</span></span>
+    )
+
+    <span class="pl-k">func</span> <span class="pl-en">main</span>() {
+        irc.<span class="pl-c1">Run</span>(&amp;bot.<span class="pl-smi">Config</span>{
+            Server:   os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>IRC_SERVER<span class="pl-pds">"</span></span>),
+            Channels: strings.<span class="pl-c1">Split</span>(os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>IRC_CHANNELS<span class="pl-pds">"</span></span>), <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>),
+            User:     os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>IRC_USER<span class="pl-pds">"</span></span>),
+            Nick:     os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>IRC_NICK<span class="pl-pds">"</span></span>),
+            Password: os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>IRC_PASSWORD<span class="pl-pds">"</span></span>),
+            UseTLS:   <span class="pl-c1">true</span>,
+            Debug:    os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>DEBUG<span class="pl-pds">"</span></span>) != <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,})
+    }</pre></div>
+
+<p>To join channels with passwords just put the password after the channel name separated by a space:</p>
+
+<pre><code>Channels: []string{"#mychannel mypassword", "#go-bot"}
+</code></pre>
+
+<h3>
+<a id="telegram" class="anchor" href="#telegram" aria-hidden="true"><span class="octicon octicon-link"></span></a>Telegram</h3>
+
+<p>To deploy your go-bot to Telegram, you need to:</p>
+
+<ul>
+<li>Follow Telegram instructions to <a href="https://core.telegram.org/bots#3-how-do-i-create-a-bot">create a new bot user</a> and get your token</li>
+<li>Import the package <code>github.com/go-chat-bot/bot/telegram</code>
+</li>
+<li>Import the commands you would like to use</li>
+<li>Call <code>telegram.Run(token, debug)</code>
+</li>
+</ul>
+
+<p>Here is a full example reading the telegram token from the <code>TELEGRAM_TOKEN</code> env var:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>os<span class="pl-pds">"</span></span>
+
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/bot/telegram<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catfacts<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/catgif<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-chat-bot/plugins/chucknorris<span class="pl-pds">"</span></span>
+    <span class="pl-c">// Import all the commands you wish to use</span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    telegram.<span class="pl-c1">Run</span>(os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>TELEGRAM_TOKEN<span class="pl-pds">"</span></span>), os.<span class="pl-c1">Getenv</span>(<span class="pl-s"><span class="pl-pds">"</span>DEBUG<span class="pl-pds">"</span></span>) != <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+}</pre></div>
+
+<h2>
+<a id="deploying-your-own-bot" class="anchor" href="#deploying-your-own-bot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deploying your own bot</h2>
+
+<p>To see an example project on how to deploy your bot, please see my own configuration:</p>
+
+<ul>
+<li>
+<strong>IRC</strong>: <a href="https://github.com/fabioxgn/go-bot-heroku">https://github.com/fabioxgn/go-bot-heroku</a>
+</li>
+<li>
+<strong>Slack</strong>: <a href="https://github.com/fabioxgn/go-bot-slack">https://github.com/fabioxgn/go-bot-slack</a>
+</li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/go-chat-bot/bot">go-chat-bot</a> is maintained by <a href="https://github.com/go-chat-bot">go-chat-bot</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
