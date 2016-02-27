@@ -33,7 +33,7 @@ func TestPeriodicCommands(t *testing.T) {
 			PeriodicConfig{
 				CronSpec: "0 0 08 * * mon-fri",
 				Channels: []string{"#channel"},
-				CmdFunc:  func() (string, error) { return "ok", nil },
+				CmdFunc:  func(channel string) (string, error) { return "ok", nil },
 			})
 
 		b := New(&Handlers{Response: responseHandler})
