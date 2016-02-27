@@ -33,7 +33,7 @@ func TestPeriodicCommands(t *testing.T) {
 			PeriodicConfig{
 				CronSpec: "0 0 08 * * mon-fri",
 				Channels: []string{"#channel"},
-				CmdFunc:  func(channel string) (string, error) { return "ok", nil },
+				CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
 			})
 
 		b := New(&Handlers{Response: responseHandler})
@@ -45,7 +45,7 @@ func TestPeriodicCommands(t *testing.T) {
 		entries[0].Job.Run()
 
 		So(replies, ShouldHaveLength, 1)
-		So(replies[0], ShouldEqual, "ok")
+		So(replies[0], ShouldEqual, "ok #channel")
 	})
 }
 
