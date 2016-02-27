@@ -13,8 +13,12 @@ var (
 	api *slack.Client
 )
 
+const (
+	params = slack.PostMessageParameters{AsUser: true}
+)
+
 func responseHandler(target string, message string, sender *bot.User) {
-	rtm.SendMessage(rtm.NewOutgoingMessage(message, target))
+	api.PostMessage(target, message, params)
 }
 
 // Extracts user information from slack API
