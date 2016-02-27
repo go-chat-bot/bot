@@ -26,9 +26,9 @@ type PassiveCmd struct {
 
 // PeriodicConfig holds a cron specification for periodically notifying the configured channels
 type PeriodicConfig struct {
-	CronSpec string                                 // CronSpec that schedules some function
-	Channels []string                               // A list of channels to notify
-	CmdFunc  func(channel string) (string, error)   // func to be executed at the period specified on CronSpec
+	CronSpec string					// CronSpec that schedules some function
+	Channels []string				// A list of channels to notify
+	CmdFunc  func(channel string) (string, error)	// func to be executed at the period specified on CronSpec
 }
 
 // User holds user id (nick) and real name
