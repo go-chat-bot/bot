@@ -47,7 +47,6 @@ func (b *Bot) startPeriodicCommands() {
 				message, err := config.CmdFunc(channel)
 				if err != nil {
 					log.Print("Periodic command failed ", err)
-					return
 				} else if message != "" {
 					b.handlers.Response(channel, message, nil)
 				}
