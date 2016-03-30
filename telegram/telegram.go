@@ -5,8 +5,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Syfaro/telegram-bot-api"
 	"github.com/go-chat-bot/bot"
+	"gopkg.in/telegram-bot-api.v3"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 )
 
 func responseHandler(target string, message string, sender *bot.User) {
-	id, err := strconv.Atoi(target)
+	id, err := strconv.ParseInt(target, 10, 64)
 	if err != nil {
 		log.Println(err)
 		return
@@ -51,7 +51,7 @@ func Run(token string, debug bool) {
 	b.Disable([]string{"url"})
 
 	for update := range updates {
-		target := strconv.Itoa(update.Message.Chat.ID)
+		target := strconv.FormatInt(update.Message.Chat.ID, 10)
 		sender := strconv.Itoa(update.Message.From.ID)
 		b.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
 	}
