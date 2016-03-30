@@ -11,9 +11,7 @@ import (
 var (
 	rtm *slack.RTM
 	api *slack.Client
-)
 
-const (
 	params = slack.PostMessageParameters{AsUser: true}
 )
 
