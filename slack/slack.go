@@ -34,6 +34,7 @@ func readBotInfo(api *slack.Client) {
 	info, err := api.AuthTest()
 	if err != nil {
 		fmt.Printf("Error calling AuthTest: %s\n", err)
+		return
 	}
 	botUserID = info.UserID
 }
