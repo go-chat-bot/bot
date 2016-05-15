@@ -35,7 +35,7 @@ func parse(s string, channel string, user *User) *Cmd {
 
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces
-		c.RawArgs = pieces[1]
+		c.RawArgs = strings.TrimSpace(pieces[1])
 		c.Args = strings.Split(removeExtraSpaces(c.RawArgs), " ")
 	}
 

@@ -2,72 +2,52 @@ package bot
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
-)
-
-var (
-	DefaultChannel = "#go-bot"
-	DefaultUser    = &User{Nick: "user123"}
-	DefaultCommand = "command"
-	DefaultRawArgs = "arg1  arg2"
-	DefaultArgs    = []string{
-		"arg1",
-		"arg2",
-	}
 )
 
 func TestPaser(t *testing.T) {
-	Convey("When given a message", t, func() {
-		Convey("When the message is empty", func() {
-			cmd := parse("", DefaultChannel, DefaultUser)
+	channel := "#go-bot"
+	command := "command"
+	rawArgs := "   arg1  arg2   "
+	user := &User{Nick: "user123"}
+	args := []string{
+		"arg1",
+		"arg2",
+	}
+	validCmd := fmt.Sprintf("%v%v", CmdPrefix, command)
+	cmdWithArgs := fmt.Sprintf("%v%v %v", CmdPrefix, command, rawArgs)
 
-			So(cmd, ShouldBeNil)
-		})
+	tests := []struct {
+		msg      string
+		expected *Cmd
+	}{
+		{"", nil},
+		{"!", nil},
+		{"regular message", nil},
+		{validCmd, &Cmd{
+			Raw:     validCmd,
+			Command: command,
+			Channel: channel,
+			User:    user,
+			Message: command,
+		}},
+		{cmdWithArgs, &Cmd{
+			Raw:     cmdWithArgs,
+			Command: command,
+			Channel: channel,
+			User:    user,
+			Message: command + " " + strings.TrimRight(rawArgs, " "),
+			RawArgs: strings.TrimSpace(rawArgs),
+			Args:    args,
+		}},
+	}
 
-		Convey("When the message doesn't have the prefix", func() {
-			Message := "regular message"
-			cmd := parse(Message, DefaultChannel, DefaultUser)
-
-			So(cmd, ShouldBeNil)
-		})
-
-		Convey("When the message is only the prefix", func() {
-			cmd := parse(CmdPrefix, DefaultChannel, DefaultUser)
-
-			So(cmd, ShouldBeNil)
-		})
-
-		Convey("When the message is valid command", func() {
-			msg := fmt.Sprintf("%v%v", CmdPrefix, DefaultCommand)
-			cmd := parse(msg, DefaultChannel, DefaultUser)
-
-			So(cmd, ShouldNotBeNil)
-			So(cmd.Command, ShouldEqual, DefaultCommand)
-			So(cmd.Channel, ShouldEqual, DefaultChannel)
-		})
-
-		Convey("When the message is a command with args", func() {
-			msg := fmt.Sprintf("%v%v %v", CmdPrefix, DefaultCommand, DefaultRawArgs)
-			cmd := parse(msg, DefaultChannel, DefaultUser)
-
-			So(cmd, ShouldNotBeNil)
-			So(cmd.Command, ShouldEqual, DefaultCommand)
-			So(cmd.Channel, ShouldEqual, DefaultChannel)
-			So(cmd.Args, ShouldResemble, DefaultArgs)
-			So(cmd.RawArgs, ShouldEqual, DefaultRawArgs)
-		})
-
-		Convey("When the message has extra spaces", func() {
-			msg := fmt.Sprintf(" %v %v %v  %v  ", CmdPrefix, DefaultCommand, DefaultArgs[0], DefaultArgs[1])
-			cmd := parse(msg, DefaultChannel, DefaultUser)
-
-			So(cmd, ShouldNotBeNil)
-			So(cmd.Command, ShouldEqual, DefaultCommand)
-			So(cmd.Channel, ShouldEqual, DefaultChannel)
-			So(cmd.Args, ShouldResemble, DefaultArgs)
-			So(cmd.RawArgs, ShouldEqual, DefaultRawArgs)
-		})
-	})
+	for _, test := range tests {
+		cmd := parse(test.msg, channel, user)
+		if !reflect.DeepEqual(test.expected, cmd) {
+			t.Errorf("Expected:\n%#v\ngot:\n%#v", test.expected, cmd)
+		}
+	}
 }
