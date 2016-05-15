@@ -1,23 +1,15 @@
 package bot
 
 import (
-	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 )
 
 func TestPaser(t *testing.T) {
 	channel := "#go-bot"
-	command := "command"
-	rawArgs := "   arg1  arg2   "
 	user := &User{Nick: "user123"}
-	args := []string{
-		"arg1",
-		"arg2",
-	}
-	validCmd := fmt.Sprintf("%v%v", CmdPrefix, command)
-	cmdWithArgs := fmt.Sprintf("%v%v %v", CmdPrefix, command, rawArgs)
+	cmdWithoutArgs := CmdPrefix + "cmd"
+	cmdWithArgs := CmdPrefix + "cmd    arg1  arg2   "
 
 	tests := []struct {
 		msg      string
@@ -26,21 +18,21 @@ func TestPaser(t *testing.T) {
 		{"", nil},
 		{"!", nil},
 		{"regular message", nil},
-		{validCmd, &Cmd{
-			Raw:     validCmd,
-			Command: command,
+		{cmdWithoutArgs, &Cmd{
+			Raw:     cmdWithoutArgs,
+			Command: "cmd",
 			Channel: channel,
 			User:    user,
-			Message: command,
+			Message: "cmd",
 		}},
 		{cmdWithArgs, &Cmd{
 			Raw:     cmdWithArgs,
-			Command: command,
+			Command: "cmd",
 			Channel: channel,
 			User:    user,
-			Message: command + " " + strings.TrimRight(rawArgs, " "),
-			RawArgs: strings.TrimSpace(rawArgs),
-			Args:    args,
+			Message: "cmd    arg1  arg2",
+			RawArgs: "arg1  arg2",
+			Args:    []string{"arg1", "arg2"},
 		}},
 	}
 
