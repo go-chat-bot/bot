@@ -27,29 +27,42 @@ func resetResponses() {
 }
 
 func TestPeriodicCommands(t *testing.T) {
-	Convey("Periodic Commands", t, func() {
-		Reset(resetResponses)
-		RegisterPeriodicCommand("morning",
-			PeriodicConfig{
-				CronSpec: "0 0 08 * * mon-fri",
-				Channels: []string{"#channel"},
-				CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
-			})
+	resetResponses()
+	RegisterPeriodicCommand("morning",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			Channels: []string{"#channel"},
+			CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
+		})
 
-		b := New(&Handlers{Response: responseHandler})
+	b := New(&Handlers{Response: responseHandler})
 
-		entries := b.cron.Entries()
-		So(entries, ShouldHaveLength, 1)
-		So(entries[0].Next.Hour(), ShouldEqual, 8)
+	entries := b.cron.Entries()
+	if len(entries) != 1 {
+		t.Fatal("No cron job entries found")
+	}
 
-		entries[0].Job.Run()
+	want := 8
+	got := entries[0].Next.Hour()
+	if got != want {
+		t.Fatalf("Cron job should be scheduled for %dh got %dh", want, got)
+	}
 
-		So(replies, ShouldHaveLength, 1)
-		So(replies[0], ShouldEqual, "ok #channel")
-	})
+	entries[0].Job.Run()
+
+	if len(replies) == 0 {
+		t.Fatal("Job did not executed or period command did not reply")
+	}
+
+	msgWant := "ok #channel"
+	msgGot := replies[0]
+	if msgWant != msgGot {
+		t.Fatalf("Wrong mesage sent to channel want %s got %s", msgWant, msgGot)
+	}
 }
 
 func TestDisableCommands(t *testing.T) {
+	resetResponses()
 	Convey("Allow disabling commands", t, func() {
 		Reset(resetResponses)
 		commands = make(map[string]*customCommand)
