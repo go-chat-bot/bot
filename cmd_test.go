@@ -27,60 +27,62 @@ func resetResponses() {
 }
 
 func TestPeriodicCommands(t *testing.T) {
-	Convey("Periodic Commands", t, func() {
-		Reset(resetResponses)
-		RegisterPeriodicCommand("morning",
-			PeriodicConfig{
-				CronSpec: "0 0 08 * * mon-fri",
-				Channels: []string{"#channel"},
-				CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
-			})
+	resetResponses()
+	RegisterPeriodicCommand("morning",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			Channels: []string{"#channel"},
+			CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
+		})
+	b := New(&Handlers{Response: responseHandler})
 
-		b := New(&Handlers{Response: responseHandler})
+	entries := b.cron.Entries()
+	if len(entries) != 1 {
+		t.Fatal("Should have one cron job entry")
+	}
+	if entries[0].Next.Hour() != 8 {
+		t.Fatal("Cron job should be scheduled to 8am")
+	}
 
-		entries := b.cron.Entries()
-		So(entries, ShouldHaveLength, 1)
-		So(entries[0].Next.Hour(), ShouldEqual, 8)
+	entries[0].Job.Run()
 
-		entries[0].Job.Run()
-
-		So(replies, ShouldHaveLength, 1)
-		So(replies[0], ShouldEqual, "ok #channel")
-	})
+	if len(replies) != 1 {
+		t.Fatal("Should have one reply in the channel")
+	}
+	if replies[0] != "ok #channel" {
+		t.Fatal("Invalid reply")
+	}
 }
 
-func TestDisableCommands(t *testing.T) {
-	Convey("Allow disabling commands", t, func() {
-		Reset(resetResponses)
-		commands = make(map[string]*customCommand)
-		b := New(&Handlers{
-			Response: responseHandler,
-		})
-
-		RegisterCommand("cmd", "", "",
-			func(c *Cmd) (string, error) {
-				return "active", nil
-			})
-
-		RegisterPassiveCommand("passive",
-			func(cmd *PassiveCmd) (string, error) {
-				return "passive", nil
-			})
-
-		Convey("When the disabled command is active", func() {
-			b.Disable([]string{"cmd"})
-			b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
-
-			So(replies, ShouldBeEmpty)
-		})
-
-		Convey("When the disabled command is passive", func() {
-			b.Disable([]string{"passive"})
-			b.MessageReceived("#go-bot", "regular message", &User{Nick: "user"})
-
-			So(replies, ShouldBeEmpty)
-		})
+func TestDisabledCommands(t *testing.T) {
+	resetResponses()
+	commands = make(map[string]*customCommand)
+	b := New(&Handlers{
+		Response: responseHandler,
 	})
+
+	RegisterCommand("cmd", "", "",
+		func(c *Cmd) (string, error) {
+			return "active", nil
+		})
+
+	RegisterPassiveCommand("passive",
+		func(cmd *PassiveCmd) (string, error) {
+			return "passive", nil
+		})
+
+	b.Disable([]string{"cmd"})
+	b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+	if len(replies) != 0 {
+		t.Fatal("Should not execute disabled active commands")
+	}
+
+	b.Disable([]string{"passive"})
+	b.MessageReceived("#go-bot", "regular message", &User{Nick: "user"})
+
+	if len(replies) != 0 {
+		t.Fatal("Should not execute disabled passive commands")
+	}
 }
 
 func TestMessageReceived(t *testing.T) {
