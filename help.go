@@ -14,7 +14,10 @@ const (
 )
 
 func (b *Bot) help(c *Cmd) {
-	cmd := parse(CmdPrefix+c.RawArgs, c.Channel, c.User)
+	cmd, err := parse(CmdPrefix+c.RawArgs, c.Channel, c.User)
+	if err != nil {
+		b.handlers.Response(c.Channel, err.Error(), c.User)
+	}
 	if cmd == nil {
 		b.showAvailabeCommands(c.Channel, c.User)
 		return
