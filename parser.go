@@ -1,20 +1,23 @@
 package bot
 
 import (
+	"errors"
 	"regexp"
 	"strings"
+
+	"github.com/mattn/go-shellwords"
 )
 
 var (
 	re = regexp.MustCompile("\\s+") // Matches one or more spaces
 )
 
-func parse(s string, channel string, user *User) *Cmd {
+func parse(s string, channel string, user *User) (*Cmd, error) {
 	c := &Cmd{Raw: s}
 	s = strings.TrimSpace(s)
 
 	if !strings.HasPrefix(s, CmdPrefix) {
-		return nil
+		return nil, nil
 	}
 
 	c.Channel = strings.TrimSpace(channel)
@@ -26,7 +29,7 @@ func parse(s string, channel string, user *User) *Cmd {
 
 	// check if we have the command and not only the prefix
 	if c.Message == "" {
-		return nil
+		return nil, nil
 	}
 
 	// get the command
@@ -36,12 +39,12 @@ func parse(s string, channel string, user *User) *Cmd {
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces
 		c.RawArgs = strings.TrimSpace(pieces[1])
-		c.Args = strings.Split(removeExtraSpaces(c.RawArgs), " ")
+		parsedArgs, err := shellwords.Parse(c.RawArgs)
+		if err != nil {
+			return nil, errors.New("Error parsing arguments: " + err.Error())
+		}
+		c.Args = parsedArgs
 	}
 
-	return c
-}
-
-func removeExtraSpaces(args string) string {
-	return re.ReplaceAllString(strings.TrimSpace(args), " ")
+	return c, nil
 }

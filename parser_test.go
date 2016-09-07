@@ -10,6 +10,7 @@ func TestPaser(t *testing.T) {
 	user := &User{Nick: "user123"}
 	cmdWithoutArgs := CmdPrefix + "cmd"
 	cmdWithArgs := CmdPrefix + "cmd    arg1  arg2   "
+	cmdWithQuotes := CmdPrefix + "cmd    \"arg1  arg2\""
 
 	tests := []struct {
 		msg      string
@@ -34,12 +35,31 @@ func TestPaser(t *testing.T) {
 			RawArgs: "arg1  arg2",
 			Args:    []string{"arg1", "arg2"},
 		}},
+		{cmdWithQuotes, &Cmd{
+			Raw:     cmdWithQuotes,
+			Command: "cmd",
+			Channel: channel,
+			User:    user,
+			Message: "cmd    \"arg1  arg2\"",
+			RawArgs: "\"arg1  arg2\"",
+			Args:    []string{"arg1  arg2"},
+		}},
 	}
 
 	for _, test := range tests {
-		cmd := parse(test.msg, channel, user)
+		cmd, _ := parse(test.msg, channel, user)
 		if !reflect.DeepEqual(test.expected, cmd) {
 			t.Errorf("Expected:\n%#v\ngot:\n%#v", test.expected, cmd)
 		}
+	}
+}
+
+func TestInvalidArguments(t *testing.T) {
+	cmd, err := parse("!cmd Invalid \"arg", "#go-bot", &User{Nick: "user123"})
+	if err == nil {
+		t.Error("Expected error, got nil")
+	}
+	if cmd != nil {
+		t.Errorf("Expected nil, got %#v", cmd)
 	}
 }

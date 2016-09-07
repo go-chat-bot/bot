@@ -26,8 +26,13 @@ func resetResponses() {
 	replies = []string{}
 }
 
+func resetRegisteredPeriodicCommands() {
+	periodicCommands = make(map[string]PeriodicConfig)
+}
+
 func TestPeriodicCommands(t *testing.T) {
 	resetResponses()
+	resetRegisteredPeriodicCommands()
 	RegisterPeriodicCommand("morning",
 		PeriodicConfig{
 			CronSpec: "0 0 08 * * mon-fri",
@@ -51,6 +56,30 @@ func TestPeriodicCommands(t *testing.T) {
 	}
 	if replies[0] != "ok #channel" {
 		t.Fatal("Invalid reply")
+	}
+}
+
+func TestErroredPeriodicCommand(t *testing.T) {
+	resetResponses()
+	resetRegisteredPeriodicCommands()
+	RegisterPeriodicCommand("bugged",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			Channels: []string{"#channel"},
+			CmdFunc:  func(channel string) (string, error) { return "bug", errors.New("error") },
+		})
+	b := New(&Handlers{Response: responseHandler})
+
+	entries := b.cron.Entries()
+
+	if len(entries) != 1 {
+		t.Fatal("Should have one cron job entry")
+	}
+
+	entries[0].Job.Run()
+
+	if len(replies) != 0 {
+		t.Fatal("Should not have a reply in the channel")
 	}
 }
 
@@ -98,6 +127,16 @@ func TestMessageReceived(t *testing.T) {
 				b.MessageReceived("#go-bot", "!not_a_cmd", &User{})
 
 				So(replies, ShouldBeEmpty)
+			})
+		})
+
+		Convey("When the command arguments are invalid", func() {
+			Convey("It should reply with an error message", func() {
+				b.MessageReceived("#go-bot", "!cmd \"invalid arg", &User{Nick: "user"})
+
+				So(channel, ShouldEqual, "#go-bot")
+				So(replies, ShouldHaveLength, 1)
+				So(replies[0], ShouldStartWith, "Error parsing")
 			})
 		})
 
@@ -171,6 +210,14 @@ func TestMessageReceived(t *testing.T) {
 						fmt.Sprintf(helpAboutCommand, CmdPrefix),
 						fmt.Sprintf(availableCommands, "cmd"),
 					})
+				})
+
+				Convey("if the help arguments are invalid, reply with an error", func() {
+					b.MessageReceived("#go-bot", "!help cmd \"invalid arg", &User{Nick: "user"})
+
+					So(channel, ShouldEqual, "#go-bot")
+					So(replies, ShouldHaveLength, 1)
+					So(replies[0], ShouldStartWith, "Error parsing")
 				})
 			})
 		})
