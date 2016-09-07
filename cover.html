@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/go-chat-bot/bot/bot.go (95.8%)</option>
+				
+				<option value="file1">github.com/go-chat-bot/bot/cmd.go (100.0%)</option>
+				
+				<option value="file2">github.com/go-chat-bot/bot/help.go (100.0%)</option>
+				
+				<option value="file3">github.com/go-chat-bot/bot/parser.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Package bot provides a simple to use IRC, Slack and Telegram bot
+package bot
+
+import (
+        "log"
+        "math/rand"
+        "time"
+
+        "github.com/robfig/cron"
+)
+
+const (
+        // CmdPrefix is the prefix used to identify a command.
+        // !hello whould be identified as a command
+        CmdPrefix = "!"
+)
+
+// Bot handles the bot instance
+type Bot struct {
+        handlers     *Handlers
+        cron         *cron.Cron
+        disabledCmds []string
+}
+
+// ResponseHandler must be implemented by the protocol to handle the bot responses
+type ResponseHandler func(target, message string, sender *User)
+
+// Handlers that must be registered to receive callbacks from the bot
+type Handlers struct {
+        Response ResponseHandler
+}
+
+// New configures a new bot instance
+func New(h *Handlers) *Bot <span class="cov8" title="1">{
+        b := &amp;Bot{
+                handlers: h,
+                cron:     cron.New(),
+        }
+        b.startPeriodicCommands()
+        return b
+}</span>
+
+func (b *Bot) startPeriodicCommands() <span class="cov8" title="1">{
+        for _, config := range periodicCommands </span><span class="cov8" title="1">{
+                b.cron.AddFunc(config.CronSpec, func() </span><span class="cov8" title="1">{
+                        for _, channel := range config.Channels </span><span class="cov8" title="1">{
+                                message, err := config.CmdFunc(channel)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Print("Periodic command failed ", err)
+                                }</span><span class="cov8" title="1"> else if message != "" </span><span class="cov8" title="1">{
+                                        b.handlers.Response(channel, message, nil)
+                                }</span>
+                        }
+                })
+        }
+        <span class="cov8" title="1">if len(b.cron.Entries()) == 1 </span><span class="cov8" title="1">{
+                b.cron.Start()
+        }</span>
+}
+
+// MessageReceived must be called by the protocol upon receiving a message
+func (b *Bot) MessageReceived(channel string, text string, sender *User) <span class="cov8" title="1">{
+        command, err := parse(text, channel, sender)
+        if err != nil </span><span class="cov8" title="1">{
+                b.handlers.Response(channel, err.Error(), sender)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if command == nil </span><span class="cov8" title="1">{
+                b.executePassiveCommands(&amp;PassiveCmd{
+                        Raw:     text,
+                        Channel: channel,
+                        User:    sender,
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">switch command.Command </span>{
+        <span class="cov8" title="1">case helpCommand:
+                b.help(command)</span>
+        <span class="cov8" title="1">default:
+                b.handleCmd(command)</span>
+        }
+}
+
+func init() <span class="cov8" title="1">{
+        rand.Seed(time.Now().UnixNano())
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package bot
+
+import (
+        "fmt"
+        "log"
+        "sync"
+)
+
+// Cmd holds the parsed user's input for easier handling of commands
+type Cmd struct {
+        Raw     string   // Raw is full string passed to the command
+        Channel string   // Channel where the command was called
+        User    *User    // User who sent the message
+        Message string   // Full string without the prefix
+        Command string   // Command is the first argument passed to the bot
+        RawArgs string   // Raw arguments after the command
+        Args    []string // Arguments as array
+}
+
+// PassiveCmd holds the information which will be passed to passive commands when receiving a message
+type PassiveCmd struct {
+        Raw     string // Raw message sent to the channel
+        Channel string // Channel which the message was sent to
+        User    *User  // User who sent this message
+}
+
+// PeriodicConfig holds a cron specification for periodically notifying the configured channels
+type PeriodicConfig struct {
+        CronSpec string                               // CronSpec that schedules some function
+        Channels []string                             // A list of channels to notify
+        CmdFunc  func(channel string) (string, error) // func to be executed at the period specified on CronSpec
+}
+
+// User holds user id (nick) and real name
+type User struct {
+        Nick     string
+        RealName string
+}
+
+type customCommand struct {
+        Version     int
+        Cmd         string
+        CmdFuncV1   activeCmdFuncV1
+        CmdFuncV2   activeCmdFuncV2
+        Description string
+        ExampleArgs string
+}
+
+type incomingMessage struct {
+        Channel        string
+        Text           string
+        User           *User
+        BotCurrentNick string
+}
+
+// CmdResult is the result message of V2 commands
+type CmdResult struct {
+        Channel string // The channel where the bot should send the message
+        Message string // The message to be sent
+}
+
+const (
+        v1 = iota
+        v2
+)
+
+const (
+        commandNotAvailable   = "Command %v not available."
+        noCommandsAvailable   = "No commands available."
+        errorExecutingCommand = "Error executing %s: %s"
+)
+
+type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
+type activeCmdFuncV1 func(cmd *Cmd) (string, error)
+type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
+
+var (
+        commands         = make(map[string]*customCommand)
+        passiveCommands  = make(map[string]passiveCmdFunc)
+        periodicCommands = make(map[string]PeriodicConfig)
+)
+
+// RegisterCommand adds a new command to the bot.
+// The command(s) should be registered in the Init() func of your package
+// command: String which the user will use to execute the command, example: reverse
+// decription: Description of the command to use in !help, example: Reverses a string
+// exampleArgs: Example args to be displayed in !help &lt;command&gt;, example: string to be reversed
+// cmdFunc: Function which will be executed. It will received a parsed command as a Cmd value
+func RegisterCommand(command, description, exampleArgs string, cmdFunc activeCmdFuncV1) <span class="cov8" title="1">{
+        commands[command] = &amp;customCommand{
+                Version:     v1,
+                Cmd:         command,
+                CmdFuncV1:   cmdFunc,
+                Description: description,
+                ExampleArgs: exampleArgs,
+        }
+}</span>
+
+// RegisterCommandV2 adds a new command to the bot.
+// It is the same as RegisterCommand but the command can specify the channel to reply to
+func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeCmdFuncV2) <span class="cov8" title="1">{
+        commands[command] = &amp;customCommand{
+                Version:     v2,
+                Cmd:         command,
+                CmdFuncV2:   cmdFunc,
+                Description: description,
+                ExampleArgs: exampleArgs,
+        }
+}</span>
+
+// RegisterPassiveCommand adds a new passive command to the bot.
+// The command should be registered in the Init() func of your package
+// Passive commands receives all the text posted to a channel without any parsing
+// command: String used to identify the command, for internal use only (ex: logs)
+// cmdFunc: Function which will be executed. It will received the raw message, channel and nick
+func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (string, error)) <span class="cov8" title="1">{
+        passiveCommands[command] = cmdFunc
+}</span>
+
+// RegisterPeriodicCommand adds a command that is run periodically.
+// The command should be registered in the Init() func of your package
+// config: PeriodicConfig which specify CronSpec and a channel list
+// cmdFunc: A no-arg function which gets triggered periodically
+func RegisterPeriodicCommand(command string, config PeriodicConfig) <span class="cov8" title="1">{
+        periodicCommands[command] = config
+}</span>
+
+// Disable allows disabling commands that were registered.
+// It is usefull when running multiple bot instances to disabled some plugins like url which
+// is already present on some protocols.
+func (b *Bot) Disable(cmds []string) <span class="cov8" title="1">{
+        b.disabledCmds = append(b.disabledCmds, cmds...)
+}</span>
+
+func (b *Bot) executePassiveCommands(cmd *PassiveCmd) <span class="cov8" title="1">{
+        var wg sync.WaitGroup
+        mutex := &amp;sync.Mutex{}
+
+        for k, v := range passiveCommands </span><span class="cov8" title="1">{
+                if b.isDisabled(k) </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">cmdFunc := v
+                wg.Add(1)
+
+                go func() </span><span class="cov8" title="1">{
+                        defer wg.Done()
+
+                        result, err := cmdFunc(cmd)
+                        if err != nil </span><span class="cov8" title="1">{
+                                log.Println(err)
+                        }</span><span class="cov8" title="1"> else {
+                                mutex.Lock()
+                                b.handlers.Response(cmd.Channel, result, cmd.User)
+                                mutex.Unlock()
+                        }</span>
+                }()
+        }
+        <span class="cov8" title="1">wg.Wait()</span>
+}
+
+func (b *Bot) isDisabled(cmd string) bool <span class="cov8" title="1">{
+        for _, c := range b.disabledCmds </span><span class="cov8" title="1">{
+                if c == cmd </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+func (b *Bot) handleCmd(c *Cmd) <span class="cov8" title="1">{
+        cmd := commands[c.Command]
+
+        if cmd == nil </span><span class="cov8" title="1">{
+                log.Printf("Command not found %v", c.Command)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if b.isDisabled(c.Command) </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        <span class="cov8" title="1">switch cmd.Version </span>{
+        <span class="cov8" title="1">case v1:
+                message, err := cmd.CmdFuncV1(c)
+                b.checkCmdError(err, c)
+                if message != "" </span><span class="cov8" title="1">{
+                        b.handlers.Response(c.Channel, message, c.User)
+                }</span>
+        <span class="cov8" title="1">case v2:
+                result, err := cmd.CmdFuncV2(c)
+                b.checkCmdError(err, c)
+                if result.Channel == "" </span><span class="cov8" title="1">{
+                        result.Channel = c.Channel
+                }</span>
+
+                <span class="cov8" title="1">if result.Message != "" </span><span class="cov8" title="1">{
+                        b.handlers.Response(result.Channel, result.Message, c.User)
+                }</span>
+        }
+}
+
+func (b *Bot) checkCmdError(err error, c *Cmd) <span class="cov8" title="1">{
+        if err != nil </span><span class="cov8" title="1">{
+                errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
+                log.Printf(errorMsg)
+                b.handlers.Response(c.Channel, errorMsg, c.User)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package bot
+
+import (
+        "fmt"
+        "strings"
+)
+
+const (
+        helpDescripton    = "Description: %s"
+        helpUsage         = "Usage: %s%s %s"
+        availableCommands = "Available commands: %v"
+        helpAboutCommand  = "Type: '%shelp &lt;command&gt;' to see details about a specific command."
+        helpCommand       = "help"
+)
+
+func (b *Bot) help(c *Cmd) <span class="cov8" title="1">{
+        cmd, _ := parse(CmdPrefix+c.RawArgs, c.Channel, c.User)
+        if cmd == nil </span><span class="cov8" title="1">{
+                b.showAvailabeCommands(c.Channel, c.User)
+                return
+        }</span>
+
+        <span class="cov8" title="1">command := commands[cmd.Command]
+        if command == nil </span><span class="cov8" title="1">{
+                b.showAvailabeCommands(c.Channel, c.User)
+                return
+        }</span>
+
+        <span class="cov8" title="1">b.showHelp(cmd, command)</span>
+}
+
+func (b *Bot) showHelp(c *Cmd, help *customCommand) <span class="cov8" title="1">{
+        if help.Description != "" </span><span class="cov8" title="1">{
+                b.handlers.Response(c.Channel, fmt.Sprintf(helpDescripton, help.Description), c.User)
+        }</span>
+        <span class="cov8" title="1">b.handlers.Response(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs), c.User)</span>
+}
+
+func (b *Bot) showAvailabeCommands(channel string, sender *User) <span class="cov8" title="1">{
+        var cmds []string
+        for k := range commands </span><span class="cov8" title="1">{
+                cmds = append(cmds, k)
+        }</span>
+        <span class="cov8" title="1">b.handlers.Response(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix), sender)
+        b.handlers.Response(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")), sender)</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package bot
+
+import (
+        "errors"
+        "regexp"
+        "strings"
+
+        "github.com/mattn/go-shellwords"
+)
+
+var (
+        re = regexp.MustCompile("\\s+") // Matches one or more spaces
+)
+
+func parse(s string, channel string, user *User) (*Cmd, error) <span class="cov8" title="1">{
+        c := &amp;Cmd{Raw: s}
+        s = strings.TrimSpace(s)
+
+        if !strings.HasPrefix(s, CmdPrefix) </span><span class="cov8" title="1">{
+                return nil, nil
+        }</span>
+
+        <span class="cov8" title="1">c.Channel = strings.TrimSpace(channel)
+        c.User = user
+
+        // Trim the prefix and extra spaces
+        c.Message = strings.TrimPrefix(s, CmdPrefix)
+        c.Message = strings.TrimSpace(c.Message)
+
+        // check if we have the command and not only the prefix
+        if c.Message == "" </span><span class="cov8" title="1">{
+                return nil, nil
+        }</span>
+
+        // get the command
+        <span class="cov8" title="1">pieces := strings.SplitN(c.Message, " ", 2)
+        c.Command = pieces[0]
+
+        if len(pieces) &gt; 1 </span><span class="cov8" title="1">{
+                // get the arguments and remove extra spaces
+                c.RawArgs = strings.TrimSpace(pieces[1])
+                parsedArgs, err := shellwords.Parse(c.RawArgs)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, errors.New("Error parsing arguments: " + err.Error())
+                }</span>
+                <span class="cov8" title="1">c.Args = parsedArgs</span>
+        }
+
+        <span class="cov8" title="1">return c, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
