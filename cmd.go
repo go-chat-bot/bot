@@ -31,8 +31,9 @@ type PeriodicConfig struct {
 	CmdFunc  func(channel string) (string, error) // func to be executed at the period specified on CronSpec
 }
 
-// User holds user id (nick) and real name
+// User holds user id, nick and real name
 type User struct {
+	ID       string
 	Nick     string
 	RealName string
 }

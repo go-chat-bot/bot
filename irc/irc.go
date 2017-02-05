@@ -37,7 +37,10 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 func onPRIVMSG(e *ircevent.Event) {
-	b.MessageReceived(e.Arguments[0], e.Message(), &bot.User{Nick: e.Nick})
+	b.MessageReceived(e.Arguments[0], e.Message(), &bot.User{
+		ID:       e.Host,
+		Nick:     e.Nick,
+		RealName: e.User})
 }
 
 func getServerName(server string) string {

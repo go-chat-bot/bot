@@ -27,7 +27,10 @@ func extractUser(userID string) *bot.User {
 		fmt.Printf("Error retrieving slack user: %s\n", err)
 		return &bot.User{Nick: userID}
 	}
-	return &bot.User{Nick: slackUser.Name, RealName: slackUser.Profile.RealName}
+	return &bot.User{
+		ID:       userID,
+		Nick:     slackUser.Name,
+		RealName: slackUser.Profile.RealName}
 }
 
 func readBotInfo(api *slack.Client) {
