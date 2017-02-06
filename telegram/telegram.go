@@ -4,6 +4,7 @@ package telegram
 import (
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/go-chat-bot/bot"
 	"gopkg.in/telegram-bot-api.v3"
@@ -52,7 +53,11 @@ func Run(token string, debug bool) {
 
 	for update := range updates {
 		target := strconv.FormatInt(update.Message.Chat.ID, 10)
-		sender := strconv.Itoa(update.Message.From.ID)
-		b.MessageReceived(target, update.Message.Text, &bot.User{Nick: sender})
+		name := []string{update.Message.From.FirstName, update.Message.From.LastName}
+
+		b.MessageReceived(target, update.Message.Text, &bot.User{
+			ID:       strconv.Itoa(update.Message.From.ID),
+			Nick:     update.Message.From.UserName,
+			RealName: strings.Join(name, " ")})
 	}
 }
