@@ -4,6 +4,8 @@ package slack
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/go-chat-bot/bot"
 	"github.com/nlopes/slack"
 )
@@ -67,7 +69,14 @@ Loop:
 				readBotInfo(api)
 			case *slack.MessageEvent:
 				if !ev.Hidden && !ownMessage(ev.User) {
-					b.MessageReceived(ev.Channel, ev.Text, extractUser(ev.User))
+					ti, _ := api.GetTeamInfo()
+					b.MessageReceived(&bot.ChannelData{
+						Protocol:  "slack",
+						Server:    ti.Domain,
+						Channel:   ev.Channel,
+						IsPrivate: strings.HasPrefix(ev.Channel, "D")},
+						ev.Text,
+						extractUser(ev.User))
 				}
 
 			case *slack.RTMError:

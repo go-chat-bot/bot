@@ -37,10 +37,17 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 func onPRIVMSG(e *ircevent.Event) {
-	b.MessageReceived(e.Arguments[0], e.Message(), &bot.User{
-		ID:       e.Host,
-		Nick:     e.Nick,
-		RealName: e.User})
+	b.MessageReceived(
+		&bot.ChannelData{
+			Protocol:  "ircnet",
+			Server:    ircConn.Server,
+			Channel:   e.Arguments[0],
+			IsPrivate: e.Arguments[0] == ircConn.GetNick()},
+		e.Message(),
+		&bot.User{
+			ID:       e.Host,
+			Nick:     e.Nick,
+			RealName: e.User})
 }
 
 func getServerName(server string) string {

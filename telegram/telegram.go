@@ -52,7 +52,11 @@ func Run(token string, debug bool) {
 	b.Disable([]string{"url"})
 
 	for update := range updates {
-		target := strconv.FormatInt(update.Message.Chat.ID, 10)
+		target := &bot.ChannelData{
+			Protocol:  "telegram",
+			Server:    "telegram",
+			Channel:   strconv.FormatInt(update.Message.Chat.ID, 10),
+			IsPrivate: update.Message.Chat.IsPrivate()}
 		name := []string{update.Message.From.FirstName, update.Message.From.LastName}
 
 		b.MessageReceived(target, update.Message.Text, &bot.User{
