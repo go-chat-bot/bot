@@ -39,7 +39,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 func onPRIVMSG(e *ircevent.Event) {
 	b.MessageReceived(
 		&bot.ChannelData{
-			Protocol:  "ircnet",
+			Protocol:  "irc",
 			Server:    ircConn.Server,
 			Channel:   e.Arguments[0],
 			IsPrivate: e.Arguments[0] == ircConn.GetNick()},
