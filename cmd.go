@@ -26,6 +26,11 @@ type ChannelData struct {
 	IsPrivate bool   // Whether the channel is a group or private chat
 }
 
+// URI gives back an URI-fied string containing protocol, server and channel.
+func (c *ChannelData) URI() string {
+	return fmt.Sprintf("%s://%s/%s", c.Protocol, c.Server, c.Channel)
+}
+
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
 	Raw         string       // Raw message sent to the channel
