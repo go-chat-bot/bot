@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	rtm *slack.RTM
-	api *slack.Client
+	rtm      *slack.RTM
+	api      *slack.Client
+	teaminfo *slack.TeamInfo
 
 	params    = slack.PostMessageParameters{AsUser: true}
 	botUserID = ""
@@ -52,6 +53,7 @@ func ownMessage(UserID string) bool {
 func Run(token string) {
 	api = slack.New(token)
 	rtm = api.NewRTM()
+	teaminfo, _ = api.GetTeamInfo()
 
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
@@ -69,10 +71,9 @@ Loop:
 				readBotInfo(api)
 			case *slack.MessageEvent:
 				if !ev.Hidden && !ownMessage(ev.User) {
-					ti, _ := api.GetTeamInfo()
 					b.MessageReceived(&bot.ChannelData{
 						Protocol:  "slack",
-						Server:    ti.Domain,
+						Server:    teaminfo.Domain,
 						Channel:   ev.Channel,
 						IsPrivate: strings.HasPrefix(ev.Channel, "D")},
 						ev.Text,
