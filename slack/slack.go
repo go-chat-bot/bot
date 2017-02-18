@@ -80,8 +80,9 @@ Loop:
 			case *slack.HelloEvent:
 				readBotInfo(api)
 				readChannelData(api)
-
 			case *slack.ChannelCreatedEvent:
+				readChannelData(api)
+			case *slack.ChannelRenameEvent:
 				readChannelData(api)
 
 			case *slack.MessageEvent:
