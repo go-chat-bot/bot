@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestPaser(t *testing.T) {
-	channel := "#go-bot"
+func TestParser(t *testing.T) {
+	channel := &ChannelData{Channel: "#go-bot"}
 	user := &User{Nick: "user123"}
 	cmdWithoutArgs := CmdPrefix + "cmd"
 	cmdWithArgs := CmdPrefix + "cmd    arg1  arg2   "
@@ -20,29 +20,32 @@ func TestPaser(t *testing.T) {
 		{"!", nil},
 		{"regular message", nil},
 		{cmdWithoutArgs, &Cmd{
-			Raw:     cmdWithoutArgs,
-			Command: "cmd",
-			Channel: channel,
-			User:    user,
-			Message: "cmd",
+			Raw:         cmdWithoutArgs,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "cmd",
 		}},
 		{cmdWithArgs, &Cmd{
-			Raw:     cmdWithArgs,
-			Command: "cmd",
-			Channel: channel,
-			User:    user,
-			Message: "cmd    arg1  arg2",
-			RawArgs: "arg1  arg2",
-			Args:    []string{"arg1", "arg2"},
+			Raw:         cmdWithArgs,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "cmd    arg1  arg2",
+			RawArgs:     "arg1  arg2",
+			Args:        []string{"arg1", "arg2"},
 		}},
 		{cmdWithQuotes, &Cmd{
-			Raw:     cmdWithQuotes,
-			Command: "cmd",
-			Channel: channel,
-			User:    user,
-			Message: "cmd    \"arg1  arg2\"",
-			RawArgs: "\"arg1  arg2\"",
-			Args:    []string{"arg1  arg2"},
+			Raw:         cmdWithQuotes,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "cmd    \"arg1  arg2\"",
+			RawArgs:     "\"arg1  arg2\"",
+			Args:        []string{"arg1  arg2"},
 		}},
 	}
 
@@ -55,7 +58,7 @@ func TestPaser(t *testing.T) {
 }
 
 func TestInvalidArguments(t *testing.T) {
-	cmd, err := parse("!cmd Invalid \"arg", "#go-bot", &User{Nick: "user123"})
+	cmd, err := parse("!cmd Invalid \"arg", &ChannelData{Channel: "#go-bot"}, &User{Nick: "user123"})
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}

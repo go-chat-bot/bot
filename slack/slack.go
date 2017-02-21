@@ -9,11 +9,13 @@ import (
 )
 
 var (
-	rtm *slack.RTM
-	api *slack.Client
+	rtm      *slack.RTM
+	api      *slack.Client
+	teaminfo *slack.TeamInfo
 
-	params    = slack.PostMessageParameters{AsUser: true}
-	botUserID = ""
+	channelList = map[string]slack.Channel{}
+	params      = slack.PostMessageParameters{AsUser: true}
+	botUserID   = ""
 )
 
 func responseHandler(target string, message string, sender *bot.User) {
@@ -42,6 +44,17 @@ func readBotInfo(api *slack.Client) {
 	botUserID = info.UserID
 }
 
+func readChannelData(api *slack.Client) {
+	channels, err := api.GetChannels(true)
+	if err != nil {
+		fmt.Printf("Error getting Channels: %s\n", err)
+		return
+	}
+	for _, channel := range channels {
+		channelList[channel.ID] = channel
+	}
+}
+
 func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
@@ -50,6 +63,7 @@ func ownMessage(UserID string) bool {
 func Run(token string) {
 	api = slack.New(token)
 	rtm = api.NewRTM()
+	teaminfo, _ = api.GetTeamInfo()
 
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
@@ -65,9 +79,28 @@ Loop:
 			switch ev := msg.Data.(type) {
 			case *slack.HelloEvent:
 				readBotInfo(api)
+				readChannelData(api)
+			case *slack.ChannelCreatedEvent:
+				readChannelData(api)
+			case *slack.ChannelRenameEvent:
+				readChannelData(api)
+
 			case *slack.MessageEvent:
 				if !ev.Hidden && !ownMessage(ev.User) {
-					b.MessageReceived(ev.Channel, ev.Text, extractUser(ev.User))
+					C := channelList[ev.Channel]
+					var channel = ev.Channel
+					if C.IsChannel {
+						channel = fmt.Sprintf("#%s", C.Name)
+					}
+					b.MessageReceived(
+						&bot.ChannelData{
+							Protocol:  "slack",
+							Server:    teaminfo.Domain,
+							Channel:   channel,
+							IsPrivate: !C.IsChannel,
+						},
+						ev.Text,
+						extractUser(ev.User))
 				}
 
 			case *slack.RTMError:

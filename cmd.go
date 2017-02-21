@@ -8,20 +8,35 @@ import (
 
 // Cmd holds the parsed user's input for easier handling of commands
 type Cmd struct {
-	Raw     string   // Raw is full string passed to the command
-	Channel string   // Channel where the command was called
-	User    *User    // User who sent the message
-	Message string   // Full string without the prefix
-	Command string   // Command is the first argument passed to the bot
-	RawArgs string   // Raw arguments after the command
-	Args    []string // Arguments as array
+	Raw         string       // Raw is full string passed to the command
+	Channel     string       // Channel where the command was called
+	ChannelData *ChannelData // More info about the channel, including network
+	User        *User        // User who sent the message
+	Message     string       // Full string without the prefix
+	Command     string       // Command is the first argument passed to the bot
+	RawArgs     string       // Raw arguments after the command
+	Args        []string     // Arguments as array
+}
+
+// ChannelData holds the improved channel info, which includes protocol and server
+type ChannelData struct {
+	Protocol  string // What protocol the message was sent on (irc, slack, telegram)
+	Server    string // The server hostname the message was sent on
+	Channel   string // The channel name the message appeared in
+	IsPrivate bool   // Whether the channel is a group or private chat
+}
+
+// URI gives back an URI-fied string containing protocol, server and channel.
+func (c *ChannelData) URI() string {
+	return fmt.Sprintf("%s://%s/%s", c.Protocol, c.Server, c.Channel)
 }
 
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
-	Raw     string // Raw message sent to the channel
-	Channel string // Channel which the message was sent to
-	User    *User  // User who sent this message
+	Raw         string       // Raw message sent to the channel
+	Channel     string       // Channel which the message was sent to
+	ChannelData *ChannelData // Channel and network info
+	User        *User        // User who sent this message
 }
 
 // PeriodicConfig holds a cron specification for periodically notifying the configured channels
@@ -45,13 +60,6 @@ type customCommand struct {
 	CmdFuncV2   activeCmdFuncV2
 	Description string
 	ExampleArgs string
-}
-
-type incomingMessage struct {
-	Channel        string
-	Text           string
-	User           *User
-	BotCurrentNick string
 }
 
 // CmdResult is the result message of V2 commands

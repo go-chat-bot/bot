@@ -101,13 +101,13 @@ func TestDisabledCommands(t *testing.T) {
 		})
 
 	b.Disable([]string{"cmd"})
-	b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 	if len(replies) != 0 {
 		t.Fatal("Should not execute disabled active commands")
 	}
 
 	b.Disable([]string{"passive"})
-	b.MessageReceived("#go-bot", "regular message", &User{Nick: "user"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "regular message", &User{Nick: "user"})
 
 	if len(replies) != 0 {
 		t.Fatal("Should not execute disabled passive commands")
@@ -124,7 +124,7 @@ func TestMessageReceived(t *testing.T) {
 
 		Convey("When the command is not registered", func() {
 			Convey("It should not post to the channel", func() {
-				b.MessageReceived("#go-bot", "!not_a_cmd", &User{})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!not_a_cmd", &User{})
 
 				So(replies, ShouldBeEmpty)
 			})
@@ -132,7 +132,7 @@ func TestMessageReceived(t *testing.T) {
 
 		Convey("When the command arguments are invalid", func() {
 			Convey("It should reply with an error message", func() {
-				b.MessageReceived("#go-bot", "!cmd \"invalid arg", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd \"invalid arg", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldHaveLength, 1)
@@ -148,7 +148,7 @@ func TestMessageReceived(t *testing.T) {
 						return "", cmdError
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble,
@@ -169,7 +169,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{expectedMsg})
@@ -177,13 +177,13 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				user = &User{Nick: "go-bot"}
-				b.MessageReceived("go-bot", "!cmd", &User{Nick: "sender-nick"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "sender-nick"})
 				So(user.Nick, ShouldEqual, "sender-nick")
 			})
 
 			Convey("When the command is help", func() {
 				Convey("Display the available commands in the channel", func() {
-					b.MessageReceived("#go-bot", "!help", &User{Nick: "user"})
+					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -193,7 +193,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command exists send a message to the channel", func() {
-					b.MessageReceived("#go-bot", "!help cmd", &User{Nick: "user"})
+					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -203,7 +203,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 				Convey("If the command does not exists, display the generic help", func() {
-					b.MessageReceived("#go-bot", "!help not_a_command", &User{Nick: "user"})
+					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help not_a_command", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldResemble, []string{
@@ -213,7 +213,7 @@ func TestMessageReceived(t *testing.T) {
 				})
 
 				Convey("if the help arguments are invalid, reply with an error", func() {
-					b.MessageReceived("#go-bot", "!help cmd \"invalid arg", &User{Nick: "user"})
+					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd \"invalid arg", &User{Nick: "user"})
 
 					So(channel, ShouldEqual, "#go-bot")
 					So(replies, ShouldHaveLength, 1)
@@ -231,7 +231,7 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#channel")
 				So(replies, ShouldResemble, []string{"message"})
@@ -244,7 +244,7 @@ func TestMessageReceived(t *testing.T) {
 							Message: "message"}, nil
 					})
 
-				b.MessageReceived("#go-bot", "!cmd", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(replies, ShouldResemble, []string{"message"})
@@ -269,7 +269,7 @@ func TestMessageReceived(t *testing.T) {
 			RegisterPassiveCommand("errored", errored)
 
 			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived("#go-bot", "test", &User{Nick: "user"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "user"})
 
 				So(channel, ShouldEqual, "#go-bot")
 				So(len(replies), ShouldEqual, 2)
@@ -279,7 +279,7 @@ func TestMessageReceived(t *testing.T) {
 
 			Convey("If it is a private message, reply to the user", func() {
 				user = &User{Nick: "go-bot"}
-				b.MessageReceived("go-bot", "test", &User{Nick: "sender-nick"})
+				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "sender-nick"})
 
 				So(user.Nick, ShouldEqual, "sender-nick")
 				So(len(replies), ShouldEqual, 2)
