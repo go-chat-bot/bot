@@ -289,3 +289,16 @@ func TestMessageReceived(t *testing.T) {
 		})
 	})
 }
+
+func TestChannelData(t *testing.T) {
+	Convey("Given a ChannelData struct", t, func() {
+		Convey("Make sure ChannelData can give you the Channel URI", func() {
+			cd := ChannelData{
+				Protocol: "irc",
+				Server:   "myserver",
+				Channel:  "#mychan",
+			}
+			So(cd.URI(), ShouldEqual, "irc://myserver/#mychan")
+		})
+	})
+}
