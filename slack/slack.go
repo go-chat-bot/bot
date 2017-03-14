@@ -23,16 +23,41 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 // Extracts user information from slack API
-func extractUser(userID string) *bot.User {
+func extractUser(event *slack.MessageEvent) *bot.User {
+	var isBot bool
+	var userID string
+	if len(event.User) == 0 {
+		userID = event.BotID
+		isBot = true
+	} else {
+		userID = event.User
+		isBot = false
+	}
 	slackUser, err := api.GetUserInfo(userID)
 	if err != nil {
 		fmt.Printf("Error retrieving slack user: %s\n", err)
-		return &bot.User{Nick: userID}
+		return &bot.User{
+			ID:    userID,
+			IsBot: isBot}
 	}
 	return &bot.User{
 		ID:       userID,
 		Nick:     slackUser.Name,
-		RealName: slackUser.Profile.RealName}
+		RealName: slackUser.Profile.RealName,
+		IsBot:    isBot}
+}
+
+func extractText(event *slack.MessageEvent) string {
+	text := ""
+	if len(event.Text) != 0 {
+		text = event.Text
+	} else {
+		attachments := event.Attachments
+		if len(attachments) > 0 {
+			text = attachments[0].Fallback
+		}
+	}
+	return text
 }
 
 func readBotInfo(api *slack.Client) {
@@ -99,8 +124,8 @@ Loop:
 							Channel:   channel,
 							IsPrivate: !C.IsChannel,
 						},
-						ev.Text,
-						extractUser(ev.User))
+						extractText(ev),
+						extractUser(ev))
 				}
 
 			case *slack.RTMError:

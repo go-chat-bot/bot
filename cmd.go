@@ -51,6 +51,7 @@ type User struct {
 	ID       string
 	Nick     string
 	RealName string
+	IsBot    bool
 }
 
 type customCommand struct {
