@@ -39,6 +39,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 		for _, tmpmessage := range strarray {
 			ircConn.Privmsg(channel, tmpmessage)
 		}
+		return
 	}
 	ircConn.Privmsg(channel, message)
 }
