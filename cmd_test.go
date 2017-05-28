@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -41,6 +42,9 @@ func TestPeriodicCommands(t *testing.T) {
 		})
 	b := New(&Handlers{Response: responseHandler})
 
+	// Give a second for the crons to be registered
+	time.Sleep(time.Second)
+
 	entries := b.cron.Entries()
 	if len(entries) != 1 {
 		t.Fatal("Should have one cron job entry")
@@ -59,6 +63,51 @@ func TestPeriodicCommands(t *testing.T) {
 	}
 }
 
+func TestMultiplePeriodicCommands(t *testing.T) {
+	resetResponses()
+	resetRegisteredPeriodicCommands()
+	RegisterPeriodicCommand("morning",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			Channels: []string{"#channel"},
+			CmdFunc:  func(channel string) (string, error) { return "ok_morning " + channel, nil },
+		})
+	RegisterPeriodicCommand("afternoon",
+		PeriodicConfig{
+			CronSpec: "0 0 12 * * mon-fri",
+			Channels: []string{"#channel"},
+			CmdFunc:  func(channel string) (string, error) { return "ok_afternoon " + channel, nil },
+		})
+	b := New(&Handlers{Response: responseHandler})
+
+	// Give a second for the crons to be registered
+	time.Sleep(time.Second)
+
+	entries := b.cron.Entries()
+	if len(entries) != 2 {
+		t.Fatal("Should have 2 cron job entries")
+	}
+	if entries[0].Next.Hour() != 8 {
+		t.Fatal("First cron job should be scheduled for 8am")
+	}
+	if entries[1].Next.Hour() != 12 {
+		t.Fatal("Second cron job should be schedule for 12am")
+	}
+
+	entries[0].Job.Run()
+	entries[1].Job.Run()
+
+	if len(replies) != 2 {
+		t.Fatal("Should have two replies in the channel")
+	}
+	if replies[0] != "ok_morning #channel" {
+		t.Fatal("Invalid reply in first cron job")
+	}
+	if replies[1] != "ok_afternoon #channel" {
+		t.Fatal("Invalid reply in second cron job")
+	}
+}
+
 func TestErroredPeriodicCommand(t *testing.T) {
 	resetResponses()
 	resetRegisteredPeriodicCommands()
@@ -69,6 +118,9 @@ func TestErroredPeriodicCommand(t *testing.T) {
 			CmdFunc:  func(channel string) (string, error) { return "bug", errors.New("error") },
 		})
 	b := New(&Handlers{Response: responseHandler})
+
+	// Give a second for the crons to be registered
+	time.Sleep(time.Second)
 
 	entries := b.cron.Entries()
 
