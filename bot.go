@@ -42,18 +42,20 @@ func New(h *Handlers) *Bot {
 
 func (b *Bot) startPeriodicCommands() {
 	for _, config := range periodicCommands {
-		b.cron.AddFunc(config.CronSpec, func() {
-			for _, channel := range config.Channels {
-				message, err := config.CmdFunc(channel)
-				if err != nil {
-					log.Print("Periodic command failed ", err)
-				} else if message != "" {
-					b.handlers.Response(channel, message, nil)
+		go func(config PeriodicConfig) {
+			b.cron.AddFunc(config.CronSpec, func() {
+				for _, channel := range config.Channels {
+					message, err := config.CmdFunc(channel)
+					if err != nil {
+						log.Print("Periodic command failed ", err)
+					} else if message != "" {
+						b.handlers.Response(channel, message, nil)
+					}
 				}
-			}
-		})
+			})
+		}(config)
 	}
-	if len(b.cron.Entries()) == 1 {
+	if len(periodicCommands) > 0 {
 		b.cron.Start()
 	}
 }
