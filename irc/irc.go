@@ -33,15 +33,10 @@ func responseHandler(target string, message string, sender *bot.User) {
 	if ircConn.GetNick() == target {
 		channel = sender.Nick
 	}
-	//Return multiple lines if message contains \n
-	if strings.Contains(message, "\n") {
-		strarray := strings.Split(message, "\n")
-		for _, tmpmessage := range strarray {
-			ircConn.Privmsg(channel, tmpmessage)
-		}
-		return
+
+	for _, line := range strings.Split(message, "\n") {
+		ircConn.Privmsg(channel, line)
 	}
-	ircConn.Privmsg(channel, message)
 }
 
 func onPRIVMSG(e *ircevent.Event) {
