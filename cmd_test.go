@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"testing"
-	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -42,9 +41,6 @@ func TestPeriodicCommands(t *testing.T) {
 		})
 	b := New(&Handlers{Response: responseHandler})
 
-	// Give a second for the crons to be registered
-	time.Sleep(time.Second)
-
 	entries := b.cron.Entries()
 	if len(entries) != 1 {
 		t.Fatal("Should have one cron job entry")
@@ -79,9 +75,6 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 			CmdFunc:  func(channel string) (string, error) { return "ok_afternoon " + channel, nil },
 		})
 	b := New(&Handlers{Response: responseHandler})
-
-	// Give a second for the crons to be registered
-	time.Sleep(time.Second)
 
 	entries := b.cron.Entries()
 	if len(entries) != 2 {
@@ -118,9 +111,6 @@ func TestErroredPeriodicCommand(t *testing.T) {
 			CmdFunc:  func(channel string) (string, error) { return "bug", errors.New("error") },
 		})
 	b := New(&Handlers{Response: responseHandler})
-
-	// Give a second for the crons to be registered
-	time.Sleep(time.Second)
 
 	entries := b.cron.Entries()
 
