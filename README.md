@@ -72,7 +72,7 @@ package main
 	)
 
 	func main() {
-		irc.Run(&bot.Config{
+		irc.Run(&irc.Config{
 			Server:   os.Getenv("IRC_SERVER"),
 			Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
 			User:     os.Getenv("IRC_USER"),
