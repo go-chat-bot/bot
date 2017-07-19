@@ -187,10 +187,6 @@ func (b *Bot) handleCmd(c *Cmd) {
 		return
 	}
 
-	if b.isDisabled(c.Command) {
-		return
-	}
-
 	switch cmd.Version {
 	case v1:
 		message, err := cmd.CmdFuncV1(c)

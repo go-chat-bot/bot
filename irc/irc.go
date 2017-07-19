@@ -33,7 +33,10 @@ func responseHandler(target string, message string, sender *bot.User) {
 	if ircConn.GetNick() == target {
 		channel = sender.Nick
 	}
-	ircConn.Privmsg(channel, message)
+
+	for _, line := range strings.Split(message, "\n") {
+		ircConn.Privmsg(channel, line)
+	}
 }
 
 func onPRIVMSG(e *ircevent.Event) {
