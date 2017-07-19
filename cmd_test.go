@@ -269,6 +269,18 @@ func TestHelpWithNoArgs(t *testing.T) {
 	}
 }
 
+func TestDisableHelp(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+	b := newBot()
+	b.Disable([]string{"help"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
+
+	if len(replies) > 0 {
+		t.Fatalf("Should not execute help after disabling it")
+	}
+}
+
 func TestHelpForACommand(t *testing.T) {
 	resetResponses()
 	registerValidCommand()

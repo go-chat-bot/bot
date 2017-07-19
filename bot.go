@@ -78,6 +78,10 @@ func (b *Bot) MessageReceived(channel *ChannelData, text string, sender *User) {
 		return
 	}
 
+	if b.isDisabled(command.Command) {
+		return
+	}
+
 	switch command.Command {
 	case helpCommand:
 		b.help(command)
