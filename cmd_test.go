@@ -331,6 +331,20 @@ func TestCmdV2(t *testing.T) {
 	}
 }
 
+func TestCmdV2WithoutSpecifyingChannel(t *testing.T) {
+	resetResponses()
+	RegisterCommandV2("cmd", "", "",
+		func(c *Cmd) (CmdResult, error) {
+			return CmdResult{Message: "message"}, nil
+		})
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+
+	if channel != "#go-bot" {
+		t.Error("Should reply to original channel if no channel is returned")
+	}
+}
+
 func TestPassiveCommand(t *testing.T) {
 	resetResponses()
 
