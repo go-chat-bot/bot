@@ -3,15 +3,23 @@ package bot
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"sort"
+	"strings"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (
 	channel string
 	replies []string
 	user    *User
+)
+
+const (
+	expectedMsg    = "msg"
+	cmd            = "cmd"
+	cmdDescription = "Command description"
+	cmdExampleArgs = "arg1 arg2"
 )
 
 func responseHandler(target string, message string, sender *User) {
@@ -24,10 +32,24 @@ func resetResponses() {
 	channel = ""
 	user = &User{Nick: ""}
 	replies = []string{}
+	commands = make(map[string]*customCommand)
+}
+
+func newBot() *Bot {
+	return New(&Handlers{
+		Response: responseHandler,
+	})
 }
 
 func resetRegisteredPeriodicCommands() {
 	periodicCommands = make(map[string]PeriodicConfig)
+}
+
+func registerValidCommand() {
+	RegisterCommand(cmd, cmdDescription, cmdExampleArgs,
+		func(c *Cmd) (string, error) {
+			return expectedMsg, nil
+		})
 }
 
 func TestPeriodicCommands(t *testing.T) {
@@ -156,191 +178,206 @@ func TestDisabledCommands(t *testing.T) {
 	}
 }
 
-func TestMessageReceived(t *testing.T) {
-	Convey("Given a new message in the channel", t, func() {
-		Reset(resetResponses)
-		commands = make(map[string]*customCommand)
-		b := New(&Handlers{
-			Response: responseHandler,
+func TestCommandNotRegistered(t *testing.T) {
+	resetResponses()
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!not_a_cmd", &User{})
+
+	if len(replies) != 0 {
+		t.Fatal("Should not reply if a command is not found")
+	}
+}
+
+func TestInvalidCmdArgs(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd \"invalid arg", &User{Nick: "user"})
+
+	if channel != "#go-bot" {
+		t.Error("Should reply to #go-bot channel")
+	}
+	if len(replies) != 1 {
+		t.Fatal("Invalid reply")
+	}
+	if !strings.HasPrefix(replies[0], "Error parsing") {
+		t.Fatal("Should reply with an error message")
+	}
+}
+
+func TestErroredCmd(t *testing.T) {
+	resetResponses()
+	cmdError := errors.New("error")
+	RegisterCommand("cmd", "", "",
+		func(c *Cmd) (string, error) {
+			return "", cmdError
 		})
 
-		Convey("When the command is not registered", func() {
-			Convey("It should not post to the channel", func() {
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!not_a_cmd", &User{})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
-				So(replies, ShouldBeEmpty)
-			})
-		})
+	if channel != "#go-bot" {
+		t.Fatal("Invalid channel")
+	}
+	if len(replies) != 1 {
+		t.Fatal("Invalid reply")
+	}
+	if replies[0] != fmt.Sprintf(errorExecutingCommand, "cmd", cmdError.Error()) {
+		t.Fatal("Reply should contain the error message")
+	}
+}
 
-		Convey("When the command arguments are invalid", func() {
-			Convey("It should reply with an error message", func() {
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd \"invalid arg", &User{Nick: "user"})
+func TestValidCmdOnChannel(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
 
-				So(channel, ShouldEqual, "#go-bot")
-				So(replies, ShouldHaveLength, 1)
-				So(replies[0], ShouldStartWith, "Error parsing")
-			})
-		})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
 
-		Convey("The command can return an error", func() {
-			Convey("it sould send the message with the error to the channel", func() {
-				cmdError := errors.New("error")
-				RegisterCommand("cmd", "", "",
-					func(c *Cmd) (string, error) {
-						return "", cmdError
-					})
-
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
-
-				So(channel, ShouldEqual, "#go-bot")
-				So(replies, ShouldResemble,
-					[]string{fmt.Sprintf(errorExecutingCommand, "cmd", cmdError.Error())})
-			})
-		})
-
-		Convey("When the command is valid and registered", func() {
-			commands = make(map[string]*customCommand)
-			expectedMsg := "msg"
-			cmd := "cmd"
-			cmdDescription := "Command description"
-			cmdExampleArgs := "arg1 arg2"
-
-			RegisterCommand(cmd, cmdDescription, cmdExampleArgs,
-				func(c *Cmd) (string, error) {
-					return expectedMsg, nil
-				})
-
-			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
-
-				So(channel, ShouldEqual, "#go-bot")
-				So(replies, ShouldResemble, []string{expectedMsg})
-			})
-
-			Convey("If it is a private message, reply to the user", func() {
-				user = &User{Nick: "go-bot"}
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "sender-nick"})
-				So(user.Nick, ShouldEqual, "sender-nick")
-			})
-
-			Convey("When the command is help", func() {
-				Convey("Display the available commands in the channel", func() {
-					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
-
-					So(channel, ShouldEqual, "#go-bot")
-					So(replies, ShouldResemble, []string{
-						fmt.Sprintf(helpAboutCommand, CmdPrefix),
-						fmt.Sprintf(availableCommands, "cmd"),
-					})
-				})
-
-				Convey("If the command exists send a message to the channel", func() {
-					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd", &User{Nick: "user"})
-
-					So(channel, ShouldEqual, "#go-bot")
-					So(replies, ShouldResemble, []string{
-						fmt.Sprintf(helpDescripton, cmdDescription),
-						fmt.Sprintf(helpUsage, CmdPrefix, cmd, cmdExampleArgs),
-					})
-				})
-
-				Convey("If the command does not exists, display the generic help", func() {
-					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help not_a_command", &User{Nick: "user"})
-
-					So(channel, ShouldEqual, "#go-bot")
-					So(replies, ShouldResemble, []string{
-						fmt.Sprintf(helpAboutCommand, CmdPrefix),
-						fmt.Sprintf(availableCommands, "cmd"),
-					})
-				})
-
-				Convey("if the help arguments are invalid, reply with an error", func() {
-					b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd \"invalid arg", &User{Nick: "user"})
-
-					So(channel, ShouldEqual, "#go-bot")
-					So(replies, ShouldHaveLength, 1)
-					So(replies[0], ShouldStartWith, "Error parsing")
-				})
-			})
-		})
-
-		Convey("When the command is V2", func() {
-			Convey("it should send the message with the error to the channel", func() {
-				RegisterCommandV2("cmd", "", "",
-					func(c *Cmd) (CmdResult, error) {
-						return CmdResult{
-							Channel: "#channel",
-							Message: "message"}, nil
-					})
-
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
-
-				So(channel, ShouldEqual, "#channel")
-				So(replies, ShouldResemble, []string{"message"})
-			})
-
-			Convey("it should reply to the current channel if the command does not specify one", func() {
-				RegisterCommandV2("cmd", "", "",
-					func(c *Cmd) (CmdResult, error) {
-						return CmdResult{
-							Message: "message"}, nil
-					})
-
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
-
-				So(channel, ShouldEqual, "#go-bot")
-				So(replies, ShouldResemble, []string{"message"})
-			})
-		})
-
-		Convey("When the command is passive", func() {
-			passiveCommands = make(map[string]passiveCmdFunc)
-
-			echo := func(cmd *PassiveCmd) (string, error) {
-				return cmd.Raw, nil
-			}
-			ping := func(cmd *PassiveCmd) (string, error) {
-				return "pong", nil
-			}
-			errored := func(cmd *PassiveCmd) (string, error) {
-				return "", errors.New("error")
-			}
-
-			RegisterPassiveCommand("echo", echo)
-			RegisterPassiveCommand("ping", ping)
-			RegisterPassiveCommand("errored", errored)
-
-			Convey("If it is called in the channel, reply on the channel", func() {
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "user"})
-
-				So(channel, ShouldEqual, "#go-bot")
-				So(len(replies), ShouldEqual, 2)
-				So(replies, ShouldContain, "test")
-				So(replies, ShouldContain, "pong")
-			})
-
-			Convey("If it is a private message, reply to the user", func() {
-				user = &User{Nick: "go-bot"}
-				b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "sender-nick"})
-
-				So(user.Nick, ShouldEqual, "sender-nick")
-				So(len(replies), ShouldEqual, 2)
-				So(replies, ShouldContain, "test")
-				So(replies, ShouldContain, "pong")
-			})
-		})
-	})
+	if channel != "#go-bot" {
+		t.Fatal("Command called on channel should reply to channel")
+	}
+	if len(replies) != 1 {
+		t.Fatal("Should have one reply on channel")
+	}
+	if replies[0] != expectedMsg {
+		t.Fatal("Invalid command reply")
+	}
 }
 
 func TestChannelData(t *testing.T) {
-	Convey("Given a ChannelData struct", t, func() {
-		Convey("Make sure ChannelData can give you the Channel URI", func() {
-			cd := ChannelData{
-				Protocol: "irc",
-				Server:   "myserver",
-				Channel:  "#mychan",
-			}
-			So(cd.URI(), ShouldEqual, "irc://myserver/#mychan")
+	cd := ChannelData{
+		Protocol: "irc",
+		Server:   "myserver",
+		Channel:  "#mychan",
+	}
+	if cd.URI() != "irc://myserver/#mychan" {
+		t.Fatal("URI should return a valid IRC URI")
+	}
+}
+
+func TestHelpWithNoArgs(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
+
+	expectedReply := []string{
+		fmt.Sprintf(helpAboutCommand, CmdPrefix),
+		fmt.Sprintf(availableCommands, "cmd"),
+	}
+
+	if !reflect.DeepEqual(replies, expectedReply) {
+		t.Fatalf("Invalid reply. Expected %v got %v", expectedReply, replies)
+	}
+}
+
+func TestHelpForACommand(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd", &User{Nick: "user"})
+
+	expectedReply := []string{
+		fmt.Sprintf(helpDescripton, cmdDescription),
+		fmt.Sprintf(helpUsage, CmdPrefix, cmd, cmdExampleArgs),
+	}
+
+	if !reflect.DeepEqual(replies, expectedReply) {
+		t.Fatalf("Invalid reply. Expected %v got %v", expectedReply, replies)
+	}
+}
+
+func TestHelpWithNonExistingCommand(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help not_a_cmd", &User{Nick: "user"})
+
+	expectedReply := []string{
+		fmt.Sprintf(helpAboutCommand, CmdPrefix),
+		fmt.Sprintf(availableCommands, "cmd"),
+	}
+
+	if !reflect.DeepEqual(replies, expectedReply) {
+		t.Fatalf("Invalid reply. Expected %v got %v", expectedReply, replies)
+	}
+}
+
+func TestHelpWithInvalidArgs(t *testing.T) {
+	resetResponses()
+	registerValidCommand()
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd \"invalid arg", &User{Nick: "user"})
+
+	if len(replies) != 1 {
+		t.Fatal("Invalid reply")
+	}
+	if !strings.HasPrefix(replies[0], "Error parsing") {
+		t.Fatal("Should reply with an error message")
+	}
+}
+
+func TestCmdV2(t *testing.T) {
+	resetResponses()
+	RegisterCommandV2("cmd", "", "",
+		func(c *Cmd) (CmdResult, error) {
+			return CmdResult{
+				Channel: "#channel",
+				Message: "message"}, nil
 		})
-	})
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+
+	if channel != "#channel" {
+		t.Error("Wrong channel")
+	}
+	if !reflect.DeepEqual([]string{"message"}, replies) {
+		t.Error("Invalid reply")
+	}
+}
+
+func TestCmdV2WithoutSpecifyingChannel(t *testing.T) {
+	resetResponses()
+	RegisterCommandV2("cmd", "", "",
+		func(c *Cmd) (CmdResult, error) {
+			return CmdResult{Message: "message"}, nil
+		})
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+
+	if channel != "#go-bot" {
+		t.Error("Should reply to original channel if no channel is returned")
+	}
+}
+
+func TestPassiveCommand(t *testing.T) {
+	resetResponses()
+
+	passiveCommands = make(map[string]passiveCmdFunc)
+
+	echo := func(cmd *PassiveCmd) (string, error) {
+		return cmd.Raw, nil
+	}
+	ping := func(cmd *PassiveCmd) (string, error) {
+		return "pong", nil
+	}
+	errored := func(cmd *PassiveCmd) (string, error) {
+		return "", errors.New("error")
+	}
+
+	RegisterPassiveCommand("echo", echo)
+	RegisterPassiveCommand("ping", ping)
+	RegisterPassiveCommand("errored", errored)
+
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "user"})
+
+	if channel != "#go-bot" {
+		t.Error("Invalid channel")
+	}
+	if len(replies) != 2 {
+		t.Fatal("Invalid reply")
+	}
+
+	sort.Strings(replies)
+	if replies[0] != "pong" {
+		t.Error("ping command not executed")
+	}
+	if replies[1] != "test" {
+		t.Error("echo command not executed")
+	}
 }
