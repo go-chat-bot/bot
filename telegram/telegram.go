@@ -58,8 +58,11 @@ func Run(token string, debug bool) {
 			Channel:   strconv.FormatInt(update.Message.Chat.ID, 10),
 			IsPrivate: update.Message.Chat.IsPrivate()}
 		name := []string{update.Message.From.FirstName, update.Message.From.LastName}
+		message := &bot.Message{
+			Text: update.Message.Text,
+		}
 
-		b.MessageReceived(target, update.Message.Text, &bot.User{
+		b.MessageReceived(target, message, &bot.User{
 			ID:       strconv.Itoa(update.Message.From.ID),
 			Nick:     update.Message.From.UserName,
 			RealName: strings.Join(name, " ")})

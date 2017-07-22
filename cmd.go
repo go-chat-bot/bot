@@ -13,6 +13,7 @@ type Cmd struct {
 	ChannelData *ChannelData // More info about the channel, including network
 	User        *User        // User who sent the message
 	Message     string       // Full string without the prefix
+	MessageData *Message     // Message with extra flags
 	Command     string       // Command is the first argument passed to the bot
 	RawArgs     string       // Raw arguments after the command
 	Args        []string     // Arguments as array
@@ -31,9 +32,16 @@ func (c *ChannelData) URI() string {
 	return fmt.Sprintf("%s://%s/%s", c.Protocol, c.Server, c.Channel)
 }
 
+// Message holds the message info - for IRC and Slack networks, this can include whether the message was an action.
+type Message struct {
+	Text     string // The actual content of this Message
+	IsAction bool   // True if this was a '/me does something' message
+}
+
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
 	Raw         string       // Raw message sent to the channel
+	MessageData *Message     // Message with extra
 	Channel     string       // Channel which the message was sent to
 	ChannelData *ChannelData // Channel and network info
 	User        *User        // User who sent this message
