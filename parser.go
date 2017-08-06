@@ -47,5 +47,9 @@ func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
 		c.Args = parsedArgs
 	}
 
+	c.MessageData = &Message{
+		Text: c.Message,
+	}
+
 	return c, nil
 }

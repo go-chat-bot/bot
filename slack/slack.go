@@ -47,17 +47,20 @@ func extractUser(event *slack.MessageEvent) *bot.User {
 		IsBot:    isBot}
 }
 
-func extractText(event *slack.MessageEvent) string {
-	text := ""
+func extractText(event *slack.MessageEvent) *bot.Message {
+	msg := &bot.Message{}
 	if len(event.Text) != 0 {
-		text = event.Text
+		msg.Text = event.Text
+		if event.SubType == "me_message" {
+			msg.IsAction = true
+		}
 	} else {
 		attachments := event.Attachments
 		if len(attachments) > 0 {
-			text = attachments[0].Fallback
+			msg.Text = attachments[0].Fallback
 		}
 	}
-	return text
+	return msg
 }
 
 func readBotInfo(api *slack.Client) {
