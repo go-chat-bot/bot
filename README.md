@@ -116,6 +116,43 @@ func main() {
 }
 ```
 
+### Rocket.chat
+
+To deploy your go-bot to Rocket.chat, you need to:
+
+* Import the package `github.com/go-chat-bot/bot/rocket`
+* Import the commands you would like to use
+* Call `rocket.Run(config)`
+
+Here is a full example:
+
+```Go
+package main
+
+import (
+	"os"
+
+	"github.com/go-chat-bot/bot/rocket"
+	_ "github.com/go-chat-bot/plugins/godoc"
+	_ "github.com/go-chat-bot/plugins/catfacts"
+	_ "github.com/go-chat-bot/plugins/catgif"
+	_ "github.com/go-chat-bot/plugins/chucknorris"
+)
+
+func main() {
+	config := &rocket.Config{
+		Server:   os.Getenv("ROCKET_SERVER"),
+		Port:     os.Getenv("ROCKET_PORT"),
+		User:     os.Getenv("ROCKET_USER"),
+		Email:    os.Getenv("ROCKET_EMAIL"),
+		Password: os.Getenv("ROCKET_PASSWORD"),
+		UseTLS:   false,
+		Debug:    os.Getenv("DEBUG") != "",
+	}
+	rocket.Run(config)
+}
+```
+
 ## Deploying your own bot
 
 To see an example project on how to deploy your bot, please see my own configuration:
