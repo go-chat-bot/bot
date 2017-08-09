@@ -26,6 +26,9 @@ type Config struct {
 
 func responseHandler(target string, message string, sender *bot.User) {
 	atUser := sender.RealName
+	if message == "" {
+		return
+	}
 	message = fmt.Sprintf("@%s %s", atUser, message)
 	channelInfo, _ := client.GetChannelInfoById(target)
 	err := client.Send(channelInfo, message)
