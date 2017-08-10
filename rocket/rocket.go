@@ -13,15 +13,15 @@ var (
 	config *Config
 )
 
+// Config must contain the necessary data to connect to an rocket.chat server
 type Config struct {
 	Server   string
 	Port     string
 	User     string
 	Email    string
 	Password string
-	// Channels []string
-	UseTLS bool
-	Debug  bool
+	UseTLS   bool
+	Debug    bool
 }
 
 func responseHandler(target string, message string, sender *bot.User) {
@@ -43,6 +43,7 @@ func ownMessage(c *Config, msg api.Message) bool {
 	return c.User == msg.User.UserName
 }
 
+// Run reads the Config, connect to the specified rocket.chat server and starts the bot.
 func Run(c *Config) {
 	config = c
 	client = rest.NewClient(config.Server, config.Port, config.UseTLS, config.Debug)
