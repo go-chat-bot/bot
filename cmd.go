@@ -67,6 +67,7 @@ type customCommand struct {
 	Cmd         string
 	CmdFuncV1   activeCmdFuncV1
 	CmdFuncV2   activeCmdFuncV2
+	CmdFuncV3   activeCmdFuncV3
 	Description string
 	ExampleArgs string
 }
@@ -77,9 +78,17 @@ type CmdResult struct {
 	Message string // The message to be sent
 }
 
+// CmdResult is the result message of V3 commands
+type CmdResultV3 struct {
+	Channel string
+	Message chan string
+	Done    chan bool
+}
+
 const (
 	v1 = iota
 	v2
+	v3
 )
 
 const (
@@ -91,6 +100,7 @@ const (
 type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
 type activeCmdFuncV1 func(cmd *Cmd) (string, error)
 type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
+type activeCmdFuncV3 func(cmd *Cmd) (CmdResultV3, error)
 
 var (
 	commands         = make(map[string]*customCommand)
@@ -121,6 +131,18 @@ func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeC
 		Version:     v2,
 		Cmd:         command,
 		CmdFuncV2:   cmdFunc,
+		Description: description,
+		ExampleArgs: exampleArgs,
+	}
+}
+
+// RegisterCommandV3 adds a new command to the bot.
+// It is the same as RegisterCommand but the command return a chan
+func RegisterCommandV3(command, description, exampleArgs string, cmdFunc activeCmdFuncV3) {
+	commands[command] = &customCommand{
+		Version:     v3,
+		Cmd:         command,
+		CmdFuncV3:   cmdFunc,
 		Description: description,
 		ExampleArgs: exampleArgs,
 	}
@@ -211,6 +233,22 @@ func (b *Bot) handleCmd(c *Cmd) {
 
 		if result.Message != "" {
 			b.handlers.Response(result.Channel, result.Message, c.User)
+		}
+	case v3:
+		result, err := cmd.CmdFuncV3(c)
+		b.checkCmdError(err, c)
+		if result.Channel == "" {
+			result.Channel = c.Channel
+		}
+		for {
+			select {
+			case message := <-result.Message:
+				if message != "" {
+					b.handlers.Response(result.Channel, message, c.User)
+				}
+			case <-result.Done:
+				return
+			}
 		}
 	}
 }
