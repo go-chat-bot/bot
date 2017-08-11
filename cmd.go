@@ -78,7 +78,7 @@ type CmdResult struct {
 	Message string // The message to be sent
 }
 
-// CmdResult is the result message of V3 commands
+// CmdResultV3 is the result message of V3 commands
 type CmdResultV3 struct {
 	Channel string
 	Message chan string
