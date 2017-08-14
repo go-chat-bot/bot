@@ -393,3 +393,48 @@ func TestPassiveCommand(t *testing.T) {
 		t.Error("echo command not executed")
 	}
 }
+
+func TestCmdV3(t *testing.T) {
+	resetResponses()
+	result := CmdResultV3{
+		Channel: "#channel",
+		Message: make(chan string),
+		Done:    make(chan bool)}
+	RegisterCommandV3("cmd", "", "",
+		func(c *Cmd) (CmdResultV3, error) {
+			return result, nil
+		})
+
+	go newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
+	result.Message <- "message"
+	result.Done <- true
+
+	if channel != "#channel" {
+		t.Error("Wrong channel")
+	}
+	if !reflect.DeepEqual([]string{"message"}, replies) {
+		t.Error("Invalid reply")
+	}
+}
+
+func TestCmdV3WithoutSpecifyingChannel(t *testing.T) {
+	resetResponses()
+	result := CmdResultV3{
+		Message: make(chan string),
+		Done:    make(chan bool)}
+	RegisterCommandV3("cmd", "", "",
+		func(c *Cmd) (CmdResultV3, error) {
+			return result, nil
+		})
+
+	go newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
+	result.Message <- "message"
+	result.Done <- true
+
+	if channel != "#go-bot" {
+		t.Error("Should reply to original channel if no channel is returned")
+	}
+	if !reflect.DeepEqual([]string{"message"}, replies) {
+		t.Error("Invalid reply")
+	}
+}
