@@ -34,8 +34,10 @@ func responseHandler(target string, message string, sender *bot.User) {
 		channel = sender.Nick
 	}
 
-	for _, line := range strings.Split(message, "\n") {
-		ircConn.Privmsg(channel, line)
+	if message != "" {
+		for _, line := range strings.Split(message, "\n") {
+			ircConn.Privmsg(channel, line)
+		}
 	}
 }
 
