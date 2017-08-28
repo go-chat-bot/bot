@@ -8,17 +8,25 @@ import (
 	"github.com/nlopes/slack"
 )
 
+type MessageFilter func(string, *bot.User) (string, slack.PostMessageParameters)
+
 var (
 	rtm      *slack.RTM
 	api      *slack.Client
 	teaminfo *slack.TeamInfo
 
-	channelList = map[string]slack.Channel{}
-	params      = slack.PostMessageParameters{AsUser: true}
-	botUserID   = ""
+	channelList                 = map[string]slack.Channel{}
+	params                      = slack.PostMessageParameters{AsUser: true}
+	messageFilter MessageFilter = defaultMessageFilter
+	botUserID                   = ""
 )
 
+func defaultMessageFilter(message string, sender *bot.User) (string, slack.PostMessageParameters) {
+	return message, params
+}
+
 func responseHandler(target string, message string, sender *bot.User) {
+	message, params := messageFilter(message, sender)
 	api.PostMessage(target, message, params)
 }
 
@@ -87,6 +95,14 @@ func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
 
+func RunWithFilter(token string, customMessageFilter MessageFilter) {
+	if customMessageFilter == nil {
+		panic("A valid message filter must be provided.")
+	}
+	messageFilter = customMessageFilter
+	Run(token)
+}
+
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
 	api = slack.New(token)
@@ -96,6 +112,7 @@ func Run(token string) {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
+
 	b.Disable([]string{"url"})
 
 	go rtm.ManageConnection()
