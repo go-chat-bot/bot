@@ -34,8 +34,10 @@ func responseHandler(target string, message string, sender *bot.User) {
 		channel = sender.Nick
 	}
 
-	for _, line := range strings.Split(message, "\n") {
-		ircConn.Privmsg(channel, line)
+	if message != "" {
+		for _, line := range strings.Split(message, "\n") {
+			ircConn.Privmsg(channel, line)
+		}
 	}
 }
 
@@ -46,11 +48,32 @@ func onPRIVMSG(e *ircevent.Event) {
 			Server:    ircConn.Server,
 			Channel:   e.Arguments[0],
 			IsPrivate: e.Arguments[0] == ircConn.GetNick()},
-		e.Message(),
+		&bot.Message{
+			Text: e.Message(),
+		},
 		&bot.User{
 			ID:       e.Host,
 			Nick:     e.Nick,
 			RealName: e.User})
+}
+
+func onCTCPACTION(e *ircevent.Event) {
+	b.MessageReceived(
+		&bot.ChannelData{
+			Protocol:  "irc",
+			Server:    ircConn.Server,
+			Channel:   e.Arguments[0],
+			IsPrivate: false,
+		},
+		&bot.Message{
+			Text:     e.Message(),
+			IsAction: true,
+		},
+		&bot.User{
+			ID:       e.Host,
+			Nick:     e.Nick,
+			RealName: e.User,
+		})
 }
 
 func getServerName(server string) string {
@@ -86,6 +109,7 @@ func Run(c *Config) {
 
 	ircConn.AddCallback("001", onWelcome)
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)
+	ircConn.AddCallback("CTCP_ACTION", onCTCPACTION)
 
 	err := ircConn.Connect(c.Server)
 	if err != nil {

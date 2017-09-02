@@ -165,13 +165,13 @@ func TestDisabledCommands(t *testing.T) {
 		})
 
 	b.Disable([]string{"cmd"})
-	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 	if len(replies) != 0 {
 		t.Fatal("Should not execute disabled active commands")
 	}
 
 	b.Disable([]string{"passive"})
-	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "regular message", &User{Nick: "user"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "regular message"}, &User{Nick: "user"})
 
 	if len(replies) != 0 {
 		t.Fatal("Should not execute disabled passive commands")
@@ -181,7 +181,7 @@ func TestDisabledCommands(t *testing.T) {
 func TestCommandNotRegistered(t *testing.T) {
 	resetResponses()
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!not_a_cmd", &User{})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!not_a_cmd"}, &User{})
 
 	if len(replies) != 0 {
 		t.Fatal("Should not reply if a command is not found")
@@ -192,7 +192,7 @@ func TestInvalidCmdArgs(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd \"invalid arg", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd \"invalid arg"}, &User{Nick: "user"})
 
 	if channel != "#go-bot" {
 		t.Error("Should reply to #go-bot channel")
@@ -213,7 +213,7 @@ func TestErroredCmd(t *testing.T) {
 			return "", cmdError
 		})
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
 	if channel != "#go-bot" {
 		t.Fatal("Invalid channel")
@@ -230,7 +230,7 @@ func TestValidCmdOnChannel(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
 	if channel != "#go-bot" {
 		t.Fatal("Command called on channel should reply to channel")
@@ -257,7 +257,7 @@ func TestChannelData(t *testing.T) {
 func TestHelpWithNoArgs(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help"}, &User{Nick: "user"})
 
 	expectedReply := []string{
 		fmt.Sprintf(helpAboutCommand, CmdPrefix),
@@ -274,7 +274,7 @@ func TestDisableHelp(t *testing.T) {
 	registerValidCommand()
 	b := newBot()
 	b.Disable([]string{"help"})
-	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help", &User{Nick: "user"})
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help"}, &User{Nick: "user"})
 
 	if len(replies) > 0 {
 		t.Fatalf("Should not execute help after disabling it")
@@ -284,7 +284,7 @@ func TestDisableHelp(t *testing.T) {
 func TestHelpForACommand(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help cmd"}, &User{Nick: "user"})
 
 	expectedReply := []string{
 		fmt.Sprintf(helpDescripton, cmdDescription),
@@ -299,7 +299,7 @@ func TestHelpForACommand(t *testing.T) {
 func TestHelpWithNonExistingCommand(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help not_a_cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help not_a_cmd"}, &User{Nick: "user"})
 
 	expectedReply := []string{
 		fmt.Sprintf(helpAboutCommand, CmdPrefix),
@@ -314,7 +314,7 @@ func TestHelpWithNonExistingCommand(t *testing.T) {
 func TestHelpWithInvalidArgs(t *testing.T) {
 	resetResponses()
 	registerValidCommand()
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!help cmd \"invalid arg", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help cmd \"invalid arg"}, &User{Nick: "user"})
 
 	if len(replies) != 1 {
 		t.Fatal("Invalid reply")
@@ -333,7 +333,7 @@ func TestCmdV2(t *testing.T) {
 				Message: "message"}, nil
 		})
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
 	if channel != "#channel" {
 		t.Error("Wrong channel")
@@ -350,7 +350,7 @@ func TestCmdV2WithoutSpecifyingChannel(t *testing.T) {
 			return CmdResult{Message: "message"}, nil
 		})
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "!cmd", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
 	if channel != "#go-bot" {
 		t.Error("Should reply to original channel if no channel is returned")
@@ -376,7 +376,7 @@ func TestPassiveCommand(t *testing.T) {
 	RegisterPassiveCommand("ping", ping)
 	RegisterPassiveCommand("errored", errored)
 
-	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, "test", &User{Nick: "user"})
+	newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
 
 	if channel != "#go-bot" {
 		t.Error("Invalid channel")
@@ -391,5 +391,50 @@ func TestPassiveCommand(t *testing.T) {
 	}
 	if replies[1] != "test" {
 		t.Error("echo command not executed")
+	}
+}
+
+func TestCmdV3(t *testing.T) {
+	resetResponses()
+	result := CmdResultV3{
+		Channel: "#channel",
+		Message: make(chan string),
+		Done:    make(chan bool)}
+	RegisterCommandV3("cmd", "", "",
+		func(c *Cmd) (CmdResultV3, error) {
+			return result, nil
+		})
+
+	go newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
+	result.Message <- "message"
+	result.Done <- true
+
+	if channel != "#channel" {
+		t.Error("Wrong channel")
+	}
+	if !reflect.DeepEqual([]string{"message"}, replies) {
+		t.Error("Invalid reply")
+	}
+}
+
+func TestCmdV3WithoutSpecifyingChannel(t *testing.T) {
+	resetResponses()
+	result := CmdResultV3{
+		Message: make(chan string),
+		Done:    make(chan bool)}
+	RegisterCommandV3("cmd", "", "",
+		func(c *Cmd) (CmdResultV3, error) {
+			return result, nil
+		})
+
+	go newBot().MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
+	result.Message <- "message"
+	result.Done <- true
+
+	if channel != "#go-bot" {
+		t.Error("Should reply to original channel if no channel is returned")
+	}
+	if !reflect.DeepEqual([]string{"message"}, replies) {
+		t.Error("Invalid reply")
 	}
 }

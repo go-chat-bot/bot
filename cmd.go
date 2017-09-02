@@ -13,6 +13,7 @@ type Cmd struct {
 	ChannelData *ChannelData // More info about the channel, including network
 	User        *User        // User who sent the message
 	Message     string       // Full string without the prefix
+	MessageData *Message     // Message with extra flags
 	Command     string       // Command is the first argument passed to the bot
 	RawArgs     string       // Raw arguments after the command
 	Args        []string     // Arguments as array
@@ -31,9 +32,16 @@ func (c *ChannelData) URI() string {
 	return fmt.Sprintf("%s://%s/%s", c.Protocol, c.Server, c.Channel)
 }
 
+// Message holds the message info - for IRC and Slack networks, this can include whether the message was an action.
+type Message struct {
+	Text     string // The actual content of this Message
+	IsAction bool   // True if this was a '/me does something' message
+}
+
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
 	Raw         string       // Raw message sent to the channel
+	MessageData *Message     // Message with extra
 	Channel     string       // Channel which the message was sent to
 	ChannelData *ChannelData // Channel and network info
 	User        *User        // User who sent this message
@@ -59,6 +67,7 @@ type customCommand struct {
 	Cmd         string
 	CmdFuncV1   activeCmdFuncV1
 	CmdFuncV2   activeCmdFuncV2
+	CmdFuncV3   activeCmdFuncV3
 	Description string
 	ExampleArgs string
 }
@@ -69,9 +78,17 @@ type CmdResult struct {
 	Message string // The message to be sent
 }
 
+// CmdResultV3 is the result message of V3 commands
+type CmdResultV3 struct {
+	Channel string
+	Message chan string
+	Done    chan bool
+}
+
 const (
 	v1 = iota
 	v2
+	v3
 )
 
 const (
@@ -83,6 +100,7 @@ const (
 type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
 type activeCmdFuncV1 func(cmd *Cmd) (string, error)
 type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
+type activeCmdFuncV3 func(cmd *Cmd) (CmdResultV3, error)
 
 var (
 	commands         = make(map[string]*customCommand)
@@ -113,6 +131,18 @@ func RegisterCommandV2(command, description, exampleArgs string, cmdFunc activeC
 		Version:     v2,
 		Cmd:         command,
 		CmdFuncV2:   cmdFunc,
+		Description: description,
+		ExampleArgs: exampleArgs,
+	}
+}
+
+// RegisterCommandV3 adds a new command to the bot.
+// It is the same as RegisterCommand but the command return a chan
+func RegisterCommandV3(command, description, exampleArgs string, cmdFunc activeCmdFuncV3) {
+	commands[command] = &customCommand{
+		Version:     v3,
+		Cmd:         command,
+		CmdFuncV3:   cmdFunc,
 		Description: description,
 		ExampleArgs: exampleArgs,
 	}
@@ -203,6 +233,22 @@ func (b *Bot) handleCmd(c *Cmd) {
 
 		if result.Message != "" {
 			b.handlers.Response(result.Channel, result.Message, c.User)
+		}
+	case v3:
+		result, err := cmd.CmdFuncV3(c)
+		b.checkCmdError(err, c)
+		if result.Channel == "" {
+			result.Channel = c.Channel
+		}
+		for {
+			select {
+			case message := <-result.Message:
+				if message != "" {
+					b.handlers.Response(result.Channel, message, c.User)
+				}
+			case <-result.Done:
+				return
+			}
 		}
 	}
 }

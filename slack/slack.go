@@ -8,17 +8,25 @@ import (
 	"github.com/nlopes/slack"
 )
 
+type MessageFilter func(string, *bot.User) (string, slack.PostMessageParameters)
+
 var (
 	rtm      *slack.RTM
 	api      *slack.Client
 	teaminfo *slack.TeamInfo
 
-	channelList = map[string]slack.Channel{}
-	params      = slack.PostMessageParameters{AsUser: true}
-	botUserID   = ""
+	channelList                 = map[string]slack.Channel{}
+	params                      = slack.PostMessageParameters{AsUser: true}
+	messageFilter MessageFilter = defaultMessageFilter
+	botUserID                   = ""
 )
 
+func defaultMessageFilter(message string, sender *bot.User) (string, slack.PostMessageParameters) {
+	return message, params
+}
+
 func responseHandler(target string, message string, sender *bot.User) {
+	message, params := messageFilter(message, sender)
 	api.PostMessage(target, message, params)
 }
 
@@ -47,17 +55,20 @@ func extractUser(event *slack.MessageEvent) *bot.User {
 		IsBot:    isBot}
 }
 
-func extractText(event *slack.MessageEvent) string {
-	text := ""
+func extractText(event *slack.MessageEvent) *bot.Message {
+	msg := &bot.Message{}
 	if len(event.Text) != 0 {
-		text = event.Text
+		msg.Text = event.Text
+		if event.SubType == "me_message" {
+			msg.IsAction = true
+		}
 	} else {
 		attachments := event.Attachments
 		if len(attachments) > 0 {
-			text = attachments[0].Fallback
+			msg.Text = attachments[0].Fallback
 		}
 	}
-	return text
+	return msg
 }
 
 func readBotInfo(api *slack.Client) {
@@ -84,6 +95,14 @@ func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
 
+func RunWithFilter(token string, customMessageFilter MessageFilter) {
+	if customMessageFilter == nil {
+		panic("A valid message filter must be provided.")
+	}
+	messageFilter = customMessageFilter
+	Run(token)
+}
+
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
 	api = slack.New(token)
@@ -93,6 +112,7 @@ func Run(token string) {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
 	})
+
 	b.Disable([]string{"url"})
 
 	go rtm.ManageConnection()
