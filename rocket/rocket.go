@@ -2,10 +2,11 @@ package rocket
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/go-chat-bot/bot"
 	"github.com/pyinx/gorocket/api"
 	"github.com/pyinx/gorocket/rest"
-	"log"
 )
 
 var (
@@ -49,7 +50,7 @@ func Run(c *Config) {
 	client = rest.NewClient(config.Server, config.Port, config.UseTLS, config.Debug)
 	err := client.Login(api.UserCredentials{Email: config.Email, Name: config.User, Password: config.Password})
 	if err != nil {
-		log.Fatal("login err: %s\n", err)
+		log.Fatalf("login err: %s\n", err)
 	}
 
 	b := bot.New(&bot.Handlers{
@@ -70,7 +71,7 @@ func Run(c *Config) {
 							Channel:   msg.ChannelId,
 							IsPrivate: false,
 						},
-						&bot.Message{Text: msg.Text, IsAction: true},
+						&bot.Message{Text: msg.Text},
 						&bot.User{ID: msg.User.Id, RealName: msg.User.UserName, Nick: msg.User.UserName, IsBot: false})
 				}
 
