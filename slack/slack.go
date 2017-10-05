@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-chat-bot/bot"
+	"github.com/dwdraju/bot"
 	"github.com/nlopes/slack"
 )
 
