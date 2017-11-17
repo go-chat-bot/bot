@@ -91,6 +91,10 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 	}
 }
 
+func (b *Bot) SendUnsolicitedMessage(target string, message string, sender *User) {
+	b.handlers.Response(target, message, sender)
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
