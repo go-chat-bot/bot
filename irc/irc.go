@@ -90,6 +90,9 @@ func onWelcome(e *ircevent.Event) {
 	}
 }
 
+// SetUp returns a bot for irc according to the Config, but does not run it.
+// When you are ready to run the bot, call Run(nil).
+// This is useful if you need a pointer to the bot, otherwise you can simply call Run().
 func SetUp(c *Config) *bot.Bot {
 	config = c
 
