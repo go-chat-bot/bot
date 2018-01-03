@@ -49,7 +49,7 @@ func (b *Bot) startPeriodicCommands() {
 					if err != nil {
 						log.Print("Periodic command failed ", err)
 					} else if message != "" {
-						b.handlers.Response(channel, message, nil)
+						b.SendMessage(channel, message, nil)
 					}
 				}
 			})
@@ -64,7 +64,7 @@ func (b *Bot) startPeriodicCommands() {
 func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *User) {
 	command, err := parse(message.Text, channel, sender)
 	if err != nil {
-		b.handlers.Response(channel.Channel, err.Error(), sender)
+		b.SendMessage(channel.Channel, err.Error(), sender)
 		return
 	}
 
@@ -89,6 +89,11 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 	default:
 		b.handleCmd(command)
 	}
+}
+
+// Sends a message to a target recipient, optionally from a particular sender.
+func (b *Bot) SendMessage(target string, message string, sender *User) {
+	b.handlers.Response(target, message, sender)
 }
 
 func init() {

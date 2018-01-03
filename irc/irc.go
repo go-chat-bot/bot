@@ -90,9 +90,10 @@ func onWelcome(e *ircevent.Event) {
 	}
 }
 
-// Run reads the Config, connect to the specified IRC server and starts the bot.
-// The bot will automatically join all the channels specified in the configuration
-func Run(c *Config) {
+// SetUp returns a bot for irc according to the Config, but does not run it.
+// When you are ready to run the bot, call Run(nil).
+// This is useful if you need a pointer to the bot, otherwise you can simply call Run().
+func SetUp(c *Config) *bot.Bot {
 	config = c
 
 	ircConn = ircevent.IRC(c.User, c.Nick)
@@ -111,7 +112,17 @@ func Run(c *Config) {
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)
 	ircConn.AddCallback("CTCP_ACTION", onCTCPACTION)
 
-	err := ircConn.Connect(c.Server)
+	return b
+}
+
+// Run reads the Config, connect to the specified IRC server and starts the bot.
+// The bot will automatically join all the channels specified in the configuration
+func Run(c *Config) {
+	if c != nil {
+		SetUp(c)
+	}
+
+	err := ircConn.Connect(config.Server)
 	if err != nil {
 		log.Fatal(err)
 	}

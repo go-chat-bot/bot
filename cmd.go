@@ -192,7 +192,7 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 				log.Println(err)
 			} else {
 				mutex.Lock()
-				b.handlers.Response(cmd.Channel, result, cmd.User)
+				b.SendMessage(cmd.Channel, result, cmd.User)
 				mutex.Unlock()
 			}
 		}()
@@ -222,7 +222,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 		message, err := cmd.CmdFuncV1(c)
 		b.checkCmdError(err, c)
 		if message != "" {
-			b.handlers.Response(c.Channel, message, c.User)
+			b.SendMessage(c.Channel, message, c.User)
 		}
 	case v2:
 		result, err := cmd.CmdFuncV2(c)
@@ -232,7 +232,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 		}
 
 		if result.Message != "" {
-			b.handlers.Response(result.Channel, result.Message, c.User)
+			b.SendMessage(result.Channel, result.Message, c.User)
 		}
 	case v3:
 		result, err := cmd.CmdFuncV3(c)
@@ -244,7 +244,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 			select {
 			case message := <-result.Message:
 				if message != "" {
-					b.handlers.Response(result.Channel, message, c.User)
+					b.SendMessage(result.Channel, message, c.User)
 				}
 			case <-result.Done:
 				return
@@ -257,6 +257,6 @@ func (b *Bot) checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		log.Printf(errorMsg)
-		b.handlers.Response(c.Channel, errorMsg, c.User)
+		b.SendMessage(c.Channel, errorMsg, c.User)
 	}
 }
