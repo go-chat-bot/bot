@@ -30,6 +30,22 @@ func responseHandler(target string, message string, sender *bot.User) {
 	api.PostMessage(target, message, params)
 }
 
+// FindUserBySlackID converts a slack.User into a bot.User struct
+func FindUserBySlackID(userID string) *bot.User {
+	slackUser, err := api.GetUserInfo(userID)
+	if err != nil {
+		fmt.Printf("Error retrieving slack user: %s\n", err)
+		return &bot.User{
+			ID:    userID,
+			IsBot: false}
+	}
+	return &bot.User{
+		ID:       userID,
+		Nick:     slackUser.Name,
+		RealName: slackUser.Profile.RealName,
+		IsBot:    slackUser.IsBot}
+}
+
 // Extracts user information from slack API
 func extractUser(event *slack.MessageEvent) *bot.User {
 	var isBot bool
@@ -41,18 +57,12 @@ func extractUser(event *slack.MessageEvent) *bot.User {
 		userID = event.User
 		isBot = false
 	}
-	slackUser, err := api.GetUserInfo(userID)
-	if err != nil {
-		fmt.Printf("Error retrieving slack user: %s\n", err)
-		return &bot.User{
-			ID:    userID,
-			IsBot: isBot}
+	user := FindUserBySlackID(userID)
+	if len(user.Nick) == 0 {
+		user.IsBot = isBot
 	}
-	return &bot.User{
-		ID:       userID,
-		Nick:     slackUser.Name,
-		RealName: slackUser.Profile.RealName,
-		IsBot:    isBot}
+
+	return user
 }
 
 func extractText(event *slack.MessageEvent) *bot.Message {
