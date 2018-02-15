@@ -152,6 +152,7 @@ Loop:
 							Protocol:  "slack",
 							Server:    teaminfo.Domain,
 							Channel:   channel,
+							HumanName: C.Name,
 							IsPrivate: !C.IsChannel,
 						},
 						extractText(ev),
