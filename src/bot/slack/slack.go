@@ -22,7 +22,7 @@ var (
 	botUserID                   = ""
 )
 
-func defaultMessageFilter(message string, sender *bot.User) (string, slack.PostMessageParameters) {
+func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessageParameters) {
 	return message, params
 }
 
@@ -148,7 +148,7 @@ Loop:
 					if C.IsChannel {
 						channel = fmt.Sprintf("#%s", C.Name)
 					}
-					b.MessageReceived(
+					go b.MessageReceived(
 						&bot.ChannelData{
 							Protocol:  "slack",
 							Server:    teaminfo.Domain,
@@ -156,7 +156,8 @@ Loop:
 							IsPrivate: !C.IsChannel,
 						},
 						extractText(ev),
-						extractUser(ev))
+						extractUser(ev),
+					)
 				}
 
 			case *slack.RTMError:
