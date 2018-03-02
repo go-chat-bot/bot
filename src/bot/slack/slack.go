@@ -4,7 +4,8 @@ package slack
 import (
 	"fmt"
 
-	"github.com/go-chat-bot/bot"
+	"bot/bot"
+
 	"github.com/nlopes/slack"
 )
 

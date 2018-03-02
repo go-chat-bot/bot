@@ -3,6 +3,7 @@ go-bot
 *.o
 *.a
 *.so
+pkg/
 
 # Folders
 _obj
@@ -24,8 +25,10 @@ _testmain.go
 *.test
 
 # Sublime Text
-
 *.sublime-*
+
+# VsCode Config
+.vscode/
 
 # vim swap files
 *.swp
@@ -33,3 +36,8 @@ _testmain.go
 # test coverage report files
 *.out
 *.html
+
+# go deps storage
+src/github.com/
+src/gopkg.in/
+
