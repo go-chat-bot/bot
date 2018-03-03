@@ -107,7 +107,7 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 	case helpCommand:
 		b.help(command)
 	default:
-		b.handleCmd(command)
+		go b.handleCmd(command)
 	}
 }
 
