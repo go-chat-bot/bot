@@ -4,6 +4,7 @@ package bot
 import (
 	"log"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/robfig/cron"
@@ -16,7 +17,7 @@ const (
 
 	// MsgBuffer is the max number of messages which can be buffered
 	// while waiting to flush them to the chat service.
-	MsgBuffer = 10
+	MsgBuffer = 100
 )
 
 // Bot handles the bot instance
@@ -29,6 +30,7 @@ type Bot struct {
 
 	msgsToSend chan *responseMessage
 	done       chan struct{}
+	mutex      sync.Mutex
 }
 
 type responseMessage struct {
@@ -51,10 +53,11 @@ func New(h *Handlers) *Bot {
 		cron:       cron.New(),
 		msgsToSend: make(chan *responseMessage, MsgBuffer),
 		done:       make(chan struct{}),
+		mutex:      sync.Mutex{},
 	}
 	// Launch the background goroutine that isolates the possibly non-threadsafe
 	// message sending logic of the underlying transport layer.
-	go b.messageSender()
+	go b.processMessages()
 
 	b.startPeriodicCommands()
 	return b
@@ -114,7 +117,7 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
 	if b.synchronousMessageSending {
-		b.handlers.Response(target, message, sender)
+		b.sendResponse(target, message, sender)
 		return
 	}
 
@@ -127,11 +130,17 @@ func (b *Bot) SendMessage(target string, message string, sender *User) {
 	}
 }
 
-func (b *Bot) messageSender() {
+func (b *Bot) sendResponse(target, message string, sender *User) {
+	b.mutex.Lock()
+	b.handlers.Response(target, message, sender)
+	b.mutex.Unlock()
+}
+
+func (b *Bot) processMessages() {
 	for {
 		select {
 		case msg := <-b.msgsToSend:
-			b.handlers.Response(msg.target, msg.message, msg.sender)
+			b.sendResponse(msg.target, msg.message, msg.sender)
 		case <-b.done:
 			return
 		}
