@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"bot/bot"
-
+	"github.com/go-chat-bot/bot"
 	"github.com/pyinx/gorocket/api"
 	"github.com/pyinx/gorocket/rest"
 )

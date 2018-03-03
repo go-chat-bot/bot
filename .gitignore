@@ -25,10 +25,8 @@ _testmain.go
 *.test
 
 # Sublime Text
-*.sublime-*
 
-# VsCode Config
-.vscode/
+*.sublime-*
 
 # vim swap files
 *.swp
@@ -38,6 +36,6 @@ _testmain.go
 *.html
 
 # go deps storage
-src/github.com/
-src/gopkg.in/
+src/github.com/*
+src/gopkg.in/*
 

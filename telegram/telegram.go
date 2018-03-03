@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"bot/bot"
-
+	"github.com/go-chat-bot/bot"
 	"gopkg.in/telegram-bot-api.v3"
 )
 
