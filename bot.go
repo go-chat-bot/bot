@@ -13,6 +13,10 @@ const (
 	// CmdPrefix is the prefix used to identify a command.
 	// !hello would be identified as a command
 	CmdPrefix = "!"
+
+	// MsgBuffer is the max number of messages which can be buffered
+	// while waiting to flush them to the chat service.
+	MsgBuffer = 10
 )
 
 // Bot handles the bot instance
@@ -20,6 +24,16 @@ type Bot struct {
 	handlers     *Handlers
 	cron         *cron.Cron
 	disabledCmds []string
+
+	synchronousMessageSending bool
+
+	msgsToSend chan *responseMessage
+	done       chan struct{}
+}
+
+type responseMessage struct {
+	target, message string
+	sender          *User
 }
 
 // ResponseHandler must be implemented by the protocol to handle the bot responses
@@ -33,9 +47,15 @@ type Handlers struct {
 // New configures a new bot instance
 func New(h *Handlers) *Bot {
 	b := &Bot{
-		handlers: h,
-		cron:     cron.New(),
+		handlers:   h,
+		cron:       cron.New(),
+		msgsToSend: make(chan *responseMessage, MsgBuffer),
+		done:       make(chan struct{}),
 	}
+	// Launch the background goroutine that isolates the possibly non-threadsafe
+	// message sending logic of the underlying transport layer.
+	go b.messageSender()
+
 	b.startPeriodicCommands()
 	return b
 }
@@ -91,9 +111,37 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 	}
 }
 
-// Sends a message to a target recipient, optionally from a particular sender.
+// SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
-	b.handlers.Response(target, message, sender)
+	if b.synchronousMessageSending {
+		b.handlers.Response(target, message, sender)
+		return
+	}
+
+	select {
+	case b.msgsToSend <- &responseMessage{
+		target, message, sender,
+	}:
+	default:
+		log.Printf("Failed to queue message to send. Must be busy.")
+	}
+}
+
+func (b *Bot) messageSender() {
+	for {
+		select {
+		case msg := <-b.msgsToSend:
+			b.handlers.Response(msg.target, msg.message, msg.sender)
+		case <-b.done:
+			return
+		}
+	}
+}
+
+// Close will shut down the message sending capabilities of this bot. Call
+// this when you are done using the bot.
+func (b *Bot) Close() {
+	close(b.done)
 }
 
 func init() {

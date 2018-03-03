@@ -63,13 +63,15 @@ type User struct {
 }
 
 type customCommand struct {
-	Version     int
-	Cmd         string
-	CmdFuncV1   activeCmdFuncV1
-	CmdFuncV2   activeCmdFuncV2
-	CmdFuncV3   activeCmdFuncV3
-	Description string
-	ExampleArgs string
+	Version       int
+	Cmd           string
+	CmdFuncV1     activeCmdFuncV1
+	CmdFuncV2     activeCmdFuncV2
+	CmdFuncV3     activeCmdFuncV3
+	PassiveFuncV1 passiveCmdFuncV1
+	PassiveFuncV2 passiveCmdFuncV2
+	Description   string
+	ExampleArgs   string
 }
 
 // CmdResult is the result message of V2 commands
@@ -89,6 +91,8 @@ const (
 	v1 = iota
 	v2
 	v3
+	pv1
+	pv2
 )
 
 const (
@@ -97,14 +101,16 @@ const (
 	errorExecutingCommand = "Error executing %s: %s"
 )
 
-type passiveCmdFunc func(cmd *PassiveCmd) (string, error)
+type passiveCmdFuncV1 func(cmd *PassiveCmd) (string, error)
+type passiveCmdFuncV2 func(cmd *PassiveCmd) (CmdResultV3, error)
+
 type activeCmdFuncV1 func(cmd *Cmd) (string, error)
 type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
 type activeCmdFuncV3 func(cmd *Cmd) (CmdResultV3, error)
 
 var (
 	commands         = make(map[string]*customCommand)
-	passiveCommands  = make(map[string]passiveCmdFunc)
+	passiveCommands  = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 )
 
@@ -153,8 +159,25 @@ func RegisterCommandV3(command, description, exampleArgs string, cmdFunc activeC
 // Passive commands receives all the text posted to a channel without any parsing
 // command: String used to identify the command, for internal use only (ex: logs)
 // cmdFunc: Function which will be executed. It will received the raw message, channel and nick
-func RegisterPassiveCommand(command string, cmdFunc func(cmd *PassiveCmd) (string, error)) {
-	passiveCommands[command] = cmdFunc
+func RegisterPassiveCommand(command string, cmdFunc passiveCmdFuncV1) {
+	passiveCommands[command] = &customCommand{
+		Version:       pv1,
+		Cmd:           command,
+		PassiveFuncV1: cmdFunc,
+	}
+}
+
+// RegisterPassiveCommandV2 adds a new passive command to the bot.
+// The command should be registered in the Init() func of your package
+// Passive commands receives all the text posted to a channel without any parsing
+// command: String used to identify the command, for internal use only (ex: logs)
+// cmdFunc: Function which will be executed. It will received the raw message, channel and nick
+func RegisterPassiveCommandV2(command string, cmdFunc passiveCmdFuncV2) {
+	passiveCommands[command] = &customCommand{
+		Version:       pv2,
+		Cmd:           command,
+		PassiveFuncV2: cmdFunc,
+	}
 }
 
 // RegisterPeriodicCommand adds a command that is run periodically.
@@ -174,28 +197,44 @@ func (b *Bot) Disable(cmds []string) {
 
 func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
-	mutex := &sync.Mutex{}
 
 	for k, v := range passiveCommands {
 		if b.isDisabled(k) {
 			continue
 		}
 
-		cmdFunc := v
 		wg.Add(1)
 
-		go func() {
+		go func(cmdFunc *customCommand) {
 			defer wg.Done()
 
-			result, err := cmdFunc(cmd)
-			if err != nil {
-				log.Println(err)
-			} else {
-				mutex.Lock()
-				b.SendMessage(cmd.Channel, result, cmd.User)
-				mutex.Unlock()
+			switch cmdFunc.Version {
+			case pv1:
+				result, err := cmdFunc.PassiveFuncV1(cmd)
+				if err != nil {
+					log.Println(err)
+				} else {
+					b.SendMessage(cmd.Channel, result, cmd.User)
+				}
+			case pv2:
+				result, err := cmdFunc.PassiveFuncV2(cmd)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				for {
+					select {
+					case message := <-result.Message:
+						if message != "" {
+							b.SendMessage(result.Channel, message, cmd.User)
+						}
+					case <-result.Done:
+						return
+					}
+				}
+			default:
 			}
-		}()
+		}(v)
 	}
 	wg.Wait()
 }
