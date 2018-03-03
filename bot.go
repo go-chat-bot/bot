@@ -138,6 +138,8 @@ func (b *Bot) messageSender() {
 	}
 }
 
+// Close will shut down the message sending capabilities of this bot. Call
+// this when you are done using the bot.
 func (b *Bot) Close() {
 	close(b.done)
 }
