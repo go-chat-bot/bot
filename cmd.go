@@ -197,7 +197,6 @@ func (b *Bot) Disable(cmds []string) {
 
 func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 	var wg sync.WaitGroup
-	mutex := &sync.Mutex{}
 
 	for k, v := range passiveCommands {
 		if b.isDisabled(k) {
@@ -215,8 +214,6 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 				if err != nil {
 					log.Println(err)
 				} else {
-					mutex.Lock()
-					defer mutex.Unlock()
 					b.SendMessage(cmd.Channel, result, cmd.User)
 				}
 			case pv2:
@@ -229,9 +226,7 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 					select {
 					case message := <-result.Message:
 						if message != "" {
-							mutex.Lock()
 							b.SendMessage(result.Channel, message, cmd.User)
-							mutex.Unlock()
 						}
 					case <-result.Done:
 						return
