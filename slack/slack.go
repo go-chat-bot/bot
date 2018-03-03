@@ -3,8 +3,10 @@ package slack
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
-	"github.com/go-chat-bot/bot"
+	"github.com/dwdraju/bot"
 	"github.com/nlopes/slack"
 )
 
@@ -65,6 +67,17 @@ func extractUser(event *slack.MessageEvent) *bot.User {
 	return user
 }
 
+func parse(msgtxt string) string {
+	regx := regexp.MustCompile("<[^<>]+>")
+	matches := regx.FindAllString(msgtxt, -1)
+	for _, match := range matches {
+		clean := strings.Split(match, "|")[1]
+		clean = clean[:len(clean)-1]
+		msgtxt = strings.Replace(msgtxt, match, clean, -1)
+	}
+	return msgtxt
+}
+
 func extractText(event *slack.MessageEvent) *bot.Message {
 	msg := &bot.Message{}
 	if len(event.Text) != 0 {
@@ -78,6 +91,7 @@ func extractText(event *slack.MessageEvent) *bot.Message {
 			msg.Text = attachments[0].Fallback
 		}
 	}
+	msg.Text = parse(msg.Text)
 	return msg
 }
 
