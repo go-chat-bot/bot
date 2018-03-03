@@ -24,6 +24,7 @@ type ChannelData struct {
 	Protocol  string // What protocol the message was sent on (irc, slack, telegram)
 	Server    string // The server hostname the message was sent on
 	Channel   string // The channel name the message appeared in
+	HumanName string // The human readable name of the channel.
 	IsPrivate bool   // Whether the channel is a group or private chat
 }
 
