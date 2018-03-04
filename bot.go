@@ -34,11 +34,6 @@ type responseMessage struct {
 	sender          *User
 }
 
-type errorMessage struct {
-	msg string
-	err error
-}
-
 // ResponseHandler must be implemented by the protocol to handle the bot responses
 type ResponseHandler func(target, message string, sender *User)
 
@@ -51,16 +46,14 @@ type Handlers struct {
 	Errored  ErrorHandler
 }
 
-// LogErrorHandler is a default error handler which logs all the errors
-// if the protocol does not specify a custom error handler
-func LogErrorHandler(msg string, err error) {
+func logErrorHandler(msg string, err error) {
 	log.Printf("%s: %s", msg, err.Error())
 }
 
 // New configures a new bot instance
 func New(h *Handlers) *Bot {
 	if h.Errored == nil {
-		h.Errored = LogErrorHandler
+		h.Errored = logErrorHandler
 	}
 
 	b := &Bot{

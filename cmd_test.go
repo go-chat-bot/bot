@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	channel   string
-	replies   chan string
-	cmdError  chan string
-	user      *User
-	msgs      []string
-	lastError string
+	channel  string
+	replies  chan string
+	cmdError chan string
+	user     *User
+	msgs     []string
+	errs     []string
 )
 
 const (
@@ -26,17 +26,17 @@ const (
 	cmdExampleArgs = "arg1 arg2"
 )
 
-func waitMessages(t *testing.T, count int) {
+func waitMessages(t *testing.T, count int, errorCount int) {
 	for {
 		select {
 		case reply := <-replies:
 			msgs = append(msgs, reply)
 		case err := <-cmdError:
-			lastError = err
+			errs = append(errs, err)
 		case <-time.After(1 * time.Second):
 			t.Fatal("Timed the shit out")
 		}
-		if len(msgs) == count {
+		if len(msgs) == count && len(errs) == errorCount {
 			return
 		}
 	}
@@ -58,7 +58,7 @@ func reset() {
 	replies = make(chan string, 10)
 	cmdError = make(chan string, 10)
 	msgs = []string{}
-	lastError = ""
+	errs = []string{}
 	commands = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 	passiveCommands = make(map[string]*customCommand)
@@ -99,7 +99,7 @@ func TestPeriodicCommands(t *testing.T) {
 
 	entries[0].Job.Run()
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if msgs[0] != "ok #channel" {
 		t.Fatal("Invalid reply")
@@ -136,7 +136,7 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 	entries[0].Job.Run()
 	entries[1].Job.Run()
 
-	waitMessages(t, 2)
+	waitMessages(t, 2, 0)
 
 	if len(msgs) != 2 {
 		t.Fatal("Should have two replies in the channel")
@@ -168,10 +168,13 @@ func TestErroredPeriodicCommand(t *testing.T) {
 	}
 
 	entries[0].Job.Run()
-	waitMessages(t, 0)
+	waitMessages(t, 0, 1)
 
 	if len(msgs) != 0 {
-		t.Fatal("Should not have a reply in the channel")
+		t.Error("Should not have a reply in the channel")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
 	}
 }
 
@@ -226,7 +229,7 @@ func TestInvalidCmdArgs(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd \"invalid arg"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#go-bot" {
 		t.Error("Should reply to #go-bot channel")
@@ -247,13 +250,16 @@ func TestErroredCmd(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 1)
 
 	if channel != "#go-bot" {
 		t.Fatal("Invalid channel")
 	}
 	if msgs[0] != fmt.Sprintf(errorExecutingCommand, "cmd", cmdError.Error()) {
 		t.Fatal("Reply should contain the error message")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected the command to return an error")
 	}
 }
 
@@ -264,7 +270,7 @@ func TestValidCmdOnChannel(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#go-bot" {
 		t.Fatal("Command called on channel should reply to channel")
@@ -291,7 +297,7 @@ func TestHelpWithNoArgs(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help"}, &User{Nick: "user"})
 
-	waitMessages(t, 2)
+	waitMessages(t, 2, 0)
 
 	expectedReply := []string{
 		fmt.Sprintf(helpAboutCommand, CmdPrefix),
@@ -323,7 +329,7 @@ func TestHelpForACommand(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help cmd"}, &User{Nick: "user"})
 
-	waitMessages(t, 2)
+	waitMessages(t, 2, 0)
 
 	expectedReply := []string{
 		fmt.Sprintf(helpDescripton, cmdDescription),
@@ -346,7 +352,7 @@ func TestHelpWithNonExistingCommand(t *testing.T) {
 		fmt.Sprintf(availableCommands, "cmd"),
 	}
 
-	waitMessages(t, 2)
+	waitMessages(t, 2, 0)
 
 	if !reflect.DeepEqual(msgs, expectedReply) {
 		t.Fatalf("Invalid reply. Expected %v got %v", expectedReply, msgs)
@@ -359,7 +365,7 @@ func TestHelpWithInvalidArgs(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!help cmd \"invalid arg"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if !strings.HasPrefix(msgs[0], "Error parsing") {
 		t.Fatal("Should reply with an error message")
@@ -378,7 +384,7 @@ func TestCmdV2(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#channel" {
 		t.Error("Wrong channel")
@@ -398,7 +404,7 @@ func TestCmdV2WithoutSpecifyingChannel(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#go-bot" {
 		t.Error("Should reply to original channel if no channel is returned")
@@ -419,13 +425,16 @@ func TestPassiveCommand(t *testing.T) {
 	b := newBot()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
 
-	waitMessages(t, 2)
+	waitMessages(t, 2, 1)
 
 	if channel != "#go-bot" {
 		t.Error("Invalid channel")
 	}
 	if len(msgs) != 2 {
 		t.Fatal("Invalid reply")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
 	}
 
 	sort.Strings(msgs)
@@ -455,7 +464,7 @@ func TestPassiveCommandV2(t *testing.T) {
 	result.Message <- "pong"
 	result.Done <- true
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 1)
 
 	if channel != "#channel" {
 		t.Error("Invalid channel")
@@ -485,7 +494,7 @@ func TestCmdV3(t *testing.T) {
 	result.Message <- "message"
 	result.Done <- true
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#channel" {
 		t.Error("Wrong channel")
@@ -510,7 +519,7 @@ func TestCmdV3WithoutSpecifyingChannel(t *testing.T) {
 	result.Message <- "message"
 	result.Done <- true
 
-	waitMessages(t, 1)
+	waitMessages(t, 1, 0)
 
 	if channel != "#go-bot" {
 		t.Error("Should reply to original channel if no channel is returned")
