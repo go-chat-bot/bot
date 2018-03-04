@@ -56,11 +56,12 @@ func reset() {
 	channel = ""
 	user = &User{Nick: ""}
 	replies = make(chan string, 10)
-	cmdError = make(chan string, 1)
+	cmdError = make(chan string, 10)
 	msgs = []string{}
 	lastError = ""
 	commands = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
+	passiveCommands = make(map[string]*customCommand)
 }
 
 func newBot() *Bot {
@@ -433,6 +434,38 @@ func TestPassiveCommand(t *testing.T) {
 	}
 	if msgs[1] != "test" {
 		t.Error("echo command not executed")
+	}
+}
+
+func TestPassiveCommandV2(t *testing.T) {
+	reset()
+	result := CmdResultV3{
+		Channel: "#channel",
+		Message: make(chan string),
+		Done:    make(chan bool)}
+
+	ping := func(cmd *PassiveCmd) (CmdResultV3, error) { return result, nil }
+	errored := func(cmd *PassiveCmd) (CmdResultV3, error) { return CmdResultV3{}, errors.New("error") }
+
+	RegisterPassiveCommandV2("ping", ping)
+	RegisterPassiveCommandV2("errored", errored)
+
+	b := newBot()
+	go b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
+	result.Message <- "pong"
+	result.Done <- true
+
+	waitMessages(t, 1)
+
+	if channel != "#channel" {
+		t.Error("Invalid channel")
+	}
+	if len(msgs) != 1 {
+		t.Fatal("Invalid reply")
+	}
+
+	if msgs[0] != "pong" {
+		t.Error("ping command not executed")
 	}
 }
 

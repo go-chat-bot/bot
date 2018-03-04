@@ -25,13 +25,18 @@ type Bot struct {
 	handlers     *Handlers
 	cron         *cron.Cron
 	disabledCmds []string
-	msgsToSend   chan *responseMessage
+	msgsToSend   chan responseMessage
 	done         chan struct{}
 }
 
 type responseMessage struct {
 	target, message string
 	sender          *User
+}
+
+type errorMessage struct {
+	msg string
+	err error
 }
 
 // ResponseHandler must be implemented by the protocol to handle the bot responses
@@ -54,12 +59,17 @@ func LogErrorHandler(msg string, err error) {
 
 // New configures a new bot instance
 func New(h *Handlers) *Bot {
+	if h.Errored == nil {
+		h.Errored = LogErrorHandler
+	}
+
 	b := &Bot{
 		handlers:   h,
 		cron:       cron.New(),
-		msgsToSend: make(chan *responseMessage, MsgBuffer),
+		msgsToSend: make(chan responseMessage, MsgBuffer),
 		done:       make(chan struct{}),
 	}
+
 	// Launch the background goroutine that isolates the possibly non-threadsafe
 	// message sending logic of the underlying transport layer.
 	go b.processMessages()
@@ -122,9 +132,7 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
 	select {
-	case b.msgsToSend <- &responseMessage{
-		target, message, sender,
-	}:
+	case b.msgsToSend <- responseMessage{target, message, sender}:
 	default:
 		b.errored("Failed to queue message to send.", errors.New("Too busy"))
 	}
