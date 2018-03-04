@@ -1,8 +1,8 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"sync"
 )
 
@@ -213,14 +213,14 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 			case pv1:
 				result, err := cmdFunc.PassiveFuncV1(cmd)
 				if err != nil {
-					log.Println(err)
+					b.errored(fmt.Sprintf("Error executing %s", cmdFunc.Cmd), err)
 				} else {
 					b.SendMessage(cmd.Channel, result, cmd.User)
 				}
 			case pv2:
 				result, err := cmdFunc.PassiveFuncV2(cmd)
 				if err != nil {
-					log.Println(err)
+					b.errored(fmt.Sprintf("Error executing %s", cmdFunc.Cmd), err)
 					return
 				}
 				for {
@@ -253,7 +253,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 	cmd := commands[c.Command]
 
 	if cmd == nil {
-		log.Printf("Command not found %v", c.Command)
+		b.errored(fmt.Sprintf("Command not found %v", c.Command), errors.New("Command not found"))
 		return
 	}
 
@@ -296,7 +296,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 func (b *Bot) checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
-		log.Printf(errorMsg)
+		b.errored(errorMsg, err)
 		b.SendMessage(c.Channel, errorMsg, c.User)
 	}
 }

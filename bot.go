@@ -2,9 +2,9 @@
 package bot
 
 import (
+	"errors"
 	"log"
 	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/robfig/cron"
@@ -25,12 +25,8 @@ type Bot struct {
 	handlers     *Handlers
 	cron         *cron.Cron
 	disabledCmds []string
-
-	synchronousMessageSending bool
-
-	msgsToSend chan *responseMessage
-	done       chan struct{}
-	mutex      sync.Mutex
+	msgsToSend   chan *responseMessage
+	done         chan struct{}
 }
 
 type responseMessage struct {
@@ -41,9 +37,19 @@ type responseMessage struct {
 // ResponseHandler must be implemented by the protocol to handle the bot responses
 type ResponseHandler func(target, message string, sender *User)
 
+// ErrorHandler will be called when an error happens
+type ErrorHandler func(msg string, err error)
+
 // Handlers that must be registered to receive callbacks from the bot
 type Handlers struct {
 	Response ResponseHandler
+	Errored  ErrorHandler
+}
+
+// LogErrorHandler is a default error handler which logs all the errors
+// if the protocol does not specify a custom error handler
+func LogErrorHandler(msg string, err error) {
+	log.Printf("%s: %s", msg, err.Error())
 }
 
 // New configures a new bot instance
@@ -53,7 +59,6 @@ func New(h *Handlers) *Bot {
 		cron:       cron.New(),
 		msgsToSend: make(chan *responseMessage, MsgBuffer),
 		done:       make(chan struct{}),
-		mutex:      sync.Mutex{},
 	}
 	// Launch the background goroutine that isolates the possibly non-threadsafe
 	// message sending logic of the underlying transport layer.
@@ -70,7 +75,7 @@ func (b *Bot) startPeriodicCommands() {
 				for _, channel := range config.Channels {
 					message, err := config.CmdFunc(channel)
 					if err != nil {
-						log.Print("Periodic command failed ", err)
+						b.errored("Periodic command failed ", err)
 					} else if message != "" {
 						b.SendMessage(channel, message, nil)
 					}
@@ -116,24 +121,23 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
-	if b.synchronousMessageSending {
-		b.sendResponse(target, message, sender)
-		return
-	}
-
 	select {
 	case b.msgsToSend <- &responseMessage{
 		target, message, sender,
 	}:
 	default:
-		log.Printf("Failed to queue message to send. Must be busy.")
+		b.errored("Failed to queue message to send.", errors.New("Too busy"))
 	}
 }
 
 func (b *Bot) sendResponse(target, message string, sender *User) {
-	b.mutex.Lock()
 	b.handlers.Response(target, message, sender)
-	b.mutex.Unlock()
+}
+
+func (b *Bot) errored(msg string, err error) {
+	if b.handlers.Errored != nil {
+		b.handlers.Errored(msg, err)
+	}
 }
 
 func (b *Bot) processMessages() {

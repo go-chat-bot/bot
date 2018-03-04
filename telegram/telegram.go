@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chat-bot/bot"
-	"gopkg.in/telegram-bot-api.v3"
+	tgbotapi "gopkg.in/telegram-bot-api.v3"
 )
 
 var (
@@ -21,7 +21,6 @@ func responseHandler(target string, message string, sender *bot.User) {
 		return
 	}
 	msg := tgbotapi.NewMessage(id, message)
-	msg.ReplyToMessageID = msg.ReplyToMessageID
 
 	tg.Send(msg)
 }
