@@ -8,6 +8,8 @@ import (
 	"github.com/nlopes/slack"
 )
 
+// MessageFilter allows implementing a filter function to transform the messages
+// before sending to the channel, it is run before the bot sends the message to slack
 type MessageFilter func(string, *bot.User) (string, slack.PostMessageParameters)
 
 var (
@@ -105,6 +107,8 @@ func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
 
+// RunWithFilter executes the bot and sets up a message filter which will
+// receive all the messages before they are sent to slack
 func RunWithFilter(token string, customMessageFilter MessageFilter) {
 	if customMessageFilter == nil {
 		panic("A valid message filter must be provided.")
