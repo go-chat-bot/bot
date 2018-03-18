@@ -34,7 +34,10 @@ func waitMessages(t *testing.T, count int, errorCount int) {
 		case err := <-cmdError:
 			errs = append(errs, err)
 		case <-time.After(1 * time.Second):
-			t.Fatal("Timed the shit out")
+			t.Error("Timeout waiting for messages")
+			t.Errorf("msgs received: %v", msgs)
+			t.Errorf("errs received: %v", errs)
+			t.Fatal()
 		}
 		if len(msgs) == count && len(errs) == errorCount {
 			return
