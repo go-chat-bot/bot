@@ -18,6 +18,12 @@ Please see the [plugins repository](https://github.com/go-chat-bot/plugins) for 
 
 You can also write your own, it's really simple.
 
+## Debug
+
+To test the bot, use the [debug](https://github.com/go-chat-bot/bot/tree/master/debug) console app.
+
+To test your plugin, add your plugin to `debug/main.go` import list, then build and execute the debug app.
+
 ## Protocols
 
 ### Slack
