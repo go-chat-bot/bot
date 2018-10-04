@@ -124,6 +124,11 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
+	message = b.executeFilterCommands(&FilterCmd{
+		Target: target,
+		Message: message,
+		User: sender})
+
 	select {
 	case b.msgsToSend <- responseMessage{target, message, sender}:
 	default:
