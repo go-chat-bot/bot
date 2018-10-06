@@ -10,4 +10,4 @@ jobs:
       - checkout
       - run: go test -v -cover -race -coverprofile=coverage.out          
       - run: go get github.com/mattn/goveralls
-      - run: goveralls -coverprofile=coverage.out -service=circle-ci
+      - run: goveralls -coverprofile=coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
