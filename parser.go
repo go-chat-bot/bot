@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/mattn/go-shellwords"
+	unidecode "github.com/mozillazg/go-unidecode"
 )
 
 var (
@@ -35,7 +36,7 @@ func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
 
 	// get the command
 	pieces := strings.SplitN(c.Message, " ", 2)
-	c.Command = strings.ToLower(pieces[0])
+	c.Command = strings.ToLower(unidecode.Unidecode(pieces[0]))
 
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces

@@ -9,5 +9,5 @@ jobs:
     steps:
       - checkout
       - run: go test -v -cover -race -coverprofile=coverage.out          
-      - run: go get github.com/mattn/goveralls
+      - run: go get github.com/mattn/goveralls github.com/mozillazg/go-unidecode
       - run: goveralls -coverprofile=coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
