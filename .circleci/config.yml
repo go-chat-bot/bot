@@ -5,7 +5,6 @@ jobs:
       - image: circleci/golang:1.11
         environment:
           GO111MODULE: "on"      
-          COVERALLS_TOKEN: $COVERALLS_TOKEN
     working_directory: /go/src/github.com/go-chat-bot/bot
     steps:
       - checkout
