@@ -12,7 +12,7 @@ Please see the [plugins repository](https://github.com/go-chat-bot/plugins) for 
 
 You can also write your own, it's really simple.
 
-## Compiling, and testing the bot and plugins (Debug)
+## Compiling and testing the bot and plugins (Debug)
 
 This project uses the new [Go 1.11 modules](https://github.com/golang/go/wiki/Modules) if you have Go 1.11 installed, just clone the project and follow the instructions bellow, when you build Go will automatically download all dependencies.
 
