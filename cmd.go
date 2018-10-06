@@ -39,6 +39,14 @@ type Message struct {
 	IsAction bool   // True if this was a '/me does something' message
 }
 
+// FilterCmd holds information about what is output being filtered - message and
+// channel where it is being sent
+type FilterCmd struct {
+	Target  string // Channel or user the message is being sent to
+	Message string // Message text being sent
+	User    *User  // User who triggered original message
+}
+
 // PassiveCmd holds the information which will be passed to passive commands when receiving a message
 type PassiveCmd struct {
 	Raw         string       // Raw message sent to the channel
@@ -71,6 +79,7 @@ type customCommand struct {
 	CmdFuncV3     activeCmdFuncV3
 	PassiveFuncV1 passiveCmdFuncV1
 	PassiveFuncV2 passiveCmdFuncV2
+	FilterFuncV1  filterCmdFuncV1
 	Description   string
 	ExampleArgs   string
 }
@@ -94,6 +103,7 @@ const (
 	v3
 	pv1
 	pv2
+	fv1
 )
 
 const (
@@ -109,9 +119,12 @@ type activeCmdFuncV1 func(cmd *Cmd) (string, error)
 type activeCmdFuncV2 func(cmd *Cmd) (CmdResult, error)
 type activeCmdFuncV3 func(cmd *Cmd) (CmdResultV3, error)
 
+type filterCmdFuncV1 func(cmd *FilterCmd) (string, error)
+
 var (
 	commands         = make(map[string]*customCommand)
 	passiveCommands  = make(map[string]*customCommand)
+	filterCommands   = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 )
 
@@ -181,6 +194,23 @@ func RegisterPassiveCommandV2(command string, cmdFunc passiveCmdFuncV2) {
 	}
 }
 
+// RegisterFilterCommand adds a command that is run every time bot is about to
+// send a message. The comand should be registered in the Init() func of your
+// package.
+// Filter commands receive message and its destination and should return
+// modified version. Returning empty string prevents message being sent
+// completely
+// command: String used to identify the command, for internal use only (ex: silence)
+// cmdFunc: Function which will be executed. It will receive the message, target
+// channel and nick who triggered original message
+func RegisterFilterCommand(command string, cmdFunc filterCmdFuncV1) {
+	filterCommands[command] = &customCommand{
+		Version:      fv1,
+		Cmd:          command,
+		FilterFuncV1: cmdFunc,
+	}
+}
+
 // RegisterPeriodicCommand adds a command that is run periodically.
 // The command should be registered in the Init() func of your package
 // config: PeriodicConfig which specify CronSpec and a channel list
@@ -238,6 +268,21 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 		}(v)
 	}
 	wg.Wait()
+}
+
+func (b *Bot) executeFilterCommands(cmd *FilterCmd) string {
+	for k, filter := range filterCommands {
+		switch filter.Version {
+		case fv1:
+			filtered, err := filter.FilterFuncV1(cmd)
+			if err != nil {
+				b.errored(fmt.Sprintf("Error executing filter %s", k), err)
+				continue
+			}
+			cmd.Message = filtered
+		}
+	}
+	return cmd.Message
 }
 
 func (b *Bot) isDisabled(cmd string) bool {
