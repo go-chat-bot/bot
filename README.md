@@ -26,7 +26,7 @@ To test the bot, use the [debug](https://github.com/go-chat-bot/bot/tree/master/
 
 ### Testing your plugin
 
-- Ad your plugin to `debug/main.go` import list
+- Add your plugin to `debug/main.go` import list
 - Build the debug app
 - Execute it and test with the interactive console
 
