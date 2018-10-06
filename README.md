@@ -6,23 +6,32 @@ IRC, Slack & Telegram bot written in [Go][go] using [go-ircevent][go-ircevent] f
 
 ![2016-01-17 11 21 38 036](https://cloud.githubusercontent.com/assets/1084729/12377689/5bf7d5f2-bd0d-11e5-87d9-525481f01c3a.gif)
 
-## See the bot in action on IRC
-
-To see the bot in action, send a private message to **go-bot** on Freenode or join the channel **#go-bot @ irc.freenode.org**.
-
-Type `!help` in the channel or send `!help` in private message.
-
 ## Plugins
 
 Please see the [plugins repository](https://github.com/go-chat-bot/plugins) for a complete list of plugins.
 
 You can also write your own, it's really simple.
 
-## Debug
+## Compiling, and testing the bot and plugins (Debug)
+
+This project uses the new [Go 1.11 modules](https://github.com/golang/go/wiki/Modules) if you have Go 1.11 installed, just clone the project and follow the instructions bellow, when you build Go will automatically download all dependencies.
 
 To test the bot, use the [debug](https://github.com/go-chat-bot/bot/tree/master/debug) console app.
 
-To test your plugin, add your plugin to `debug/main.go` import list, then build and execute the debug app.
+- Clone this repository or use `go get github.com/go-chat-bot`
+- Build everything: `go build ./...`
+- Build and execute the debug app:
+  -  `cd debug`
+  -  `go build`
+  -  `./debug`
+- This will open a console where you can type commands
+- Type `!help` to see the list of available commands
+
+### Testing your plugin
+
+- Add your plugin to `debug/main.go` import list
+- Build the debug app
+- Execute it and test with the interactive console
 
 ## Protocols
 
@@ -67,26 +76,27 @@ To deploy your own go-bot to IRC, you need to:
 Here is a full example:
 ```Go
 package main
-	import (
-		"github.com/go-chat-bot/bot/irc"
-		_ "github.com/go-chat-bot/plugins/catfacts"
-		_ "github.com/go-chat-bot/plugins/catgif"
-		_ "github.com/go-chat-bot/plugins/chucknorris"
-		// Import all the commands you wish to use
-		"os"
-		"strings"
-	)
 
-	func main() {
-		irc.Run(&irc.Config{
-			Server:   os.Getenv("IRC_SERVER"),
-			Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
-			User:     os.Getenv("IRC_USER"),
-			Nick:     os.Getenv("IRC_NICK"),
-			Password: os.Getenv("IRC_PASSWORD"),
-			UseTLS:   true,
-			Debug:    os.Getenv("DEBUG") != "",})
-	}
+import (
+	"github.com/go-chat-bot/bot/irc"
+	_ "github.com/go-chat-bot/plugins/catfacts"
+	_ "github.com/go-chat-bot/plugins/catgif"
+	_ "github.com/go-chat-bot/plugins/chucknorris"
+	// Import all the commands you wish to use
+	"os"
+	"strings"
+)
+
+func main() {
+	irc.Run(&irc.Config{
+		Server:   os.Getenv("IRC_SERVER"),
+		Channels: strings.Split(os.Getenv("IRC_CHANNELS"), ","),
+		User:     os.Getenv("IRC_USER"),
+		Nick:     os.Getenv("IRC_NICK"),
+		Password: os.Getenv("IRC_PASSWORD"),
+		UseTLS:   true,
+		Debug:    os.Getenv("DEBUG") != "",})
+}
 ```
 
 To join channels with passwords just put the password after the channel name separated by a space:
