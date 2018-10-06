@@ -20,7 +20,10 @@ To test the bot, use the [debug](https://github.com/go-chat-bot/bot/tree/master/
 
 - Clone this repository or use `go get github.com/go-chat-bot`
 - Build everything: `go build ./...`
-- Execute the debug app: `cd debug && ./debug`
+- Build and execute the debug app:
+  -  `cd debug`
+  -  `go build`
+  -  `./debug`
 - This will open a console where you can type commands
 - Type `!help` to see the list of available commands
 
