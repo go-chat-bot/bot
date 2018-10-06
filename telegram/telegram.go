@@ -25,7 +25,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 	tg.Send(msg)
 }
 
-// Run executes the bot and connects to Telegram using the provided token. Use the debug flag if you wish to see all trafic logged
+// Run executes the bot and connects to Telegram using the provided token. Use the debug flag if you wish to see all traffic logged
 func Run(token string, debug bool) {
 	var err error
 	tg, err = tgbotapi.NewBotAPI(token)

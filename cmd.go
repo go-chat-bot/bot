@@ -220,7 +220,7 @@ func RegisterPeriodicCommand(command string, config PeriodicConfig) {
 }
 
 // Disable allows disabling commands that were registered.
-// It is usefull when running multiple bot instances to disabled some plugins like url which
+// It is useful when running multiple bot instances to disabled some plugins like url which
 // is already present on some protocols.
 func (b *Bot) Disable(cmds []string) {
 	b.disabledCmds = append(b.disabledCmds, cmds...)
