@@ -1,7 +1,0 @@
-test:
-  pre:
-    - go get github.com/mattn/goveralls
-  override:
-    - go test -v -cover -race -coverprofile=/home/ubuntu/coverage.out
-  post:
-    - goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci
