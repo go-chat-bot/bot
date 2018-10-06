@@ -35,7 +35,7 @@ func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
 
 	// get the command
 	pieces := strings.SplitN(c.Message, " ", 2)
-	c.Command = pieces[0]
+	c.Command = strings.ToLower(pieces[0])
 
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces

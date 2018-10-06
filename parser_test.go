@@ -11,6 +11,9 @@ func TestParser(t *testing.T) {
 	cmdWithoutArgs := CmdPrefix + "cmd"
 	cmdWithArgs := CmdPrefix + "cmd    arg1  arg2   "
 	cmdWithQuotes := CmdPrefix + "cmd    \"arg1  arg2\""
+	cmdMixedCaseWithoutArgs := CmdPrefix + "Cmd"
+	cmdMixedCaseWithArgs := CmdPrefix + "Cmd    arg1  arg2   "
+	cmdMixedCaseWithQuotes := CmdPrefix + "Cmd    \"arg1  arg2\""
 
 	tests := []struct {
 		msg      string
@@ -49,6 +52,37 @@ func TestParser(t *testing.T) {
 			RawArgs:     "\"arg1  arg2\"",
 			Args:        []string{"arg1  arg2"},
 			MessageData: &Message{Text: strings.TrimLeft("cmd    \"arg1  arg2\"", CmdPrefix)},
+		}},
+		{cmdMixedCaseWithoutArgs, &Cmd{
+			Raw:         cmdMixedCaseWithoutArgs,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "Cmd",
+			MessageData: &Message{Text: strings.TrimLeft("Cmd", CmdPrefix)},
+		}},
+		{cmdMixedCaseWithArgs, &Cmd{
+			Raw:         cmdMixedCaseWithArgs,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "Cmd    arg1  arg2",
+			RawArgs:     "arg1  arg2",
+			Args:        []string{"arg1", "arg2"},
+			MessageData: &Message{Text: strings.TrimLeft("Cmd    arg1  arg2", CmdPrefix)},
+		}},
+		{cmdMixedCaseWithQuotes, &Cmd{
+			Raw:         cmdMixedCaseWithQuotes,
+			Command:     "cmd",
+			Channel:     channel.Channel,
+			ChannelData: channel,
+			User:        user,
+			Message:     "Cmd    \"arg1  arg2\"",
+			RawArgs:     "\"arg1  arg2\"",
+			Args:        []string{"arg1  arg2"},
+			MessageData: &Message{Text: strings.TrimLeft("Cmd    \"arg1  arg2\"", CmdPrefix)},
 		}},
 	}
 
