@@ -43,7 +43,7 @@ func main() {
 		Response: responseHandler,
 	})
 
-	fmt.Println("Type a command or !help for available commands...")
+	fmt.Printf("Type a command or %shelp for available commands...\n", bot.CmdPrefix)
 
 	for {
 		r := bufio.NewReader(os.Stdin)
