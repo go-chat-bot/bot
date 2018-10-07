@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/martinusso/go-docs v0.0.0-20161215163720-81905d575a58 // indirect
 	github.com/mattn/go-shellwords v1.0.3
+	github.com/mozillazg/go-unidecode v0.1.0
 	github.com/nlopes/slack v0.4.0
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pyinx/gorocket v0.0.0-20170810024322-78ae1353729f

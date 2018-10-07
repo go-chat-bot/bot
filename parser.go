@@ -41,7 +41,7 @@ func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
 	if len(pieces) > 1 {
 		// get the arguments and remove extra spaces
 		c.RawArgs = strings.TrimSpace(pieces[1])
-		parsedArgs, err := shellwords.Parse(c.RawArgs)
+		parsedArgs, err := shellwords.Parse(unidecode.Unidecode(c.RawArgs))
 		if err != nil {
 			return nil, errors.New("Error parsing arguments: " + err.Error())
 		}
