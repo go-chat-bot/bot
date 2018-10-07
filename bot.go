@@ -3,18 +3,20 @@ package bot
 
 import (
 	"errors"
+	"github.com/robfig/cron"
 	"log"
 	"math/rand"
+	"os"
 	"time"
-
-	"github.com/robfig/cron"
 )
 
-const (
+var (
 	// CmdPrefix is the prefix used to identify a command.
 	// !hello would be identified as a command
 	CmdPrefix = "!"
+)
 
+const (
 	// MsgBuffer is the max number of messages which can be buffered
 	// while waiting to flush them to the chat service.
 	MsgBuffer = 100
@@ -125,9 +127,9 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
 	message = b.executeFilterCommands(&FilterCmd{
-		Target: target,
+		Target:  target,
 		Message: message,
-		User: sender})
+		User:    sender})
 
 	select {
 	case b.msgsToSend <- responseMessage{target, message, sender}:
@@ -164,5 +166,9 @@ func (b *Bot) Close() {
 }
 
 func init() {
+	CmdPrefix = "!"
+	if prefix := os.Getenv("BOT_CMD_PREFIX"); prefix != "" {
+		CmdPrefix = prefix
+	}
 	rand.Seed(time.Now().UnixNano())
 }
