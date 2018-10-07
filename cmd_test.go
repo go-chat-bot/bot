@@ -65,6 +65,7 @@ func reset() {
 	commands = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 	passiveCommands = make(map[string]*customCommand)
+	filterCommands = make(map[string]*customCommand)
 }
 
 func newBot() *Bot {
@@ -529,5 +530,61 @@ func TestCmdV3WithoutSpecifyingChannel(t *testing.T) {
 	}
 	if !reflect.DeepEqual([]string{"message"}, msgs) {
 		t.Error("Invalid reply")
+	}
+}
+
+func TestFilterCommand(t *testing.T) {
+	reset()
+	passiveCommands = make(map[string]*customCommand)
+	ping := func(cmd *PassiveCmd) (string, error) { return "pong", nil }
+	modified := func(cmd *FilterCmd) (string, error) { return "PONG!", nil }
+	errored := func(cmd *FilterCmd) (string, error) { return "", errors.New("error") }
+
+	RegisterPassiveCommand("ping", ping)
+	RegisterFilterCommand("modified", modified)
+	RegisterFilterCommand("errored", errored)
+
+	b := newBot()
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
+
+	waitMessages(t, 1, 1)
+
+	if channel != "#go-bot" {
+		t.Error("Invalid channel")
+	}
+	if len(msgs) != 1 {
+		t.Fatal("Invalid reply")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
+	}
+
+	sort.Strings(msgs)
+	if msgs[0] != "PONG!" {
+		t.Error("filter command not working")
+	}
+}
+
+func TestFilterCommandSilence(t *testing.T) {
+	reset()
+	passiveCommands = make(map[string]*customCommand)
+	ping := func(cmd *PassiveCmd) (string, error) { return "pong", nil }
+	silenced := func(cmd *FilterCmd) (string, error) { return "", nil }
+	errored := func(cmd *FilterCmd) (string, error) { return "Ignored", errors.New("error") }
+
+	RegisterPassiveCommand("ping", ping)
+	RegisterFilterCommand("silenced", silenced)
+	RegisterFilterCommand("errored", errored)
+
+	b := newBot()
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
+
+	waitMessages(t, 0, 1)
+
+	if len(msgs) != 0 {
+		t.Fatal("Expected no messages!")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
 	}
 }
