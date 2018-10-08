@@ -40,6 +40,8 @@ github.com/martinusso/go-docs v0.0.0-20161215163720-81905d575a58 h1:VmcrkkMjTdCG
 github.com/martinusso/go-docs v0.0.0-20161215163720-81905d575a58/go.mod h1:QymHbiLXXhrSGV5xTWYfEBt9mau3hHwVOT9Y7tpolJU=
 github.com/mattn/go-shellwords v1.0.3 h1:K/VxK7SZ+cvuPgFSLKi5QPI9Vr/ipOf4C1gN+ntueUk=
 github.com/mattn/go-shellwords v1.0.3/go.mod h1:3xCvwCdWdlDJUrvuMn7Wuy9eWs4pE8vqg+NOMyg4B2o=
+github.com/mozillazg/go-unidecode v0.1.0 h1:wAIMDf/yTexXKxT5TkctLwmClGSyuoJaZDRMclFNq8U=
+github.com/mozillazg/go-unidecode v0.1.0/go.mod h1:fYMdhyjni9ZeEmS6OE/GJHDLsF8TQvIVDwYR/drR26Q=
 github.com/nlopes/slack v0.4.0 h1:OVnHm7lv5gGT5gkcHsZAyw++oHVFihbjWbL3UceUpiA=
 github.com/nlopes/slack v0.4.0/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/onsi/ginkgo v1.6.0 h1:Ix8l273rp3QzYgXSR+c8d1fTG7UPgYkOSELPhiY/YGw=
