@@ -75,12 +75,24 @@ func (b *Bot) startPeriodicCommands() {
 	for _, config := range periodicCommands {
 		func(b *Bot, config PeriodicConfig) {
 			b.cron.AddFunc(config.CronSpec, func() {
-				for _, channel := range config.Channels {
-					message, err := config.CmdFunc(channel)
+				switch config.Version {
+				case v1:
+					for _, channel := range config.Channels {
+						message, err := config.CmdFunc(channel)
+						if err != nil {
+							b.errored("Periodic command failed ", err)
+						} else if message != "" {
+							b.SendMessage(channel, message, nil)
+						}
+					}
+				case v2:
+					results, err := config.CmdFuncV2()
 					if err != nil {
 						b.errored("Periodic command failed ", err)
-					} else if message != "" {
-						b.SendMessage(channel, message, nil)
+						return
+					}
+					for _, result := range results {
+						b.SendMessage(result.Channel, result.Message, nil)
 					}
 				}
 			})
@@ -125,9 +137,9 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
 	message = b.executeFilterCommands(&FilterCmd{
-		Target: target,
+		Target:  target,
 		Message: message,
-		User: sender})
+		User:    sender})
 
 	select {
 	case b.msgsToSend <- responseMessage{target, message, sender}:

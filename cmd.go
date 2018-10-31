@@ -58,9 +58,11 @@ type PassiveCmd struct {
 
 // PeriodicConfig holds a cron specification for periodically notifying the configured channels
 type PeriodicConfig struct {
-	CronSpec string                               // CronSpec that schedules some function
-	Channels []string                             // A list of channels to notify
-	CmdFunc  func(channel string) (string, error) // func to be executed at the period specified on CronSpec
+	Version   int
+	CronSpec  string                               // CronSpec that schedules some function
+	Channels  []string                             // A list of channels to notify, ignored for V2
+	CmdFunc   func(channel string) (string, error) // func to be executed at the period specified on CronSpec
+	CmdFuncV2 func() ([]CmdResult, error)          // func v2 to be executed at the period specified on CronSpec
 }
 
 // User holds user id, nick and real name
@@ -214,8 +216,19 @@ func RegisterFilterCommand(command string, cmdFunc filterCmdFuncV1) {
 // RegisterPeriodicCommand adds a command that is run periodically.
 // The command should be registered in the Init() func of your package
 // config: PeriodicConfig which specify CronSpec and a channel list
-// cmdFunc: A no-arg function which gets triggered periodically
+// cmdFunc: A function with single string argument (channel) which gets triggered periodically
 func RegisterPeriodicCommand(command string, config PeriodicConfig) {
+	config.Version = v1
+	periodicCommands[command] = config
+}
+
+// RegisterPeriodicCommandV2 adds a command that is run periodically.
+// The command should be registered in the Init() func of your package
+// config: PeriodicConfig which specifies CronSpec
+// cmdFuncV2: A no-arg function which gets triggered periodically
+// It should return slice of CmdResults (channel and message to send to it)
+func RegisterPeriodicCommandV2(command string, config PeriodicConfig) {
+	config.Version = v2
 	periodicCommands[command] = config
 }
 

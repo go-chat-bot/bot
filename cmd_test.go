@@ -182,6 +182,90 @@ func TestErroredPeriodicCommand(t *testing.T) {
 	}
 }
 
+func TestPeriodicCommandsV2(t *testing.T) {
+	reset()
+	RegisterPeriodicCommandV2("morning",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			CmdFuncV2: func() ([]CmdResult, error) {
+				ret := []CmdResult{
+					{Message: "message 1", Channel: "#channel1"},
+					{Message: "message 2", Channel: "#channel2"}}
+				return ret, nil
+			},
+		})
+	channels := make([]string, 0, 2)
+	b := New(&Handlers{Response: func(target string, message string, sender *User) {
+		channels = append(channels, target)
+		channel = target
+		user = sender
+		replies <- message
+	}})
+	defer b.Close()
+
+	entries := b.cron.Entries()
+	if len(entries) != 1 {
+		t.Fatal("Should have one cron job entry")
+	}
+	if entries[0].Next.Hour() != 8 {
+		t.Fatal("Cron job should be scheduled to 8am")
+	}
+
+	entries[0].Job.Run()
+
+	waitMessages(t, 2, 0)
+	if len(channels) != 2 {
+		t.Fatal("Should have 2 destinations channels", len(channels))
+	}
+
+	if msgs[0] != "message 1" {
+		t.Fatal("Invalid first reply")
+	}
+
+	if channels[0] != "#channel1" {
+		t.Fatal("Invalid channel for first message", channels[0])
+	}
+
+	if msgs[1] != "message 2" {
+		t.Fatal("Invalid second reply")
+	}
+
+	if channels[1] != "#channel2" {
+		t.Fatal("Invalid channel for second message", channels[1])
+	}
+}
+
+func TestErroredPeriodicCommandsV2(t *testing.T) {
+	reset()
+	RegisterPeriodicCommandV2("morning",
+		PeriodicConfig{
+			CronSpec: "0 0 08 * * mon-fri",
+			CmdFuncV2: func() ([]CmdResult, error) {
+				return nil, errors.New("error")
+			},
+		})
+	b := newBot()
+	defer b.Close()
+
+	entries := b.cron.Entries()
+	if len(entries) != 1 {
+		t.Fatal("Should have one cron job entry")
+	}
+	if entries[0].Next.Hour() != 8 {
+		t.Fatal("Cron job should be scheduled to 8am")
+	}
+
+	entries[0].Job.Run()
+
+	waitMessages(t, 0, 1)
+	if len(msgs) != 0 {
+		t.Error("Should not have a reply in the channel")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
+	}
+}
+
 func TestDisabledCommands(t *testing.T) {
 	reset()
 	commands = make(map[string]*customCommand)
