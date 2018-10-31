@@ -16,6 +16,7 @@ type Config struct {
 	Channels      []string // Channels to connect. Ex: []string{"#go-bot", "#channel mypassword"}
 	User          string   // The IRC username the bot will use
 	Nick          string   // The nick the bot will use
+	RealName      string   // The real name (longer string) the bot will use
 	Password      string   // Server password
 	UseTLS        bool     // Should connect using TLS?
 	TLSServerName string   // Must supply if UseTLS is true
@@ -97,6 +98,7 @@ func SetUp(c *Config) *bot.Bot {
 	config = c
 
 	ircConn = ircevent.IRC(c.User, c.Nick)
+	ircConn.RealName = c.RealName
 	ircConn.Password = c.Password
 	ircConn.UseTLS = c.UseTLS
 	ircConn.TLSConfig = &tls.Config{
