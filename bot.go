@@ -140,6 +140,9 @@ func (b *Bot) SendMessage(target string, message string, sender *User) {
 		Target:  target,
 		Message: message,
 		User:    sender})
+	if message == "" {
+		return
+	}
 
 	select {
 	case b.msgsToSend <- responseMessage{target, message, sender}:
