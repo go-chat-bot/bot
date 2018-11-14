@@ -1,6 +1,7 @@
 package hangouts
 
 import (
+	"bytes"
 	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
@@ -30,10 +31,28 @@ type Config struct {
 	Token            string
 }
 
-func responseHandler(space string, message string, sender *bot.User) {
+func responseHandler(target string, message string, sender *bot.User) {
+	var space, thread string
+
+	// this define thread in the reply if we can so we don't alwayus start new
+	targets := strings.Split(target, ":")
+	if len(targets) < 2 {
+		space = target
+	} else {
+		space = targets[0]
+		thread = targets[1]
+	}
+
+	reply, err := json.Marshal(&ReplyMessage{
+		Text: message,
+		Thread: &ReplyThread{
+			Name: thread}})
+
+	log.Printf("space: %s thread: %s message: %s\n",
+		space, thread, message)
 	resp, err := httpChatClient.Post(apiEndpoint+space+"/messages",
 		"application/json",
-		strings.NewReader("{\"text\":\""+message+"\"}"))
+		bytes.NewReader(reply))
 	if err != nil {
 		log.Printf("Error posting reply: %v", err)
 	}
@@ -113,7 +132,7 @@ func Run(config *Config) {
 						Protocol:  "hangouts",
 						Server:    "chat.google.com",
 						HumanName: msg.Space.DisplayName,
-						Channel:   msg.Space.Name,
+						Channel:   msg.Space.Name + ":" + msg.Message.Thread.Name,
 						IsPrivate: msg.Space.Type == "DM",
 					},
 					&bot.Message{

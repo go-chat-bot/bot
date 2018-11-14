@@ -44,3 +44,16 @@ type ChatMessage struct {
 	} `json:"space"`
 	ConfigCompleteRedirectURL string `json:"configCompleteRedirectUrl"`
 }
+
+// ReplyThread is a part of reply messages
+type ReplyThread struct {
+	Name string `json:"name,omitempty"`
+}
+
+// ReplyMessage is partial hangouts format of messages used
+// For details see
+// https://developers.google.com/hangouts/chat/reference/rest/v1/spaces.messages#Message
+type ReplyMessage struct {
+	Text   string       `json:"text"`
+	Thread *ReplyThread `json:"thread,omitempty"`
+}
