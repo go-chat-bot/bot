@@ -29,6 +29,7 @@ type Config struct {
 	TopicName        string
 	SubscriptionName string
 	Token            string
+	WelcomeMessage   string
 }
 
 func responseHandler(target string, message string, sender *bot.User) {
@@ -123,7 +124,10 @@ func Run(config *Config) {
 			log.Printf("Space: %s\n", msg.Space.Name)
 			switch msg.Type {
 			case "ADDED_TO_SPACE":
-				break
+				if config.WelcomeMessage != "" {
+					log.Printf("Sending welcome message to %s\n", msg.Space.Name)
+					b.SendMessage(msg.Space.Name, config.WelcomeMessage, nil)
+				}
 			case "REMOVED_FROM_SPACE":
 				break
 			case "MESSAGE":
