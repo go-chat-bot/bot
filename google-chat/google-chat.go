@@ -49,7 +49,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 		Thread: &ReplyThread{
 			Name: thread}})
 
-	log.Printf("space: %s thread: %s message: %s\n",
+	log.Printf("Replying: space: %s thread: %s message: %s\n",
 		space, thread, message)
 	resp, err := httpChatClient.Post(apiEndpoint+space+"/messages",
 		"application/json",
@@ -74,7 +74,7 @@ func Run(config *Config) {
 
 	client, err := pubsub.NewClient(ctx, config.PubSubProject)
 	if err != nil {
-		log.Printf("error creating client: %v\n", err)
+		log.Printf("Error creating client: %v\n", err)
 		return
 	}
 
@@ -96,7 +96,7 @@ func Run(config *Config) {
 				AckDeadline: 10 * time.Second,
 			})
 		if err != nil {
-			log.Printf("error subscribing: %v\n", err)
+			log.Printf("Error subscribing: %v\n", err)
 			return
 		}
 	}
@@ -107,11 +107,10 @@ func Run(config *Config) {
 
 	err = sub.Receive(context.Background(),
 		func(ctx context.Context, m *pubsub.Message) {
-			log.Printf("Got message: %s\n\n", m.Data)
 			var msg ChatMessage
 			err = json.Unmarshal(m.Data, &msg)
 			if err != nil {
-				log.Printf("Failed message unmarshal: %v\n", err)
+				log.Printf("Failed message unmarshal(%v): %s\n", err, m.Data)
 				m.Ack()
 				return
 			}
@@ -121,7 +120,9 @@ func Run(config *Config) {
 				return
 			}
 
-			log.Printf("Space: %s\n", msg.Space.Name)
+			log.Printf("Space: %s (%s)\n", msg.Space.Name, msg.Space.DisplayName)
+			log.Printf("Message type: %s\n", msg.Type)
+			log.Printf("From: %s (%s)\n", msg.User.Name, msg.User.DisplayName)
 			switch msg.Type {
 			case "ADDED_TO_SPACE":
 				if config.WelcomeMessage != "" {
@@ -131,6 +132,7 @@ func Run(config *Config) {
 			case "REMOVED_FROM_SPACE":
 				break
 			case "MESSAGE":
+				log.Printf("Message: %s\n", msg.Message.ArgumentText)
 				b.MessageReceived(
 					&bot.ChannelData{
 						Protocol:  "googlechat",
@@ -153,7 +155,7 @@ func Run(config *Config) {
 			m.Ack()
 		})
 	if err != nil {
-		log.Printf("error setting up receiving: %v\n", err)
+		log.Printf("Error setting up receiving: %v\n", err)
 		return
 	}
 	// Wait indefinetely
