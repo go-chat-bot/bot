@@ -1,4 +1,4 @@
-package hangouts
+package googlechat
 
 import (
 	"bytes"
@@ -133,7 +133,7 @@ func Run(config *Config) {
 			case "MESSAGE":
 				b.MessageReceived(
 					&bot.ChannelData{
-						Protocol:  "hangouts",
+						Protocol:  "googlechat",
 						Server:    "chat.google.com",
 						HumanName: msg.Space.DisplayName,
 						Channel:   msg.Space.Name + ":" + msg.Message.Thread.Name,

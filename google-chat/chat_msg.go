@@ -1,4 +1,4 @@
-package hangouts
+package googlechat
 
 import "time"
 
