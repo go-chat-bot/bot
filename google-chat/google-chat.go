@@ -140,7 +140,7 @@ func Run(config *Config) {
 						IsPrivate: msg.Space.Type == "DM",
 					},
 					&bot.Message{
-						Text:     msg.Message.Text,
+						Text:     msg.Message.ArgumentText,
 						IsAction: false,
 					},
 					&bot.User{
