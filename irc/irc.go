@@ -6,9 +6,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	ircevent "github.com/thoj/go-ircevent"
 )
+
+// "github.com/go-chat-bot/bot"
 
 // Config must contain the necessary data to connect to an IRC server
 type Config struct {
