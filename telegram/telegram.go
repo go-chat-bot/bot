@@ -6,12 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	bot "github.com/bnfinet/go-chat-bot"
-
+	"github.com/go-chat-bot/bot"
 	tgbotapi "gopkg.in/telegram-bot-api.v3"
 )
-
-// "github.com/go-chat-bot/bot"
 
 var (
 	tg *tgbotapi.BotAPI
