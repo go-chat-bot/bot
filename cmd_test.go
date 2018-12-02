@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -704,8 +705,13 @@ func TestMessageStreams(t *testing.T) {
 		return nil
 	})
 
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
 	b1 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoA", Server: "test"})
+	mutex.Unlock()
+	mutex.Lock()
 	b2 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoB", Server: "test"})
+	mutex.Unlock()
 
 	// activeBots := []*Bot{b1, b2}
 	// for _, v := range activeBots {
