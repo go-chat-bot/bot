@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	_ "github.com/go-chat-bot/plugins-br/cnpj"
 	_ "github.com/go-chat-bot/plugins-br/cotacao"
 	_ "github.com/go-chat-bot/plugins-br/cpf"
@@ -41,7 +41,12 @@ func responseHandler(target string, message string, sender *bot.User) {
 func main() {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: "debug",
+			Server:   "debug",
+		},
+	)
 
 	fmt.Println("Type a command or !help for available commands...")
 

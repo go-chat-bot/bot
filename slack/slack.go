@@ -4,7 +4,7 @@ package slack
 import (
 	"fmt"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	"github.com/nlopes/slack"
 )
 
@@ -22,6 +22,8 @@ var (
 	messageFilter MessageFilter = defaultMessageFilter
 	botUserID                   = ""
 )
+
+const protocol = "slack"
 
 func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessageParameters) {
 	return message, params
@@ -125,7 +127,12 @@ func Run(token string) {
 
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: protocol,
+			Server:   teaminfo.Domain,
+		},
+	)
 
 	b.Disable([]string{"url"})
 

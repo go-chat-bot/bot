@@ -6,12 +6,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	tgbotapi "gopkg.in/telegram-bot-api.v3"
 )
 
 var (
 	tg *tgbotapi.BotAPI
+)
+
+const (
+	protocol = "telegram"
+	server   = "telegram"
 )
 
 func responseHandler(target string, message string, sender *bot.User) {
@@ -47,13 +52,20 @@ func Run(token string, debug bool) {
 
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	}, &bot.Config{
+		Protocol: protocol,
+		Server:   server,
+	},
+	)
+	// b.Protocol = protocol
+	// b.Server = server
+
 	b.Disable([]string{"url"})
 
 	for update := range updates {
 		target := &bot.ChannelData{
-			Protocol:  "telegram",
-			Server:    "telegram",
+			Protocol:  protocol,
+			Server:    server,
 			Channel:   strconv.FormatInt(update.Message.Chat.ID, 10),
 			IsPrivate: update.Message.Chat.IsPrivate()}
 		name := []string{update.Message.From.FirstName, update.Message.From.LastName}

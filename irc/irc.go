@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	ircevent "github.com/thoj/go-ircevent"
 )
 
@@ -29,6 +29,8 @@ var (
 	b       *bot.Bot
 )
 
+const protocol = "irc"
+
 func responseHandler(target string, message string, sender *bot.User) {
 	channel := target
 	if ircConn.GetNick() == target {
@@ -45,7 +47,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 func onPRIVMSG(e *ircevent.Event) {
 	b.MessageReceived(
 		&bot.ChannelData{
-			Protocol:  "irc",
+			Protocol:  protocol,
 			Server:    ircConn.Server,
 			Channel:   e.Arguments[0],
 			IsPrivate: e.Arguments[0] == ircConn.GetNick()},
@@ -61,7 +63,7 @@ func onPRIVMSG(e *ircevent.Event) {
 func onCTCPACTION(e *ircevent.Event) {
 	b.MessageReceived(
 		&bot.ChannelData{
-			Protocol:  "irc",
+			Protocol:  protocol,
 			Server:    ircConn.Server,
 			Channel:   e.Arguments[0],
 			IsPrivate: false,
@@ -108,7 +110,12 @@ func SetUp(c *Config) *bot.Bot {
 
 	b = bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: protocol,
+			Server:   c.Server,
+		},
+	)
 
 	ircConn.AddCallback("001", onWelcome)
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)

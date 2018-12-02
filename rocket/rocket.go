@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-chat-bot/bot"
+	bot "github.com/bnfinet/go-chat-bot"
 	"github.com/pyinx/gorocket/api"
 	"github.com/pyinx/gorocket/rest"
 )
@@ -12,6 +12,10 @@ import (
 var (
 	client *rest.Client
 	config *Config
+)
+
+const (
+	protocol = "rocket"
 )
 
 // Config must contain the necessary data to connect to an rocket.chat server
@@ -55,7 +59,13 @@ func Run(c *Config) {
 
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: protocol,
+			Server:   config.Server,
+		},
+	)
+
 	b.Disable([]string{"url"})
 
 	msgChan := client.GetAllMessages()
@@ -66,7 +76,7 @@ func Run(c *Config) {
 				if !ownMessage(c, msg) {
 					b.MessageReceived(
 						&bot.ChannelData{
-							Protocol:  "rocket",
+							Protocol:  protocol,
 							Server:    "",
 							Channel:   msg.ChannelId,
 							IsPrivate: false,

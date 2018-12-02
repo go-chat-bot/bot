@@ -72,7 +72,12 @@ func newBot() *Bot {
 	return New(&Handlers{
 		Response: responseHandler,
 		Errored:  errorHandler,
-	})
+	},
+		&Config{
+			Protocol: "test",
+			Server:   "test",
+		},
+	)
 }
 
 func registerValidCommand() {
@@ -90,7 +95,10 @@ func TestPeriodicCommands(t *testing.T) {
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
 		})
-	b := New(&Handlers{Response: responseHandler})
+	b := New(
+		&Handlers{Response: responseHandler},
+		&Config{Protocol: "test", Server: "test"},
+	)
 	defer b.Close()
 
 	entries := b.cron.Entries()
@@ -123,7 +131,10 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok_afternoon " + channel, nil },
 		})
-	b := New(&Handlers{Response: responseHandler})
+	b := New(
+		&Handlers{Response: responseHandler},
+		&Config{Protocol: "test", Server: "test"},
+	)
 	defer b.Close()
 
 	entries := b.cron.Entries()
@@ -200,7 +211,9 @@ func TestPeriodicCommandsV2(t *testing.T) {
 		channel = target
 		user = sender
 		replies <- message
-	}})
+	}},
+		&Config{Protocol: "test", Server: "test"})
+
 	defer b.Close()
 
 	entries := b.cron.Entries()

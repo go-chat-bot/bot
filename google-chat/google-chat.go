@@ -2,20 +2,23 @@ package googlechat
 
 import (
 	"bytes"
-	"cloud.google.com/go/pubsub"
 	"context"
 	"encoding/json"
-	"github.com/go-chat-bot/bot"
-	"golang.org/x/oauth2/google"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"cloud.google.com/go/pubsub"
+	"github.com/go-chat-bot/bot"
+	"golang.org/x/oauth2/google"
 )
 
 const (
 	chatAuthScope = "https://www.googleapis.com/auth/chat.bot"
 	apiEndpoint   = "https://chat.googleapis.com/v1/"
+	protocol      = "googlechat"
+	server        = "chat.google.com"
 )
 
 var (
@@ -103,7 +106,12 @@ func Run(config *Config) {
 
 	b = bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: protocol,
+			Server:   server,
+		},
+	)
 
 	err = sub.Receive(context.Background(),
 		func(ctx context.Context, m *pubsub.Message) {
@@ -135,8 +143,8 @@ func Run(config *Config) {
 				log.Printf("Message: %s\n", msg.Message.ArgumentText)
 				b.MessageReceived(
 					&bot.ChannelData{
-						Protocol:  "googlechat",
-						Server:    "chat.google.com",
+						Protocol:  protocol,
+						Server:    server,
 						HumanName: msg.Space.DisplayName,
 						Channel:   msg.Space.Name + ":" + msg.Message.Thread.Name,
 						IsPrivate: msg.Space.Type == "DM",
