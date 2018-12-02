@@ -3,6 +3,7 @@ package bot
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -27,6 +28,20 @@ type Bot struct {
 	disabledCmds []string
 	msgsToSend   chan responseMessage
 	done         chan struct{}
+
+	// Protocol and Server are used by MesssageStreams to
+	/// determine if this is the correct bot to send a message on
+	// see:
+	// https://github.com/go-chat-bot/bot/issues/37#issuecomment-277661159
+	// https://github.com/go-chat-bot/bot/issues/97#issuecomment-442827599
+	Protocol string
+	Server   string
+}
+
+// Config see above
+type Config struct {
+	Protocol string
+	Server   string
 }
 
 type responseMessage struct {
@@ -51,7 +66,7 @@ func logErrorHandler(msg string, err error) {
 }
 
 // New configures a new bot instance
-func New(h *Handlers) *Bot {
+func New(h *Handlers, bc *Config) *Bot {
 	if h.Errored == nil {
 		h.Errored = logErrorHandler
 	}
@@ -61,14 +76,43 @@ func New(h *Handlers) *Bot {
 		cron:       cron.New(),
 		msgsToSend: make(chan responseMessage, MsgBuffer),
 		done:       make(chan struct{}),
+		Protocol:   bc.Protocol,
+		Server:     bc.Server,
 	}
 
 	// Launch the background goroutine that isolates the possibly non-threadsafe
 	// message sending logic of the underlying transport layer.
 	go b.processMessages()
 
+	b.startMessageStreams()
+
 	b.startPeriodicCommands()
 	return b
+}
+
+func (b *Bot) startMessageStreams() {
+	fmt.Printf("startMessageStreams messageStreams: %v", messageStreams)
+
+	for _, v := range messageStreamConfigs {
+
+		go func(b *Bot, config *MessageStreamConfig) {
+			ms := &MessageStream{
+				Data: make(chan MessageStreamMessage),
+				Done: make(chan bool),
+			}
+			var err = config.MsgFunc(ms)
+			if err != nil {
+				b.errored("MessageStream "+config.StreamName+" failed ", err)
+			}
+			msKey := messageStreamKey{
+				Protocol:   b.Protocol,
+				Server:     b.Server,
+				StreamName: config.StreamName,
+			}
+			messageStreams[msKey] = ms
+			b.handleMessageStream(config.StreamName, ms)
+		}(b, v)
+	}
 }
 
 func (b *Bot) startPeriodicCommands() {

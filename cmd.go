@@ -6,6 +6,12 @@ import (
 	"sync"
 )
 
+var (
+	// ErrProtocolServerMismatch server && proto must match
+	ErrProtocolServerMismatch = errors.New("the specified protocol and server do not correspond to this bot instance")
+	errNoChannelSpecified     = errors.New("no channel was specified for this message")
+)
+
 // Cmd holds the parsed user's input for easier handling of commands
 type Cmd struct {
 	Raw         string       // Raw is full string passed to the command
@@ -73,6 +79,27 @@ type User struct {
 	IsBot    bool
 }
 
+// MessageStream allows event information to be transmitted to an arbitrary channel
+// https://github.com/go-chat-bot/bot/issues/97
+type MessageStream struct {
+	Data chan MessageStreamMessage
+	// Done is almost never called, usually the bot should just leave the chan open
+	Done chan bool
+}
+
+// MessageStreamMessage the actual Message passed back to MessageStream in a chan
+type MessageStreamMessage struct {
+	Message     string
+	ChannelData *ChannelData
+}
+
+// MessageStreamConfig set the Protocol, Server and Channel where the messages should be sent
+type MessageStreamConfig struct {
+	Version    int
+	StreamName string
+	MsgFunc    messageStreamFunc
+}
+
 type customCommand struct {
 	Version       int
 	Cmd           string
@@ -123,12 +150,23 @@ type activeCmdFuncV3 func(cmd *Cmd) (CmdResultV3, error)
 
 type filterCmdFuncV1 func(cmd *FilterCmd) (string, error)
 
+type messageStreamFunc func(ms *MessageStream) error
+
 var (
 	commands         = make(map[string]*customCommand)
 	passiveCommands  = make(map[string]*customCommand)
 	filterCommands   = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
+
+	messageStreamConfigs []*MessageStreamConfig
+	messageStreams       = make(map[messageStreamKey]*MessageStream)
 )
+
+type messageStreamKey struct {
+	StreamName string
+	Server     string
+	Protocol   string
+}
 
 // RegisterCommand adds a new command to the bot.
 // The command(s) should be registered in the Init() func of your package
@@ -168,6 +206,19 @@ func RegisterCommandV3(command, description, exampleArgs string, cmdFunc activeC
 		Description: description,
 		ExampleArgs: exampleArgs,
 	}
+}
+
+// RegisterMessageStream adds a new message stream to the bot.
+// The command should be registered in the Init() func of your package
+// MessageStreams send messages to a channel
+// streamName: String used to identify the command, for internal use only (ex: webhook)
+// messageStreamFunc: Function which will be executed. It will received a MessageStream with a chan to ppush
+func RegisterMessageStream(streamName string, msgFunc messageStreamFunc) {
+	messageStreamConfigs = append(messageStreamConfigs, &MessageStreamConfig{
+		Version:    v1,
+		StreamName: streamName,
+		MsgFunc:    msgFunc,
+	})
 }
 
 // RegisterPassiveCommand adds a new passive command to the bot.
@@ -266,6 +317,7 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 					b.errored(fmt.Sprintf("Error executing %s", cmdFunc.Cmd), err)
 					return
 				}
+
 				for {
 					select {
 					case message := <-result.Message:
@@ -356,5 +408,38 @@ func (b *Bot) checkCmdError(err error, c *Cmd) {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		b.errored(errorMsg, err)
 		b.SendMessage(c.Channel, errorMsg, c.User)
+	}
+}
+
+// handleMessageStream
+// if there are two bots (telegram, irc) and three messsages(a, b, c) then there will be six entries in messageStreams[key]
+// when a message is sent into a chan it has a good chance of arriving at the wrong bot instance
+// for every message we check to see if it matched this b.Protocol and b.Server
+// if it doesn't we lookup the entry in messageStreams[key] send it to *that* Data chan
+func (b *Bot) handleMessageStream(streamName string, ms *MessageStream) {
+	for {
+		select {
+		case d := <-ms.Data:
+
+			if d.ChannelData.Protocol != b.Protocol || d.ChannelData.Server != b.Server {
+				// b.errored("Warning: MessageStream "+cmdName+" for "+d.ChannelData.Channel+" will not be received by "+b.Server, ErrProtocolServerMismatch)
+				// then lookup who it *should* be sent to and send it back into *that* chan
+				key := messageStreamKey{Protocol: d.ChannelData.Protocol, Server: d.ChannelData.Server, StreamName: streamName}
+				messageStreams[key].Data <- d
+				continue
+			}
+
+			// this message is meant for us!
+
+			if d.ChannelData.Channel == "" {
+				b.errored("handleMessageStream: "+d.Message, errNoChannelSpecified)
+				continue
+			}
+			if d.Message != "" {
+				b.SendMessage(d.ChannelData.Channel, d.Message, nil)
+			}
+		case <-ms.Done:
+			return
+		}
 	}
 }

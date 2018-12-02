@@ -685,3 +685,66 @@ func TestFilterCommandSilence(t *testing.T) {
 		t.Error("Expected 1 error")
 	}
 }
+
+// how to test channels..
+// https://www.hugopicado.com/2016/10/01/testing-over-golang-channels.html
+
+func TestMessageStreams(t *testing.T) {
+	reset()
+
+	var msSender1 *MessageStream
+	var msSender2 *MessageStream
+
+	RegisterMessageStream("streamOne", func(ms *MessageStream) error {
+		msSender1 = ms
+		return nil
+	})
+	RegisterMessageStream("streamTwo", func(ms *MessageStream) error {
+		msSender2 = ms
+		return nil
+	})
+
+	b1 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoA", Server: "test"})
+	b2 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoB", Server: "test"})
+
+	// activeBots := []*Bot{b1, b2}
+	// for _, v := range activeBots {
+	// 	v.startMessageStreams()
+	// }
+
+	msmB1 := MessageStreamMessage{
+		Message:     "hello botOne",
+		ChannelData: &ChannelData{Server: b1.Server, Protocol: b1.Protocol, Channel: "#go-bot"},
+	}
+	msmB2 := MessageStreamMessage{
+		Message:     "hello botTwo",
+		ChannelData: &ChannelData{Server: b2.Server, Protocol: b2.Protocol, Channel: "#go-bot"},
+	}
+
+	// give New() a second to make() the chans and setup the objects
+	time.Sleep(1 * time.Second)
+
+	// when when you send a message destined for b1 #go-bots, even if you send it to b2, it should arrive at b1
+	msSender1.Data <- msmB1
+	if "hello botOne" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	msSender2.Data <- msmB1
+	if "hello botOne" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	// and vice-versa
+	// when when you send a message destined for b2 #go-bots, even if you send it to b1, it should arrive at b1
+	msSender1.Data <- msmB2
+	if "hello botTwo" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	msSender2.Data <- msmB2
+	if "hello botTwo" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+}
