@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/robfig/cron"
@@ -92,7 +93,7 @@ func New(h *Handlers, bc *Config) *Bot {
 
 func (b *Bot) startMessageStreams() {
 	fmt.Printf("startMessageStreams messageStreams: %v", messageStreams)
-
+	var mutex = &sync.Mutex{}
 	for _, v := range messageStreamConfigs {
 
 		go func(b *Bot, config *MessageStreamConfig) {
@@ -109,7 +110,10 @@ func (b *Bot) startMessageStreams() {
 				Server:     b.Server,
 				StreamName: config.StreamName,
 			}
+			// thread safe write
+			mutex.Lock()
 			messageStreams[msKey] = ms
+			mutex.Unlock()
 			b.handleMessageStream(config.StreamName, ms)
 		}(b, v)
 	}
