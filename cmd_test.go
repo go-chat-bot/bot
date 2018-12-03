@@ -691,32 +691,27 @@ func TestFilterCommandSilence(t *testing.T) {
 // https://www.hugopicado.com/2016/10/01/testing-over-golang-channels.html
 
 func TestMessageStreams(t *testing.T) {
+	var mutex = &sync.Mutex{}
 	reset()
 
 	var msSender1 *MessageStream
 	var msSender2 *MessageStream
 
 	RegisterMessageStream("streamOne", func(ms *MessageStream) error {
+		mutex.Lock()
 		msSender1 = ms
+		mutex.Unlock()
 		return nil
 	})
 	RegisterMessageStream("streamTwo", func(ms *MessageStream) error {
+		mutex.Lock()
 		msSender2 = ms
+		mutex.Unlock()
 		return nil
 	})
 
-	var mutex = &sync.Mutex{}
-	mutex.Lock()
 	b1 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoA", Server: "test"})
-	mutex.Unlock()
-	mutex.Lock()
 	b2 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoB", Server: "test"})
-	mutex.Unlock()
-
-	// activeBots := []*Bot{b1, b2}
-	// for _, v := range activeBots {
-	// 	v.startMessageStreams()
-	// }
 
 	msmB1 := MessageStreamMessage{
 		Message:     "hello botOne",
@@ -731,6 +726,7 @@ func TestMessageStreams(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	// when when you send a message destined for b1 #go-bots, even if you send it to b2, it should arrive at b1
+	mutex.Lock()
 	msSender1.Data <- msmB1
 	if "hello botOne" != <-replies {
 		t.Fatal("message not Recieved at Channel")
@@ -752,5 +748,6 @@ func TestMessageStreams(t *testing.T) {
 	if "hello botTwo" != <-replies {
 		t.Fatal("message not Recieved at Channel")
 	}
+	mutex.Unlock()
 
 }

@@ -152,6 +152,16 @@ type filterCmdFuncV1 func(cmd *FilterCmd) (string, error)
 
 type messageStreamFunc func(ms *MessageStream) error
 
+type messageStreamSyncMap struct {
+	sync.RWMutex
+	messageStreams map[messageStreamKey]*MessageStream
+}
+type messageStreamKey struct {
+	StreamName string
+	Server     string
+	Protocol   string
+}
+
 var (
 	commands         = make(map[string]*customCommand)
 	passiveCommands  = make(map[string]*customCommand)
@@ -159,14 +169,11 @@ var (
 	periodicCommands = make(map[string]PeriodicConfig)
 
 	messageStreamConfigs []*MessageStreamConfig
-	messageStreams       = make(map[messageStreamKey]*MessageStream)
-)
 
-type messageStreamKey struct {
-	StreamName string
-	Server     string
-	Protocol   string
-}
+	msMap = &messageStreamSyncMap{
+		messageStreams: make(map[messageStreamKey]*MessageStream),
+	}
+)
 
 // RegisterCommand adds a new command to the bot.
 // The command(s) should be registered in the Init() func of your package
@@ -425,7 +432,9 @@ func (b *Bot) handleMessageStream(streamName string, ms *MessageStream) {
 				// b.errored("Warning: MessageStream "+cmdName+" for "+d.ChannelData.Channel+" will not be received by "+b.Server, ErrProtocolServerMismatch)
 				// then lookup who it *should* be sent to and send it back into *that* chan
 				key := messageStreamKey{Protocol: d.ChannelData.Protocol, Server: d.ChannelData.Server, StreamName: streamName}
-				messageStreams[key].Data <- d
+				msMap.RLock()
+				msMap.messageStreams[key].Data <- d
+				msMap.RUnlock()
 				continue
 			}
 
