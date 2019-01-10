@@ -57,8 +57,6 @@ func Run(token string, debug bool) {
 		Server:   server,
 	},
 	)
-	// b.Protocol = protocol
-	// b.Server = server
 
 	b.Disable([]string{"url"})
 

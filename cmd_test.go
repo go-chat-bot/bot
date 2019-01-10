@@ -697,15 +697,15 @@ func TestMessageStreams(t *testing.T) {
 	var msSender1 *MessageStream
 	var msSender2 *MessageStream
 
-	RegisterMessageStream("streamOne", func(ms *MessageStream) error {
+	RegisterMessageStream("streamOne", func(ms1 *MessageStream) error {
 		mutex.Lock()
-		msSender1 = ms
+		msSender1 = ms1
 		mutex.Unlock()
 		return nil
 	})
-	RegisterMessageStream("streamTwo", func(ms *MessageStream) error {
+	RegisterMessageStream("streamTwo", func(ms2 *MessageStream) error {
 		mutex.Lock()
-		msSender2 = ms
+		msSender2 = ms2
 		mutex.Unlock()
 		return nil
 	})
@@ -723,9 +723,9 @@ func TestMessageStreams(t *testing.T) {
 	}
 
 	// give New() a second to make() the chans and setup the objects
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	// when when you send a message destined for b1 #go-bots, even if you send it to b2, it should arrive at b1
+	// when you send a message destined for b1 #go-bot, even if you send it to b2, it should arrive at b1
 	mutex.Lock()
 	msSender1.Data <- msmB1
 	if "hello botOne" != <-replies {
@@ -738,7 +738,7 @@ func TestMessageStreams(t *testing.T) {
 	}
 
 	// and vice-versa
-	// when when you send a message destined for b2 #go-bots, even if you send it to b1, it should arrive at b1
+	// when you send a message destined for b2 #go-bots, even if you send it to b1, it should arrive at b2
 	msSender1.Data <- msmB2
 	if "hello botTwo" != <-replies {
 		t.Fatal("message not Recieved at Channel")

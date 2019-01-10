@@ -93,13 +93,6 @@ type MessageStreamMessage struct {
 	ChannelData *ChannelData
 }
 
-// MessageStreamConfig set the Protocol, Server and Channel where the messages should be sent
-type MessageStreamConfig struct {
-	Version    int
-	StreamName string
-	MsgFunc    messageStreamFunc
-}
-
 type customCommand struct {
 	Version       int
 	Cmd           string
@@ -162,13 +155,20 @@ type messageStreamKey struct {
 	Protocol   string
 }
 
+// messageStreamConfig holds the registered function for the streamname
+type messageStreamConfig struct {
+	version    int
+	streamName string
+	msgFunc    messageStreamFunc
+}
+
 var (
 	commands         = make(map[string]*customCommand)
 	passiveCommands  = make(map[string]*customCommand)
 	filterCommands   = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 
-	messageStreamConfigs []*MessageStreamConfig
+	messageStreamConfigs []*messageStreamConfig
 
 	msMap = &messageStreamSyncMap{
 		messageStreams: make(map[messageStreamKey]*MessageStream),
@@ -219,12 +219,12 @@ func RegisterCommandV3(command, description, exampleArgs string, cmdFunc activeC
 // The command should be registered in the Init() func of your package
 // MessageStreams send messages to a channel
 // streamName: String used to identify the command, for internal use only (ex: webhook)
-// messageStreamFunc: Function which will be executed. It will received a MessageStream with a chan to ppush
+// messageStreamFunc: Function which will be executed. It will received a MessageStream with a chan to push
 func RegisterMessageStream(streamName string, msgFunc messageStreamFunc) {
-	messageStreamConfigs = append(messageStreamConfigs, &MessageStreamConfig{
-		Version:    v1,
-		StreamName: streamName,
-		MsgFunc:    msgFunc,
+	messageStreamConfigs = append(messageStreamConfigs, &messageStreamConfig{
+		version:    v1,
+		streamName: streamName,
+		msgFunc:    msgFunc,
 	})
 }
 
@@ -429,7 +429,6 @@ func (b *Bot) handleMessageStream(streamName string, ms *MessageStream) {
 		case d := <-ms.Data:
 
 			if d.ChannelData.Protocol != b.Protocol || d.ChannelData.Server != b.Server {
-				// b.errored("Warning: MessageStream "+cmdName+" for "+d.ChannelData.Channel+" will not be received by "+b.Server, ErrProtocolServerMismatch)
 				// then lookup who it *should* be sent to and send it back into *that* chan
 				key := messageStreamKey{Protocol: d.ChannelData.Protocol, Server: d.ChannelData.Server, StreamName: streamName}
 				msMap.RLock()

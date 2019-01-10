@@ -29,18 +29,27 @@ type Bot struct {
 	done         chan struct{}
 
 	// Protocol and Server are used by MesssageStreams to
-	/// determine if this is the correct bot to send a message on
+	// determine if this is the correct bot to send a message on
 	// see:
 	// https://github.com/go-chat-bot/bot/issues/37#issuecomment-277661159
 	// https://github.com/go-chat-bot/bot/issues/97#issuecomment-442827599
 	Protocol string
-	Server   string
+	// Server and Protocol are used by MesssageStreams to
+	// determine if this is the correct bot to send a message on
+	// see:
+	// https://github.com/go-chat-bot/bot/issues/37#issuecomment-277661159
+	// https://github.com/go-chat-bot/bot/issues/97#issuecomment-442827599
+	Server string
 }
 
-// Config see above
+// Config configuration for this Bot instance
 type Config struct {
+	// Protocol and Server are used by MesssageStreams to
+	/// determine if this is the correct bot to send a message on
 	Protocol string
-	Server   string
+	// Server and Protocol are used by MesssageStreams to
+	// determine if this is the correct bot to send a message on
+	Server string
 }
 
 type responseMessage struct {
@@ -92,25 +101,25 @@ func New(h *Handlers, bc *Config) *Bot {
 func (b *Bot) startMessageStreams() {
 	for _, v := range messageStreamConfigs {
 
-		go func(b *Bot, config *MessageStreamConfig) {
+		go func(b *Bot, config *messageStreamConfig) {
 			msMap.Lock()
 			ms := &MessageStream{
 				Data: make(chan MessageStreamMessage),
 				Done: make(chan bool),
 			}
-			var err = config.MsgFunc(ms)
+			var err = config.msgFunc(ms)
 			if err != nil {
-				b.errored("MessageStream "+config.StreamName+" failed ", err)
+				b.errored("MessageStream "+config.streamName+" failed ", err)
 			}
 			msKey := messageStreamKey{
 				Protocol:   b.Protocol,
 				Server:     b.Server,
-				StreamName: config.StreamName,
+				StreamName: config.streamName,
 			}
 			// thread safe write
 			msMap.messageStreams[msKey] = ms
 			msMap.Unlock()
-			b.handleMessageStream(config.StreamName, ms)
+			b.handleMessageStream(config.streamName, ms)
 		}(b, v)
 	}
 }
