@@ -27,6 +27,29 @@ type Bot struct {
 	disabledCmds []string
 	msgsToSend   chan responseMessage
 	done         chan struct{}
+
+	// Protocol and Server are used by MesssageStreams to
+	// determine if this is the correct bot to send a message on
+	// see:
+	// https://github.com/go-chat-bot/bot/issues/37#issuecomment-277661159
+	// https://github.com/go-chat-bot/bot/issues/97#issuecomment-442827599
+	Protocol string
+	// Server and Protocol are used by MesssageStreams to
+	// determine if this is the correct bot to send a message on
+	// see:
+	// https://github.com/go-chat-bot/bot/issues/37#issuecomment-277661159
+	// https://github.com/go-chat-bot/bot/issues/97#issuecomment-442827599
+	Server string
+}
+
+// Config configuration for this Bot instance
+type Config struct {
+	// Protocol and Server are used by MesssageStreams to
+	/// determine if this is the correct bot to send a message on
+	Protocol string
+	// Server and Protocol are used by MesssageStreams to
+	// determine if this is the correct bot to send a message on
+	Server string
 }
 
 type responseMessage struct {
@@ -51,7 +74,7 @@ func logErrorHandler(msg string, err error) {
 }
 
 // New configures a new bot instance
-func New(h *Handlers) *Bot {
+func New(h *Handlers, bc *Config) *Bot {
 	if h.Errored == nil {
 		h.Errored = logErrorHandler
 	}
@@ -61,14 +84,44 @@ func New(h *Handlers) *Bot {
 		cron:       cron.New(),
 		msgsToSend: make(chan responseMessage, MsgBuffer),
 		done:       make(chan struct{}),
+		Protocol:   bc.Protocol,
+		Server:     bc.Server,
 	}
 
 	// Launch the background goroutine that isolates the possibly non-threadsafe
 	// message sending logic of the underlying transport layer.
 	go b.processMessages()
 
+	b.startMessageStreams()
+
 	b.startPeriodicCommands()
 	return b
+}
+
+func (b *Bot) startMessageStreams() {
+	for _, v := range messageStreamConfigs {
+
+		go func(b *Bot, config *messageStreamConfig) {
+			msMap.Lock()
+			ms := &MessageStream{
+				Data: make(chan MessageStreamMessage),
+				Done: make(chan bool),
+			}
+			var err = config.msgFunc(ms)
+			if err != nil {
+				b.errored("MessageStream "+config.streamName+" failed ", err)
+			}
+			msKey := messageStreamKey{
+				Protocol:   b.Protocol,
+				Server:     b.Server,
+				StreamName: config.streamName,
+			}
+			// thread safe write
+			msMap.messageStreams[msKey] = ms
+			msMap.Unlock()
+			b.handleMessageStream(config.streamName, ms)
+		}(b, v)
+	}
 }
 
 func (b *Bot) startPeriodicCommands() {

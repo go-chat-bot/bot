@@ -41,7 +41,12 @@ func responseHandler(target string, message string, sender *bot.User) {
 func main() {
 	b := bot.New(&bot.Handlers{
 		Response: responseHandler,
-	})
+	},
+		&bot.Config{
+			Protocol: "debug",
+			Server:   "debug",
+		},
+	)
 
 	fmt.Println("Type a command or !help for available commands...")
 

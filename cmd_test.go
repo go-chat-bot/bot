@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -72,7 +73,12 @@ func newBot() *Bot {
 	return New(&Handlers{
 		Response: responseHandler,
 		Errored:  errorHandler,
-	})
+	},
+		&Config{
+			Protocol: "test",
+			Server:   "test",
+		},
+	)
 }
 
 func registerValidCommand() {
@@ -90,7 +96,10 @@ func TestPeriodicCommands(t *testing.T) {
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
 		})
-	b := New(&Handlers{Response: responseHandler})
+	b := New(
+		&Handlers{Response: responseHandler},
+		&Config{Protocol: "test", Server: "test"},
+	)
 	defer b.Close()
 
 	entries := b.cron.Entries()
@@ -123,7 +132,10 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok_afternoon " + channel, nil },
 		})
-	b := New(&Handlers{Response: responseHandler})
+	b := New(
+		&Handlers{Response: responseHandler},
+		&Config{Protocol: "test", Server: "test"},
+	)
 	defer b.Close()
 
 	entries := b.cron.Entries()
@@ -200,7 +212,9 @@ func TestPeriodicCommandsV2(t *testing.T) {
 		channel = target
 		user = sender
 		replies <- message
-	}})
+	}},
+		&Config{Protocol: "test", Server: "test"})
+
 	defer b.Close()
 
 	entries := b.cron.Entries()
@@ -671,4 +685,69 @@ func TestFilterCommandSilence(t *testing.T) {
 	if len(errs) != 1 {
 		t.Error("Expected 1 error")
 	}
+}
+
+// how to test channels..
+// https://www.hugopicado.com/2016/10/01/testing-over-golang-channels.html
+
+func TestMessageStreams(t *testing.T) {
+	var mutex = &sync.Mutex{}
+	reset()
+
+	var msSender1 *MessageStream
+	var msSender2 *MessageStream
+
+	RegisterMessageStream("streamOne", func(ms1 *MessageStream) error {
+		mutex.Lock()
+		msSender1 = ms1
+		mutex.Unlock()
+		return nil
+	})
+	RegisterMessageStream("streamTwo", func(ms2 *MessageStream) error {
+		mutex.Lock()
+		msSender2 = ms2
+		mutex.Unlock()
+		return nil
+	})
+
+	b1 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoA", Server: "test"})
+	b2 := New(&Handlers{Response: responseHandler, Errored: errorHandler}, &Config{Protocol: "protoB", Server: "test"})
+
+	msmB1 := MessageStreamMessage{
+		Message:     "hello botOne",
+		ChannelData: &ChannelData{Server: b1.Server, Protocol: b1.Protocol, Channel: "#go-bot"},
+	}
+	msmB2 := MessageStreamMessage{
+		Message:     "hello botTwo",
+		ChannelData: &ChannelData{Server: b2.Server, Protocol: b2.Protocol, Channel: "#go-bot"},
+	}
+
+	// give New() a second to make() the chans and setup the objects
+	time.Sleep(2 * time.Second)
+
+	// when you send a message destined for b1 #go-bot, even if you send it to b2, it should arrive at b1
+	mutex.Lock()
+	msSender1.Data <- msmB1
+	if "hello botOne" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	msSender2.Data <- msmB1
+	if "hello botOne" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	// and vice-versa
+	// when you send a message destined for b2 #go-bots, even if you send it to b1, it should arrive at b2
+	msSender1.Data <- msmB2
+	if "hello botTwo" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+
+	msSender2.Data <- msmB2
+	if "hello botTwo" != <-replies {
+		t.Fatal("message not Recieved at Channel")
+	}
+	mutex.Unlock()
+
 }
