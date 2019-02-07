@@ -124,6 +124,11 @@ func SetUp(c *Config) *bot.Bot {
 	return b
 }
 
+// SetUpConn wraps SetUp and returns ircConn in addition to bot
+func SetUpConn(c *Config) (*bot.Bot, *ircevent.Connection) {
+	return SetUp(c), ircConn
+}
+
 // Run reads the Config, connect to the specified IRC server and starts the bot.
 // The bot will automatically join all the channels specified in the configuration
 func Run(c *Config) {
