@@ -15,7 +15,6 @@ func TestParser(t *testing.T) {
 	cmdMixedCaseWithArgs := CmdPrefix + "Cmd    arg1  arg2   "
 	cmdMixedCaseWithQuotes := CmdPrefix + "Cmd    \"arg1  arg2\""
 	cmdUnicode := CmdPrefix + "Çmd"
-	cmdUnicodeWithArgs := CmdPrefix + "çмд årg1 årg2"
 
 	tests := []struct {
 		msg      string
@@ -94,17 +93,6 @@ func TestParser(t *testing.T) {
 			User:        user,
 			Message:     "Çmd",
 			MessageData: &Message{Text: strings.TrimLeft("Çmd", CmdPrefix)},
-		}},
-		{cmdUnicodeWithArgs, &Cmd{
-			Raw:         cmdUnicodeWithArgs,
-			Command:     "cmd",
-			Channel:     channel.Channel,
-			ChannelData: channel,
-			User:        user,
-			Message:     "çмд årg1 årg2",
-			RawArgs:     "årg1 årg2",
-			Args:        []string{"arg1", "arg2"},
-			MessageData: &Message{Text: strings.TrimLeft("çмд årg1 årg2", CmdPrefix)},
 		}},
 	}
 
