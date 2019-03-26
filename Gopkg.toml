@@ -31,10 +31,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/go-chat-bot/bot"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/go-chat-bot/plugins"
 
 [[constraint]]

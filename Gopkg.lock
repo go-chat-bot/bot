@@ -451,7 +451,6 @@
   analyzer-version = 1
   input-imports = [
     "cloud.google.com/go/pubsub",
-    "github.com/go-chat-bot/bot",
     "github.com/go-chat-bot/plugins-br/cnpj",
     "github.com/go-chat-bot/plugins-br/cotacao",
     "github.com/go-chat-bot/plugins-br/cpf",
