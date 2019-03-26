@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-chat-bot/bot"
+	"github.com/iov-one/bot"
 	"github.com/nlopes/slack"
 )
 

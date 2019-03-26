@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-chat-bot/bot"
 	_ "github.com/go-chat-bot/plugins-br/cnpj"
 	_ "github.com/go-chat-bot/plugins-br/cotacao"
 	_ "github.com/go-chat-bot/plugins-br/cpf"
@@ -29,6 +28,7 @@ import (
 	_ "github.com/go-chat-bot/plugins/uptime"
 	_ "github.com/go-chat-bot/plugins/url"
 	_ "github.com/go-chat-bot/plugins/web"
+	"github.com/iov-one/bot"
 )
 
 func responseHandler(target string, message string, sender *bot.User) {

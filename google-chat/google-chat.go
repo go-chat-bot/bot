@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/go-chat-bot/bot"
+	"github.com/iov-one/bot"
 	"golang.org/x/oauth2/google"
 )
 
