@@ -1,0 +1,11 @@
+[
+    {
+        "channel": "#gojirabot",
+        "notifyNew": ["JENKINS"],
+        "notifyResolved": ["JENKINS"]
+    },
+    {
+        "channel": "#gojira-test",
+        "template": "{{.Self}}"
+    }
+]
