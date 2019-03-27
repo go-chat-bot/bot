@@ -31,7 +31,11 @@ func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessag
 
 func responseHandler(target string, message string, sender *bot.User) {
 	message, params := messageFilter(message, sender)
-	api.PostMessage(target, message, params)
+	_, _, err := api.PostMessage(target, slack.MsgOptionPostMessageParameters(params),
+		slack.MsgOptionText(message, false))
+	if err != nil {
+		fmt.Printf("Error sending a slack message: %s\n", err.Error())
+	}
 }
 
 // FindUserBySlackID converts a slack.User into a bot.User struct
