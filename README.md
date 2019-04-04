@@ -18,7 +18,7 @@ This project uses the new [Go 1.11 modules](https://github.com/golang/go/wiki/Mo
 
 To test the bot, use the [debug](https://github.com/go-chat-bot/bot/tree/master/debug) console app.
 
-- Clone this repository or use `go get github.com/go-chat-bot`
+- Clone this repository or use `go get github.com/go-chat-bot/bot`
 - Build everything: `go build ./...`
 - Build and execute the debug app:
   -  `cd debug`
