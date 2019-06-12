@@ -3,6 +3,7 @@ package slack
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/go-chat-bot/bot"
 	"github.com/nlopes/slack"
@@ -125,7 +126,11 @@ func RunWithFilter(token string, customMessageFilter MessageFilter) {
 
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
-	api = slack.New(token)
+	if os.Getenv("SLACK_BOT_OPTION_DEBUG") == "true" {
+		api = slack.New(token, slack.OptionDebug(true))
+	} else {
+		api = slack.New(token)
+	}
 	rtm = api.NewRTM()
 	teaminfo, _ = api.GetTeamInfo()
 
