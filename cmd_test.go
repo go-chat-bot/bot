@@ -12,12 +12,13 @@ import (
 )
 
 var (
-	channel  string
-	replies  chan string
-	cmdError chan string
-	user     *User
-	msgs     []string
-	errs     []string
+	channel     string
+	replies     chan string
+	cmdError    chan string
+	user        *User
+	msgs        []string
+	errs        []string
+	protoParams interface{}
 )
 
 const (
@@ -52,6 +53,13 @@ func responseHandler(target string, message string, sender *User) {
 	replies <- message
 }
 
+func responseHandlerV2(om OutgoingMessage) {
+	channel = om.Target
+	user = om.Sender
+	replies <- om.Message
+	protoParams = om.ProtoParams
+}
+
 func errorHandler(msg string, err error) {
 	cmdError <- fmt.Sprintf("%s: %s", msg, err)
 }
@@ -63,6 +71,7 @@ func reset() {
 	cmdError = make(chan string, 10)
 	msgs = []string{}
 	errs = []string{}
+	protoParams = nil
 	commands = make(map[string]*customCommand)
 	periodicCommands = make(map[string]PeriodicConfig)
 	passiveCommands = make(map[string]*customCommand)
@@ -73,6 +82,19 @@ func newBot() *Bot {
 	return New(&Handlers{
 		Response: responseHandler,
 		Errored:  errorHandler,
+	},
+		&Config{
+			Protocol: "test",
+			Server:   "test",
+		},
+	)
+}
+
+func newBotV2() *Bot {
+	return New(&Handlers{
+		Response:   responseHandler,
+		ResponseV2: responseHandlerV2,
+		Errored:    errorHandler,
 	},
 		&Config{
 			Protocol: "test",
@@ -496,6 +518,37 @@ func TestCmdV2(t *testing.T) {
 	}
 }
 
+func TestCmdV2WithProtoParams(t *testing.T) {
+	reset()
+	RegisterCommandV2("cmd", "", "",
+		func(c *Cmd) (CmdResult, error) {
+			return CmdResult{
+				Channel:     "#channel",
+				Message:     "message",
+				ProtoParams: &CmdResult{Message: "Nested!"},
+			}, nil
+		})
+
+	b := newBotV2()
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "!cmd"}, &User{Nick: "user"})
+
+	waitMessages(t, 1, 0)
+
+	if channel != "#channel" {
+		t.Error("Wrong channel")
+	}
+	if !reflect.DeepEqual([]string{"message"}, msgs) {
+		t.Error("Invalid reply")
+	}
+	if pa, ok := protoParams.(*CmdResult); ok {
+		if pa.Message != "Nested!" {
+			t.Error("Information lost in copying.")
+		}
+	} else {
+		t.Error("Failed to pass proto args through.")
+	}
+}
+
 func TestCmdV2WithoutSpecifyingChannel(t *testing.T) {
 	reset()
 	RegisterCommandV2("cmd", "", "",
@@ -675,6 +728,30 @@ func TestFilterCommandSilence(t *testing.T) {
 	RegisterFilterCommand("errored", errored)
 
 	b := newBot()
+	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
+
+	waitMessages(t, 0, 1)
+
+	if len(msgs) != 0 {
+		t.Fatal("Expected no messages!")
+	}
+	if len(errs) != 1 {
+		t.Error("Expected 1 error")
+	}
+}
+
+func TestFilterCommandSilenceSendV2(t *testing.T) {
+	reset()
+	passiveCommands = make(map[string]*customCommand)
+	ping := func(cmd *PassiveCmd) (string, error) { return "pong", nil }
+	silenced := func(cmd *FilterCmd) (string, error) { return "", nil }
+	errored := func(cmd *FilterCmd) (string, error) { return "Ignored", errors.New("error") }
+
+	RegisterPassiveCommand("ping", ping)
+	RegisterFilterCommand("silenced", silenced)
+	RegisterFilterCommand("errored", errored)
+
+	b := newBotV2()
 	b.MessageReceived(&ChannelData{Channel: "#go-bot"}, &Message{Text: "test"}, &User{Nick: "user"})
 
 	waitMessages(t, 0, 1)
