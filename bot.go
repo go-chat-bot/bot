@@ -58,6 +58,7 @@ type responseMessage struct {
 	protoParams     interface{}
 }
 
+// OutgoingMessage collects all the information for a message to go out.
 type OutgoingMessage struct {
 	Target      string
 	Message     string
@@ -221,7 +222,7 @@ func (b *Bot) SendMessage(target string, message string, sender *User) {
 	}
 }
 
-// SendMessage queues a message for a target recipient, optionally from a particular sender.
+// SendMessageV2 queues a message.
 func (b *Bot) SendMessageV2(om OutgoingMessage) {
 	message := b.executeFilterCommands(&FilterCmd{
 		Target:  om.Target,
