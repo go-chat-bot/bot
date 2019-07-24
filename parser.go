@@ -13,21 +13,20 @@ var (
 	re = regexp.MustCompile("\\s+") // Matches one or more spaces
 )
 
-func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
-	c := &Cmd{Raw: s}
-	s = strings.TrimSpace(s)
+func parse(m *Message, channel *ChannelData, user *User) (*Cmd, error) {
+	s := strings.TrimSpace(m.Text)
 
 	if !strings.HasPrefix(s, CmdPrefix) {
 		return nil, nil
 	}
 
-	c.Channel = strings.TrimSpace(channel.Channel)
-	c.ChannelData = channel
-	c.User = user
-
-	// Trim the prefix and extra spaces
-	c.Message = strings.TrimPrefix(s, CmdPrefix)
-	c.Message = strings.TrimSpace(c.Message)
+	c := &Cmd{
+		Channel:     strings.TrimSpace(channel.Channel),
+		ChannelData: channel,
+		Message:     strings.TrimSpace(strings.TrimPrefix(s, CmdPrefix)),
+		Raw:         m.Text,
+		User:        user,
+	}
 
 	// check if we have the command and not only the prefix
 	if c.Message == "" {
@@ -48,9 +47,8 @@ func parse(s string, channel *ChannelData, user *User) (*Cmd, error) {
 		c.Args = parsedArgs
 	}
 
-	c.MessageData = &Message{
-		Text: c.Message,
-	}
+	m.Text = c.Message
+	c.MessageData = m
 
 	return c, nil
 }
