@@ -56,8 +56,8 @@ func responseHandler(target string, message string, sender *User) {
 func responseHandlerV2(om OutgoingMessage) {
 	channel = om.Target
 	user = om.Sender
-	replies <- om.Message
 	protoParams = om.ProtoParams
+	replies <- om.Message
 }
 
 func errorHandler(msg string, err error) {
