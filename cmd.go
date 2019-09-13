@@ -41,8 +41,9 @@ func (c *ChannelData) URI() string {
 
 // Message holds the message info - for IRC and Slack networks, this can include whether the message was an action.
 type Message struct {
-	Text     string // The actual content of this Message
-	IsAction bool   // True if this was a '/me does something' message
+	Text     string      // The actual content of this Message
+	IsAction bool        // True if this was a '/me does something' message
+	ProtoMsg interface{} // The underlying object that we got from the protocol pkg
 }
 
 // FilterCmd holds information about what is output being filtered - message and
@@ -108,15 +109,17 @@ type customCommand struct {
 
 // CmdResult is the result message of V2 commands
 type CmdResult struct {
-	Channel string // The channel where the bot should send the message
-	Message string // The message to be sent
+	Channel     string // The channel where the bot should send the message
+	Message     string // The message to be sent
+	ProtoParams interface{}
 }
 
 // CmdResultV3 is the result message of V3 commands
 type CmdResultV3 struct {
-	Channel string
-	Message chan string
-	Done    chan bool
+	Channel     string
+	Message     chan string
+	Done        chan bool
+	ProtoParams interface{}
 }
 
 const (
@@ -389,7 +392,12 @@ func (b *Bot) handleCmd(c *Cmd) {
 		}
 
 		if result.Message != "" {
-			b.SendMessage(result.Channel, result.Message, c.User)
+			b.SendMessageV2(OutgoingMessage{
+				Target:      result.Channel,
+				Message:     result.Message,
+				Sender:      c.User,
+				ProtoParams: result.ProtoParams,
+			})
 		}
 	case v3:
 		result, err := cmd.CmdFuncV3(c)
@@ -401,7 +409,12 @@ func (b *Bot) handleCmd(c *Cmd) {
 			select {
 			case message := <-result.Message:
 				if message != "" {
-					b.SendMessage(result.Channel, message, c.User)
+					b.SendMessageV2(OutgoingMessage{
+						Target:      result.Channel,
+						Message:     message,
+						Sender:      c.User,
+						ProtoParams: result.ProtoParams,
+					})
 				}
 			case <-result.Done:
 				return

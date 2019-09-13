@@ -55,18 +55,31 @@ type Config struct {
 type responseMessage struct {
 	target, message string
 	sender          *User
+	protoParams     interface{}
+}
+
+// OutgoingMessage collects all the information for a message to go out.
+type OutgoingMessage struct {
+	Target      string
+	Message     string
+	Sender      *User
+	ProtoParams interface{}
 }
 
 // ResponseHandler must be implemented by the protocol to handle the bot responses
 type ResponseHandler func(target, message string, sender *User)
+
+// ResponseHandlerV2 may be implemented by the protocol to handle the bot responses
+type ResponseHandlerV2 func(OutgoingMessage)
 
 // ErrorHandler will be called when an error happens
 type ErrorHandler func(msg string, err error)
 
 // Handlers that must be registered to receive callbacks from the bot
 type Handlers struct {
-	Response ResponseHandler
-	Errored  ErrorHandler
+	Response   ResponseHandler
+	ResponseV2 ResponseHandlerV2
+	Errored    ErrorHandler
 }
 
 func logErrorHandler(msg string, err error) {
@@ -158,7 +171,7 @@ func (b *Bot) startPeriodicCommands() {
 
 // MessageReceived must be called by the protocol upon receiving a message
 func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *User) {
-	command, err := parse(message.Text, channel, sender)
+	command, err := parse(message, channel, sender)
 	if err != nil {
 		b.SendMessage(channel.Channel, err.Error(), sender)
 		return
@@ -189,23 +202,47 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 
 // SendMessage queues a message for a target recipient, optionally from a particular sender.
 func (b *Bot) SendMessage(target string, message string, sender *User) {
-	message = b.executeFilterCommands(&FilterCmd{
+	b.SendMessageV2(OutgoingMessage{
 		Target:  target,
 		Message: message,
-		User:    sender})
+		Sender:  sender,
+	})
+}
+
+// SendMessageV2 queues a message.
+func (b *Bot) SendMessageV2(om OutgoingMessage) {
+	message := b.executeFilterCommands(&FilterCmd{
+		Target:  om.Target,
+		Message: om.Message,
+		User:    om.Sender,
+	})
 	if message == "" {
 		return
 	}
 
 	select {
-	case b.msgsToSend <- responseMessage{target, message, sender}:
+	case b.msgsToSend <- responseMessage{
+		target:      om.Target,
+		message:     message,
+		sender:      om.Sender,
+		protoParams: om.ProtoParams,
+	}:
 	default:
 		b.errored("Failed to queue message to send.", errors.New("Too busy"))
 	}
 }
 
-func (b *Bot) sendResponse(target, message string, sender *User) {
-	b.handlers.Response(target, message, sender)
+func (b *Bot) sendResponse(resp responseMessage) {
+	if b.handlers.ResponseV2 != nil {
+		b.handlers.ResponseV2(OutgoingMessage{
+			Message:     resp.message,
+			ProtoParams: resp.protoParams,
+			Sender:      resp.sender,
+			Target:      resp.target,
+		})
+		return
+	}
+	b.handlers.Response(resp.target, resp.message, resp.sender)
 }
 
 func (b *Bot) errored(msg string, err error) {
@@ -218,7 +255,7 @@ func (b *Bot) processMessages() {
 	for {
 		select {
 		case msg := <-b.msgsToSend:
-			b.sendResponse(msg.target, msg.message, msg.sender)
+			b.sendResponse(msg)
 		case <-b.done:
 			return
 		}
