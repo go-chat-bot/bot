@@ -92,7 +92,7 @@ func TestPeriodicCommands(t *testing.T) {
 	reset()
 	RegisterPeriodicCommand("morning",
 		PeriodicConfig{
-			CronSpec: "0 0 08 * * mon-fri",
+			CronSpec: "0 08 * * mon-fri",
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok " + channel, nil },
 		})
@@ -122,13 +122,13 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 	reset()
 	RegisterPeriodicCommand("morning",
 		PeriodicConfig{
-			CronSpec: "0 0 08 * * mon-fri",
+			CronSpec: "0 08 * * mon-fri",
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok_morning " + channel, nil },
 		})
 	RegisterPeriodicCommand("afternoon",
 		PeriodicConfig{
-			CronSpec: "0 0 12 * * mon-fri",
+			CronSpec: "0 12 * * mon-fri",
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "ok_afternoon " + channel, nil },
 		})
@@ -142,10 +142,10 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 	if len(entries) != 2 {
 		t.Fatal("Should have 2 cron job entries")
 	}
-	if entries[0].Next.Hour() != 8 {
+	if entries[0].Next.Hour() != 12 {
 		t.Fatal("First cron job should be scheduled for 8am")
 	}
-	if entries[1].Next.Hour() != 12 {
+	if entries[1].Next.Hour() != 8 {
 		t.Fatal("Second cron job should be schedule for 12am")
 	}
 
@@ -170,7 +170,7 @@ func TestErroredPeriodicCommand(t *testing.T) {
 	reset()
 	RegisterPeriodicCommand("bugged",
 		PeriodicConfig{
-			CronSpec: "0 0 08 * * mon-fri",
+			CronSpec: "0 08 * * mon-fri",
 			Channels: []string{"#channel"},
 			CmdFunc:  func(channel string) (string, error) { return "bug", errors.New("error") },
 		})
@@ -198,7 +198,7 @@ func TestPeriodicCommandsV2(t *testing.T) {
 	reset()
 	RegisterPeriodicCommandV2("morning",
 		PeriodicConfig{
-			CronSpec: "0 0 08 * * mon-fri",
+			CronSpec: "0 08 * * mon-fri",
 			CmdFuncV2: func() ([]CmdResult, error) {
 				ret := []CmdResult{
 					{Message: "message 1", Channel: "#channel1"},
@@ -253,7 +253,7 @@ func TestErroredPeriodicCommandsV2(t *testing.T) {
 	reset()
 	RegisterPeriodicCommandV2("morning",
 		PeriodicConfig{
-			CronSpec: "0 0 08 * * mon-fri",
+			CronSpec: "0 08 * * mon-fri",
 			CmdFuncV2: func() ([]CmdResult, error) {
 				return nil, errors.New("error")
 			},
