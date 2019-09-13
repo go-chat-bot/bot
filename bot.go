@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 )
 
 const (

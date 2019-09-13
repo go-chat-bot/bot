@@ -17,7 +17,7 @@ require (
 	github.com/nlopes/slack v0.5.0
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pyinx/gorocket v0.0.0-20170810024322-78ae1353729f
-	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/thoj/go-ircevent v0.0.0-20180816043103-14f3614f28c3
 	github.com/trivago/tgo v1.0.5 // indirect
@@ -30,3 +30,5 @@ require (
 	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b // indirect
 	gopkg.in/telegram-bot-api.v3 v3.0.0
 )
+
+go 1.13
