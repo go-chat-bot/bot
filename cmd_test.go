@@ -142,10 +142,10 @@ func TestMultiplePeriodicCommands(t *testing.T) {
 	if len(entries) != 2 {
 		t.Fatal("Should have 2 cron job entries")
 	}
-	if entries[0].Next.Hour() != 12 {
+	if entries[0].Next.Hour() != 8 {
 		t.Fatal("First cron job should be scheduled for 8am")
 	}
-	if entries[1].Next.Hour() != 8 {
+	if entries[1].Next.Hour() != 12 {
 		t.Fatal("Second cron job should be schedule for 12am")
 	}
 
