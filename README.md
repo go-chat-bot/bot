@@ -185,7 +185,7 @@ Condensed, the steps you will need to take are as follows:
   * Choose "Pub/Sub Editor" role for the credential
 * Enable Pub/Sub API in cloud console
 * Create new topic in the Pub/Sub (say "google-chat")
-  * This is Config.TopicName
+  * Use the value of "Topic Name" (**not** "Topic ID") for Config.TopicName (e.g. /project/<proj_name>/topics/<topic_name>)
 * Modify permissions on created topic so that
   "chat-api-push@system.gserviceaccount.com" has Pub/Sub Publisher permissions
 * Enable hangouts chat api in Cloud Console
