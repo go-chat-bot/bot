@@ -34,9 +34,17 @@ func (b *Bot) help(c *Cmd) {
 
 func (b *Bot) showHelp(c *Cmd, help *customCommand) {
 	if help.Description != "" {
-		b.SendMessage(c.Channel, fmt.Sprintf(helpDescripton, help.Description), c.User)
+		b.SendMessage(OutgoingMessage{
+			Target:  c.Channel,
+			Message: fmt.Sprintf(helpDescripton, help.Description),
+			Sender:  c.User,
+		})
 	}
-	b.SendMessage(c.Channel, fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs), c.User)
+	b.SendMessage(OutgoingMessage{
+		Target:  c.Channel,
+		Message: fmt.Sprintf(helpUsage, CmdPrefix, c.Command, help.ExampleArgs),
+		Sender:  c.User,
+	})
 }
 
 func (b *Bot) showAvailabeCommands(channel string, sender *User) {
@@ -44,6 +52,14 @@ func (b *Bot) showAvailabeCommands(channel string, sender *User) {
 	for k := range commands {
 		cmds = append(cmds, k)
 	}
-	b.SendMessage(channel, fmt.Sprintf(helpAboutCommand, CmdPrefix), sender)
-	b.SendMessage(channel, fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")), sender)
+	b.SendMessage(OutgoingMessage{
+		Target:  channel,
+		Message: fmt.Sprintf(helpAboutCommand, CmdPrefix),
+		Sender:  sender,
+	})
+	b.SendMessage(OutgoingMessage{
+		Target:  channel,
+		Message: fmt.Sprintf(availableCommands, strings.Join(cmds, ", ")),
+		Sender:  sender,
+	})
 }
