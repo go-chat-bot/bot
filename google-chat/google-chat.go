@@ -31,7 +31,6 @@ type Config struct {
 	PubSubProject    string
 	TopicName        string
 	SubscriptionName string
-	Token            string
 	WelcomeMessage   string
 }
 
@@ -119,11 +118,6 @@ func Run(config *Config) {
 			err = json.Unmarshal(m.Data, &msg)
 			if err != nil {
 				log.Printf("Failed message unmarshal(%v): %s\n", err, m.Data)
-				m.Ack()
-				return
-			}
-			if msg.Token != config.Token {
-				log.Printf("Failed to verify token: %s", msg.Token)
 				m.Ack()
 				return
 			}
