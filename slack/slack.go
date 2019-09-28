@@ -56,6 +56,26 @@ func responseHandlerV2(om bot.OutgoingMessage) {
 	}
 }
 
+// AddReactionToMessage allows you to add a reaction, to a message.
+func AddReactionToMessage(msgid, channel string, reaction string) error {
+	toReact := slack.ItemRef{
+		Timestamp: msgid,
+		Channel:   channel,
+	}
+
+	return api.AddReaction(reaction, toReact)
+}
+
+// RemoveReactionFromMessage allows you to remove a reaction, from a message.
+func RemoveReactionFromMessage(msgid, channel string, reaction string) error {
+	reactionRef := slack.ItemRef{
+		Timestamp: msgid,
+		Channel:   channel,
+	}
+
+	return api.RemoveReaction(reaction, reactionRef)
+}
+
 // FindUserBySlackID converts a slack.User into a bot.User struct
 func FindUserBySlackID(userID string) *bot.User {
 	slackUser, err := api.GetUserInfo(userID)
