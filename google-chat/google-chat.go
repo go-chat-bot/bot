@@ -135,7 +135,7 @@ func Run(config *Config) {
 			case "ADDED_TO_SPACE":
 				if config.WelcomeMessage != "" {
 					log.Printf("Sending welcome message to %s\n", msg.Space.Name)
-					b.SendMessage(OutgoingMessage{
+					b.SendMessage(bot.OutgoingMessage{
 						Target:  msg.Space.Name,
 						Message: config.WelcomeMessage,
 					})
