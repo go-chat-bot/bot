@@ -192,7 +192,6 @@ Condensed, the steps you will need to take are as follows:
 * Go to hangouts chat API config in the Cloud Console and fill in info
   * Connection settings - use Pub/Sub and fill in topic string you created
     above
-  * Verification token is your Config.Token
 
 Config.SubscriptionName should be unique for each environment or you'll not
 process messages correctly. If you encounter issues make sure your credentials
@@ -220,7 +219,6 @@ func main() {
 		TopicName:        os.Getenv("HANGOUTS_TOPIC"),
 		SubscriptionName: os.Getenv("HANGOUTS_SUB"),
 		WelcomeMessage:   os.Getenv("HANGOUTS_WELCOME"),
-		Token:            os.Getenv("HANGOUTS_TOKEN")})
 }
 
 ```
