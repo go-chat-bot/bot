@@ -319,7 +319,11 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 				if err != nil {
 					b.errored(fmt.Sprintf("Error executing %s", cmdFunc.Cmd), err)
 				} else {
-					b.SendMessage(cmd.Channel, result, cmd.User)
+					b.SendMessage(OutgoingMessage{
+						Target:  cmd.Channel,
+						Message: result,
+						Sender:  cmd.User,
+					})
 				}
 			case pv2:
 				result, err := cmdFunc.PassiveFuncV2(cmd)
@@ -327,12 +331,16 @@ func (b *Bot) executePassiveCommands(cmd *PassiveCmd) {
 					b.errored(fmt.Sprintf("Error executing %s", cmdFunc.Cmd), err)
 					return
 				}
-
 				for {
 					select {
 					case message := <-result.Message:
 						if message != "" {
-							b.SendMessage(result.Channel, message, cmd.User)
+							b.SendMessage(OutgoingMessage{
+								Target:      result.Channel,
+								Message:     message,
+								Sender:      cmd.User,
+								ProtoParams: result.ProtoParams,
+							})
 						}
 					case <-result.Done:
 						return
@@ -382,7 +390,11 @@ func (b *Bot) handleCmd(c *Cmd) {
 		message, err := cmd.CmdFuncV1(c)
 		b.checkCmdError(err, c)
 		if message != "" {
-			b.SendMessage(c.Channel, message, c.User)
+			b.SendMessage(OutgoingMessage{
+				Target:  c.Channel,
+				Message: message,
+				Sender:  c.User,
+			})
 		}
 	case v2:
 		result, err := cmd.CmdFuncV2(c)
@@ -392,7 +404,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 		}
 
 		if result.Message != "" {
-			b.SendMessageV2(OutgoingMessage{
+			b.SendMessage(OutgoingMessage{
 				Target:      result.Channel,
 				Message:     result.Message,
 				Sender:      c.User,
@@ -409,7 +421,7 @@ func (b *Bot) handleCmd(c *Cmd) {
 			select {
 			case message := <-result.Message:
 				if message != "" {
-					b.SendMessageV2(OutgoingMessage{
+					b.SendMessage(OutgoingMessage{
 						Target:      result.Channel,
 						Message:     message,
 						Sender:      c.User,
@@ -427,7 +439,11 @@ func (b *Bot) checkCmdError(err error, c *Cmd) {
 	if err != nil {
 		errorMsg := fmt.Sprintf(errorExecutingCommand, c.Command, err.Error())
 		b.errored(errorMsg, err)
-		b.SendMessage(c.Channel, errorMsg, c.User)
+		b.SendMessage(OutgoingMessage{
+			Target:  c.Channel,
+			Message: errorMsg,
+			Sender:  c.User,
+		})
 	}
 }
 
@@ -457,7 +473,10 @@ func (b *Bot) handleMessageStream(streamName string, ms *MessageStream) {
 				continue
 			}
 			if d.Message != "" {
-				b.SendMessage(d.ChannelData.Channel, d.Message, nil)
+				b.SendMessage(OutgoingMessage{
+					Target:  d.ChannelData.Channel,
+					Message: d.Message,
+				})
 			}
 		case <-ms.Done:
 			return

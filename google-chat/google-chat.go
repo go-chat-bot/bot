@@ -129,7 +129,10 @@ func Run(config *Config) {
 			case "ADDED_TO_SPACE":
 				if config.WelcomeMessage != "" {
 					log.Printf("Sending welcome message to %s\n", msg.Space.Name)
-					b.SendMessage(msg.Space.Name, config.WelcomeMessage, nil)
+					b.SendMessage(bot.OutgoingMessage{
+						Target:  msg.Space.Name,
+						Message: config.WelcomeMessage,
+					})
 				}
 			case "REMOVED_FROM_SPACE":
 				break
