@@ -1,4 +1,4 @@
-module github.com/badnetmask/bot
+module github.com/go-chat-bot/bot
 
 require (
 	cloud.google.com/go v0.38.0
