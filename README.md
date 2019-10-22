@@ -185,14 +185,13 @@ Condensed, the steps you will need to take are as follows:
   * Choose "Pub/Sub Editor" role for the credential
 * Enable Pub/Sub API in cloud console
 * Create new topic in the Pub/Sub (say "google-chat")
-  * This is Config.TopicName
+  * Use the value of "Topic Name" (**not** "Topic ID") for Config.TopicName (e.g. /project/<proj_name>/topics/<topic_name>)
 * Modify permissions on created topic so that
   "chat-api-push@system.gserviceaccount.com" has Pub/Sub Publisher permissions
 * Enable hangouts chat api in Cloud Console
 * Go to hangouts chat API config in the Cloud Console and fill in info
   * Connection settings - use Pub/Sub and fill in topic string you created
     above
-  * Verification token is your Config.Token
 
 Config.SubscriptionName should be unique for each environment or you'll not
 process messages correctly. If you encounter issues make sure your credentials
@@ -220,7 +219,6 @@ func main() {
 		TopicName:        os.Getenv("HANGOUTS_TOPIC"),
 		SubscriptionName: os.Getenv("HANGOUTS_SUB"),
 		WelcomeMessage:   os.Getenv("HANGOUTS_WELCOME"),
-		Token:            os.Getenv("HANGOUTS_TOKEN")})
 }
 
 ```
