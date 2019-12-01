@@ -3,7 +3,9 @@ package irc
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/go-chat-bot/bot"
@@ -24,9 +26,10 @@ type Config struct {
 }
 
 var (
-	ircConn *ircevent.Connection
-	config  *Config
-	b       *bot.Bot
+	ircConn     *ircevent.Connection
+	config      *Config
+	b           *bot.Bot
+	nickStartRE *regexp.Regexp
 )
 
 const protocol = "irc"
@@ -52,7 +55,7 @@ func onPRIVMSG(e *ircevent.Event) {
 			Channel:   e.Arguments[0],
 			IsPrivate: e.Arguments[0] == ircConn.GetNick()},
 		&bot.Message{
-			Text: e.Message(),
+			Text: nickStartRE.ReplaceAllString(e.Message(), ""),
 		},
 		&bot.User{
 			ID:       e.Host,
@@ -116,6 +119,8 @@ func SetUp(c *Config) *bot.Bot {
 			Server:   c.Server,
 		},
 	)
+	// prepare regex to strip from messages - nick followed by colon/comma and spaces
+	nickStartRE = regexp.MustCompile(fmt.Sprintf("%s[,:] *", c.Nick))
 
 	ircConn.AddCallback("001", onWelcome)
 	ircConn.AddCallback("PRIVMSG", onPRIVMSG)
