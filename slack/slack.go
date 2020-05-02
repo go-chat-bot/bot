@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-chat-bot/bot"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 // MessageFilter allows implementing a filter function to transform the messages
