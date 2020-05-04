@@ -15,17 +15,14 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gorilla/websocket v1.4.0 // indirect
-	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
-	github.com/lusis/slack-test v0.0.0-20190426140909-c40012f20018 // indirect
 	github.com/martinusso/go-docs v0.0.0-20161215163720-81905d575a58 // indirect
 	github.com/mattn/go-shellwords v1.0.6
 	github.com/mozillazg/go-unidecode v0.1.1
-	github.com/nlopes/slack v0.5.0
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
-	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pyinx/gorocket v0.0.0-20170810024322-78ae1353729f
 	github.com/robfig/cron/v3 v3.0.0
+	github.com/slack-go/slack v0.6.4
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
