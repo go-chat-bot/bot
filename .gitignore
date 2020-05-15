@@ -30,7 +30,7 @@ _testmain.go
 
 # vim swap files
 *.swp
-
+ 
 # test coverage report files
 *.out
 *.html
@@ -38,4 +38,4 @@ _testmain.go
 # go deps storage
 src/github.com/*
 src/gopkg.in/*
-
+ 
