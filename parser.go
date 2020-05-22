@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/mattn/go-shellwords"
 	unidecode "github.com/mozillazg/go-unidecode"
@@ -33,8 +34,18 @@ func parse(m *Message, channel *ChannelData, user *User) (*Cmd, error) {
 		return nil, nil
 	}
 
+	// split command from args by unicode space
+	firstOccurrence := true
+	f := func(c rune) bool {
+		isFirstSpace := unicode.IsSpace(c) && firstOccurrence
+		if isFirstSpace {
+			firstOccurrence = false
+		}
+		return isFirstSpace
+	}
+
 	// get the command
-	pieces := strings.SplitN(c.Message, " ", 2)
+	pieces := strings.FieldsFunc(c.Message, f)
 	c.Command = strings.ToLower(unidecode.Unidecode(pieces[0]))
 
 	if len(pieces) > 1 {
