@@ -34,7 +34,6 @@ func parse(m *Message, channel *ChannelData, user *User) (*Cmd, error) {
 		return nil, nil
 	}
 
-	// split command from args by unicode space
 	firstOccurrence := true
 	f := func(c rune) bool {
 		isFirstSpace := unicode.IsSpace(c) && firstOccurrence
