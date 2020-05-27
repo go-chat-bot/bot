@@ -35,7 +35,7 @@ func parse(m *Message, channel *ChannelData, user *User) (*Cmd, error) {
 	}
 
 	firstOccurrence := true
-	f := func(c rune) bool {
+	firstUnicodeSpace := func(c rune) bool {
 		isFirstSpace := unicode.IsSpace(c) && firstOccurrence
 		if isFirstSpace {
 			firstOccurrence = false
@@ -44,7 +44,7 @@ func parse(m *Message, channel *ChannelData, user *User) (*Cmd, error) {
 	}
 
 	// get the command
-	pieces := strings.FieldsFunc(c.Message, f)
+	pieces := strings.FieldsFunc(c.Message, firstUnicodeSpace)
 	c.Command = strings.ToLower(unidecode.Unidecode(pieces[0]))
 
 	if len(pieces) > 1 {
