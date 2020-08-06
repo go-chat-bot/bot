@@ -139,7 +139,8 @@ func readBotInfo(api *slack.Client) {
 }
 
 func readChannelData(api *slack.Client) {
-	channels, err := api.GetChannels(true)
+	params := slack.GetConversationsParameters{}
+	channels, _, err := api.GetConversations(&params)
 	if err != nil {
 		fmt.Printf("Error getting Channels: %s\n", err)
 		return
