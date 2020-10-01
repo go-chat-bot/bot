@@ -107,7 +107,8 @@ To join channels with passwords just put the password after the channel name sep
 
 To deploy your go-bot to Telegram, you need to:
 
-* Follow Telegram instructions to [create a new bot user](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and get your token
+* To create a new bot user Go to - (https://t.me/botfather) and than enter /newbot command Choose it's name and Username and get your token.
+You can also check  (https://core.telegram.org/bots#3-how-do-i-create-a-bot).
 * Import the package `github.com/go-chat-bot/bot/telegram`
 * Import the commands you would like to use
 * Call `telegram.Run(token, debug)`
