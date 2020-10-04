@@ -9,7 +9,7 @@ require (
 	github.com/detached/gorocket v0.0.0-20170629192631-d44bbd3f26d2 // indirect
 	github.com/fatih/structs v1.0.0 // indirect
 	github.com/go-chat-bot/plugins v0.0.0-20181006134258-491b3f9878d6
-	github.com/go-chat-bot/plugins-br v0.0.0-20170316122923-eb41b30907dc
+	github.com/go-chat-bot/plugins-br v0.0.0-20200917130500-b69d8e0f9584
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect

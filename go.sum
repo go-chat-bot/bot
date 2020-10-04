@@ -24,8 +24,9 @@ github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-chat-bot/plugins v0.0.0-20181006134258-491b3f9878d6 h1:qNYjVQnDwznjLk+OnNdczA5SXwEa/RwjPTZSQCKofF4=
 github.com/go-chat-bot/plugins v0.0.0-20181006134258-491b3f9878d6/go.mod h1:Ga63x4EC4NFYr/KGzhn8D8fLj89sfJA/dpBsuowiHOQ=
-github.com/go-chat-bot/plugins-br v0.0.0-20170316122923-eb41b30907dc h1:v/poG4Y4O/z1cUm2cWxiIkFFgRsT3Fe1u1A33evx89g=
-github.com/go-chat-bot/plugins-br v0.0.0-20170316122923-eb41b30907dc/go.mod h1:KU0Ieo/D/HBwPY6n3tLWanM5GemW6iWXdbgm96qRW2Q=
+github.com/go-chat-bot/plugins v0.0.0-20200616122335-c0aba236acdb h1:k2HBEaNC/+9L6d8iA+ls7EMIS6u2SRwhXlxTgfRIEvk=
+github.com/go-chat-bot/plugins-br v0.0.0-20200917130500-b69d8e0f9584 h1:6i1FuHDlNZ6OtsEeE6GKa7e078pbXafYbnvo1PG3WHw=
+github.com/go-chat-bot/plugins-br v0.0.0-20200917130500-b69d8e0f9584/go.mod h1:KU0Ieo/D/HBwPY6n3tLWanM5GemW6iWXdbgm96qRW2Q=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible h1:2cauKuaELYAEARXRkq2LrJ0yDDv1rW7+wrTEdVL3uaU=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
 github.com/go-test/deep v1.0.4 h1:u2CU3YKy9I2pmu9pX0eq50wCgjfGIt539SqR7FbHiho=

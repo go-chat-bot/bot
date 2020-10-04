@@ -16,6 +16,7 @@ import (
 	_ "github.com/go-chat-bot/plugins/catfacts"
 	_ "github.com/go-chat-bot/plugins/catgif"
 	_ "github.com/go-chat-bot/plugins/chucknorris"
+	_ "github.com/go-chat-bot/plugins-br/gloria_a_deus"
 	_ "github.com/go-chat-bot/plugins/cmd"
 	_ "github.com/go-chat-bot/plugins/crypto"
 	_ "github.com/go-chat-bot/plugins/encoding"
