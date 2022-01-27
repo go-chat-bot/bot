@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/iam v0.1.1 // indirect
 	cloud.google.com/go/pubsub v1.17.1
 	github.com/Jeffail/gabs v1.4.0 // indirect
-	github.com/andygrunwald/go-jira v1.14.0 // indirect
+	github.com/andygrunwald/go-jira v1.14.1-0.20220125145100-3555edb9bbda // indirect
 	github.com/beevik/guid v0.0.0-20170504223318-d0ea8faecee0 // indirect
 	github.com/cloudfoundry/gosigar v1.3.3 // indirect
 	github.com/detached/gorocket v0.0.0-20170629192631-d44bbd3f26d2 // indirect
