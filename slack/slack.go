@@ -3,6 +3,8 @@ package slack
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 
 	"github.com/go-chat-bot/bot"
 	"github.com/slack-go/slack"
@@ -11,6 +13,9 @@ import (
 // MessageFilter allows implementing a filter function to transform the messages
 // before sending to the channel, it is run before the bot sends the message to slack
 type MessageFilter func(string, *bot.User) (string, slack.PostMessageParameters)
+
+// Strip Slack's mrkdwn URL
+var mrkdwnURLRegexp = regexp.MustCompile(`\<http:\/\/.*\|(.*)\>`)
 
 var (
 	rtm      *slack.RTM
@@ -116,7 +121,7 @@ func extractText(event *slack.MessageEvent) *bot.Message {
 		ProtoMsg: event,
 	}
 	if len(event.Text) != 0 {
-		msg.Text = event.Text
+		msg.Text = mrkdwnURLRegexp.ReplaceAllString(event.Text, "$1")
 		if event.SubType == "me_message" {
 			msg.IsAction = true
 		}
@@ -166,7 +171,8 @@ func RunWithFilter(token string, customMessageFilter MessageFilter) {
 
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
-	api = slack.New(token)
+	_, apiDebug := os.LookupEnv("SLACK_DEBUG")
+	api = slack.New(token, slack.OptionDebug(apiDebug))
 	rtm = api.NewRTM()
 	teaminfo, _ = api.GetTeamInfo()
 
