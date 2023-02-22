@@ -3,8 +3,10 @@ package slack
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/go-chat-bot/bot"
 	"github.com/slack-go/slack"
@@ -21,6 +23,7 @@ var (
 	rtm      *slack.RTM
 	api      *slack.Client
 	teaminfo *slack.TeamInfo
+	verbose  bool
 
 	channelList                 = map[string]slack.Channel{}
 	params                      = slack.PostMessageParameters{AsUser: true}
@@ -36,6 +39,9 @@ func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessag
 
 func responseHandler(target string, message string, sender *bot.User) {
 	message, params := messageFilter(message, sender)
+	if verbose {
+		log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(target), sender.Nick, message)
+	}
 	_, _, err := api.PostMessage(
 		target,
 		slack.MsgOptionPostMessageParameters(params),
@@ -50,6 +56,9 @@ func responseHandlerV2(om bot.OutgoingMessage) {
 	message, params := messageFilter(om.Message, om.Sender)
 	if pmp, ok := om.ProtoParams.(*slack.PostMessageParameters); ok {
 		params = *pmp
+	}
+	if verbose {
+		log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(om.Target), om.Sender.Nick, message)
 	}
 	_, _, err := api.PostMessage(
 		om.Target,
@@ -159,6 +168,19 @@ func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
 
+func whereMessage(channel string) string {
+	if strings.HasPrefix(channel, "#") {
+		// this appears to be a full channel name already, no modifications
+		return channel
+	}
+	// this most likelys is a channel ID
+	C, _ := api.GetConversationInfo(channel, false)
+	if C.IsIM {
+		return "privatemsg"
+	}
+	return "#" + C.Name
+}
+
 // RunWithFilter executes the bot and sets up a message filter which will
 // receive all the messages before they are sent to slack
 func RunWithFilter(token string, customMessageFilter MessageFilter) {
@@ -171,6 +193,7 @@ func RunWithFilter(token string, customMessageFilter MessageFilter) {
 
 // Run connects to slack RTM API using the provided token
 func Run(token string) {
+	_, verbose = os.LookupEnv("SLACK_VERBOSE")
 	_, apiDebug := os.LookupEnv("SLACK_DEBUG")
 	api = slack.New(token, slack.OptionDebug(apiDebug))
 	rtm = api.NewRTM()
@@ -208,11 +231,13 @@ Loop:
 					continue
 				}
 
-				C := channelList[ev.Channel]
 				var channel = ev.Channel
+				C, _ := api.GetConversationInfo(channel, false)
 				if C.IsChannel {
 					channel = fmt.Sprintf("#%s", C.Name)
 				}
+				text := extractText(ev)
+				user := extractUser(ev)
 				go b.MessageReceived(
 					&bot.ChannelData{
 						Protocol:  protocol,
@@ -221,9 +246,13 @@ Loop:
 						HumanName: C.Name,
 						IsPrivate: !C.IsChannel,
 					},
-					extractText(ev),
-					extractUser(ev),
+					text,
+					user,
 				)
+				if verbose && strings.HasPrefix(text.Text, bot.CmdPrefix) {
+					// logs incoming message only if verbose is ON and it does not start with the bot's command prefix
+					log.Printf("[%s] channel: %s from: %s message: %s", protocol, whereMessage(C.ID), user.Nick, text.Text)
+				}
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())
