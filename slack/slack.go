@@ -39,16 +39,21 @@ func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessag
 
 func responseHandler(target string, message string, sender *bot.User) {
 	message, params := messageFilter(message, sender)
-	if verbose {
-		log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(target), sender.Nick, message)
-	}
-	_, _, err := api.PostMessage(
-		target,
-		slack.MsgOptionPostMessageParameters(params),
-		slack.MsgOptionText(message, false),
-	)
-	if err != nil {
-		fmt.Printf("Error sending a slack message: %s\n", err.Error())
+	if target != "" {
+		// if target is empty, this is most likely a mistake, and the API won't parse
+		if verbose {
+			log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(target), sender.Nick, message)
+		}
+		_, _, err := api.PostMessage(
+			target,
+			slack.MsgOptionPostMessageParameters(params),
+			slack.MsgOptionText(message, false),
+		)
+		if err != nil {
+			fmt.Printf("Error sending a slack message: %s\n", err.Error())
+		}
+	} else {
+		log.Printf("Slack message target is empty. Command error?")
 	}
 }
 
@@ -57,16 +62,22 @@ func responseHandlerV2(om bot.OutgoingMessage) {
 	if pmp, ok := om.ProtoParams.(*slack.PostMessageParameters); ok {
 		params = *pmp
 	}
-	if verbose {
-		log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(om.Target), om.Sender.Nick, message)
-	}
-	_, _, err := api.PostMessage(
-		om.Target,
-		slack.MsgOptionPostMessageParameters(params),
-		slack.MsgOptionText(message, false),
-	)
-	if err != nil {
-		fmt.Printf("Error sending a slack message: %s\n", err.Error())
+	log.Printf("Slack debug responseHandlerV2(om): %#v\n", om)
+	if om.Target != "" {
+		// if target is empty, this is most likely a mistake, and the API won't parse
+		if verbose {
+			log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(om.Target), om.Sender.Nick, message)
+		}
+		_, _, err := api.PostMessage(
+			om.Target,
+			slack.MsgOptionPostMessageParameters(params),
+			slack.MsgOptionText(message, false),
+		)
+		if err != nil {
+			fmt.Printf("Error sending a slack message: %s\n", err.Error())
+		}
+	} else {
+		log.Printf("Slack message target is empty. Command error?")
 	}
 }
 
@@ -169,16 +180,21 @@ func ownMessage(UserID string) bool {
 }
 
 func whereMessage(channel string) string {
+	log.Printf("Slack debug whereMessage(channel): %s", channel)
 	if strings.HasPrefix(channel, "#") {
 		// this appears to be a full channel name already, no modifications
 		return channel
 	}
 	// this most likelys is a channel ID
-	C, _ := api.GetConversationInfo(channel, false)
-	if C.IsIM {
-		return "privatemsg"
+	C, err := api.GetConversationInfo(channel, false)
+	if err == nil {
+		log.Printf("Slack debug whereMessage(C): %#v\n", C)
+		if C.IsIM {
+			return "privatemsg"
+		}
+		return "#" + C.Name
 	}
-	return "#" + C.Name
+	return "not-a-slack-channel"
 }
 
 // RunWithFilter executes the bot and sets up a message filter which will
