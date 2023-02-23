@@ -33,51 +33,63 @@ var (
 
 const protocol = "slack"
 
+// Slack channel names have very specific prefixes:
+// # = channel name, C = channel ID, G = group message, D = direct message
+var slack_channel_regexp = regexp.MustCompile("^[#CGD]")
+
 func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessageParameters) {
 	return message, params
 }
 
 func responseHandler(target string, message string, sender *bot.User) {
+	if !(slack_channel_regexp.MatchString(target)) {
+		// log.Printf("Slack message target does not appear to be a Slack channel.")
+		return
+	}
+
 	message, params := messageFilter(message, sender)
-	if target != "" {
-		// if target is empty, this is most likely a mistake, and the API won't parse
-		if verbose {
-			log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(target), sender.Nick, message)
+
+	if verbose {
+		nick := "botpassivecmd"
+		if sender != nil {
+			nick = sender.Nick
 		}
-		_, _, err := api.PostMessage(
-			target,
-			slack.MsgOptionPostMessageParameters(params),
-			slack.MsgOptionText(message, false),
-		)
-		if err != nil {
-			fmt.Printf("Error sending a slack message: %s\n", err.Error())
-		}
-	} else {
-		log.Printf("Slack message target is empty. Command error?")
+		log.Printf("[%s] (outgoing) channel: %s reply-to: %s message: %s", protocol, whereMessage(target), nick, message)
+	}
+	_, _, err := api.PostMessage(
+		target,
+		slack.MsgOptionPostMessageParameters(params),
+		slack.MsgOptionText(message, false),
+	)
+	if err != nil {
+		fmt.Printf("Error sending a slack message: %s\n", err.Error())
 	}
 }
 
 func responseHandlerV2(om bot.OutgoingMessage) {
+	if !(slack_channel_regexp.MatchString(om.Target)) {
+		// log.Printf("Slack messageV2 target does not appear to be a Slack channel.")
+		return
+	}
+
 	message, params := messageFilter(om.Message, om.Sender)
 	if pmp, ok := om.ProtoParams.(*slack.PostMessageParameters); ok {
 		params = *pmp
 	}
-	log.Printf("Slack debug responseHandlerV2(om): %#v\n", om)
-	if om.Target != "" {
-		// if target is empty, this is most likely a mistake, and the API won't parse
-		if verbose {
-			log.Printf("[%s] channel: %s reply-to: %s message: %s", protocol, whereMessage(om.Target), om.Sender.Nick, message)
+	if verbose {
+		nick := "botpassivecmd"
+		if om.Sender != nil {
+			nick = om.Sender.Nick
 		}
-		_, _, err := api.PostMessage(
-			om.Target,
-			slack.MsgOptionPostMessageParameters(params),
-			slack.MsgOptionText(message, false),
-		)
-		if err != nil {
-			fmt.Printf("Error sending a slack message: %s\n", err.Error())
-		}
-	} else {
-		log.Printf("Slack message target is empty. Command error?")
+		log.Printf("[%s] (outgoing) channel: %s reply-to: %s message: %s", protocol, whereMessage(om.Target), nick, message)
+	}
+	_, _, err := api.PostMessage(
+		om.Target,
+		slack.MsgOptionPostMessageParameters(params),
+		slack.MsgOptionText(message, false),
+	)
+	if err != nil {
+		fmt.Printf("Error sending a slack message: %s\n", err.Error())
 	}
 }
 
@@ -180,15 +192,13 @@ func ownMessage(UserID string) bool {
 }
 
 func whereMessage(channel string) string {
-	log.Printf("Slack debug whereMessage(channel): %s", channel)
 	if strings.HasPrefix(channel, "#") {
 		// this appears to be a full channel name already, no modifications
 		return channel
 	}
 	// this most likelys is a channel ID
 	C, err := api.GetConversationInfo(channel, false)
-	if err == nil {
-		log.Printf("Slack debug whereMessage(C): %#v\n", C)
+	if err == nil && C != nil {
 		if C.IsIM {
 			return "privatemsg"
 		}
@@ -254,6 +264,10 @@ Loop:
 				}
 				text := extractText(ev)
 				user := extractUser(ev)
+				if verbose && strings.HasPrefix(text.Text, bot.CmdPrefix) {
+					// logs incoming message only if verbose is ON and the message starts with the bot's command prefix
+					log.Printf("[%s] (incoming) channel: %s from: %s message: %s", protocol, whereMessage(C.ID), user.Nick, text.Text)
+				}
 				go b.MessageReceived(
 					&bot.ChannelData{
 						Protocol:  protocol,
@@ -265,10 +279,6 @@ Loop:
 					text,
 					user,
 				)
-				if verbose && strings.HasPrefix(text.Text, bot.CmdPrefix) {
-					// logs incoming message only if verbose is ON and it does not start with the bot's command prefix
-					log.Printf("[%s] channel: %s from: %s message: %s", protocol, whereMessage(C.ID), user.Nick, text.Text)
-				}
 
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())
