@@ -35,14 +35,14 @@ const protocol = "slack"
 
 // Slack channel names have very specific prefixes:
 // # = channel name, C = channel ID, G = group message, D = direct message
-var slack_channel_regexp = regexp.MustCompile("^[#CGD]")
+var slackChannelRegexp = regexp.MustCompile("^[#CGD]")
 
 func defaultMessageFilter(message string, _ *bot.User) (string, slack.PostMessageParameters) {
 	return message, params
 }
 
 func responseHandler(target string, message string, sender *bot.User) {
-	if !(slack_channel_regexp.MatchString(target)) {
+	if !(slackChannelRegexp.MatchString(target)) {
 		// log.Printf("Slack message target does not appear to be a Slack channel.")
 		return
 	}
@@ -67,7 +67,7 @@ func responseHandler(target string, message string, sender *bot.User) {
 }
 
 func responseHandlerV2(om bot.OutgoingMessage) {
-	if !(slack_channel_regexp.MatchString(om.Target)) {
+	if !(slackChannelRegexp.MatchString(om.Target)) {
 		// log.Printf("Slack messageV2 target does not appear to be a Slack channel.")
 		return
 	}

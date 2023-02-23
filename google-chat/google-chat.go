@@ -36,12 +36,12 @@ type Config struct {
 }
 
 // The Google Chat bot can only talk to "spaces/"
-var gchat_spaces_regexp = regexp.MustCompile("^spaces\\/")
+var gchatSpacesRegexp = regexp.MustCompile("^spaces\\/")
 
 func responseHandler(target string, message string, sender *bot.User) {
 	var space, thread string
 
-	if !(gchat_spaces_regexp.MatchString(target)) {
+	if !(gchatSpacesRegexp.MatchString(target)) {
 		// log.Printf("Google Chat message target does not appear to be a proper space.")
 		return
 	}
